@@ -4,19 +4,45 @@ import { updateMenu } from '@/api'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { ArrowLeft, Plus } from 'lucide-react'
+import { Select } from '@/components/ui/select'
+import { ArrowLeft, Plus, Eye } from 'lucide-react'
 import CategorySection from './CategorySection'
 import TVPreview from './TVPreview'
+
+const LAYOUT_OPTIONS = [
+  { value: 'classic', label: 'Classic Gold' },
+  { value: 'bistro', label: 'Bistro Chalkboard' },
+  { value: 'moroccan', label: 'Moroccan' },
+  { value: 'pro', label: 'Pro Premium' },
+]
 
 export default function MenuEditor({ menu, onBack }) {
   const [menuName, setMenuName] = useState(menu.name)
   const [categories, setCategories] = useState(menu.categories || [])
+  const [selectedLayout, setSelectedLayout] = useState(menu.selectedLayout || 'classic')
   const [saving, setSaving] = useState(false)
 
-  const save = async (newCategories) => {
+  const fullSave = async (overrides) => {
     setSaving(true)
     try {
-      await updateMenu(menu.id, { name: menuName, categories: newCategories || categories })
+      await updateMenu(menu.id, {
+        name: menuName,
+        categories: categories,
+        selectedLayout,
+        ...overrides,
+      })
+    } catch (e) {
+      toast.error('Failed to save: ' + e.message)
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const save = async (newCategories) => {
+    const cats = newCategories || categories
+    setSaving(true)
+    try {
+      await updateMenu(menu.id, { name: menuName, categories: cats, selectedLayout })
     } catch (e) {
       toast.error('Failed to save: ' + e.message)
     } finally {
@@ -81,6 +107,32 @@ export default function MenuEditor({ menu, onBack }) {
         </TabsList>
 
         <TabsContent value="edit" className="space-y-6 mt-6">
+          <div className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-5 space-y-4">
+            <div className="flex items-center gap-2">
+              <Eye className="w-4 h-4 text-gold" />
+              <h3 className="text-sm font-medium text-zinc-300 uppercase tracking-wider">
+                Display Settings
+              </h3>
+            </div>
+            <div className="flex items-center gap-3">
+              <label className="text-sm text-zinc-400 min-w-[6rem]">TV Layout</label>
+              <Select
+                value={selectedLayout}
+                onChange={(e) => {
+                  setSelectedLayout(e.target.value)
+                  fullSave({ selectedLayout: e.target.value })
+                }}
+                className="w-[220px]"
+              >
+                {LAYOUT_OPTIONS.map((opt) => (
+                  <option key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </option>
+                ))}
+              </Select>
+            </div>
+          </div>
+
           <div className="flex items-center justify-between">
             <h3 className="text-sm font-medium text-zinc-400 uppercase tracking-wider">
               Categories ({categories.length})

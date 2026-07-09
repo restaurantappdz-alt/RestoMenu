@@ -40,6 +40,7 @@ export async function createMenu(name) {
   const ref = await addDoc(menusRef, {
     name,
     categories: [],
+    selectedLayout: 'classic',
     createdAt: serverTimestamp(),
   })
   return ref.id
@@ -83,6 +84,7 @@ export async function seedDefaultMenu() {
         addons: [{ name: 'Barquette de Frites', price: 150 }],
       },
     ],
+    selectedLayout: 'classic',
     createdAt: serverTimestamp(),
   })
   return ref.id
