@@ -1,0 +1,115 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 480" fill="none">
+  <defs>
+    <linearGradient id="skin" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#F5D6B8"/>
+      <stop offset="100%" stop-color="#E8C09C"/>
+    </linearGradient>
+    <linearGradient id="shirt" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#FF5100"/>
+      <stop offset="100%" stop-color="#CC4000"/>
+    </linearGradient>
+    <linearGradient id="frame" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#FFB703"/>
+      <stop offset="50%" stop-color="#FF5100"/>
+      <stop offset="100%" stop-color="#FFB703"/>
+    </linearGradient>
+    <linearGradient id="frameGlow" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#FF5100" stop-opacity="0.3"/>
+      <stop offset="100%" stop-color="#FFB703" stop-opacity="0"/>
+    </linearGradient>
+    <linearGradient id="bread" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#F5D6A0"/>
+      <stop offset="100%" stop-color="#E8C080"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Circular frame glow (outer) -->
+  <circle cx="200" cy="200" r="178" fill="url(#frameGlow)"/>
+
+  <!-- Circular frame -->
+  <circle cx="200" cy="200" r="160" fill="#0F172A" stroke="url(#frame)" stroke-width="4"/>
+  <circle cx="200" cy="200" r="160" fill="none" stroke="url(#frame)" stroke-width="4" opacity="0.5" stroke-dasharray="8 6"/>
+
+  <!-- Inner dark fill -->
+  <circle cx="200" cy="200" r="156" fill="#0B132B"/>
+
+  <!-- Subtle inner glow ring -->
+  <circle cx="200" cy="200" r="154" fill="none" stroke="#FF5100" stroke-width="1" opacity="0.15"/>
+
+  <!-- Character group (centered within circle) -->
+  <g transform="translate(0, -10)">
+
+  <!-- Chef Hat -->
+  <ellipse cx="200" cy="67" rx="55" ry="13" fill="white" opacity="0.95"/>
+  <rect x="162" y="28" width="76" height="46" rx="9" fill="white" opacity="0.95"/>
+  <rect x="155" y="65" width="90" height="7" rx="3.5" fill="white" opacity="0.95"/>
+
+  <!-- Head -->
+  <circle cx="200" cy="130" r="72" fill="url(#skin)"/>
+
+  <!-- Hair -->
+  <path d="M128 130c0-30 18-52 72-56 54 4 72 26 72 56" fill="#1a1a2e" opacity="0.85"/>
+  <path d="M132 138c-7 0-12-3-12-9s5-9 12-9" fill="#1a1a2e" opacity="0.85"/>
+  <path d="M268 138c7 0 12-3 12-9s-5-9-12-9" fill="#1a1a2e" opacity="0.85"/>
+
+  <!-- Ears -->
+  <ellipse cx="130" cy="138" rx="9" ry="14" fill="#E8C09C"/>
+  <ellipse cx="270" cy="138" rx="9" ry="14" fill="#E8C09C"/>
+
+  <!-- Sunglasses -->
+  <rect x="152" y="120" width="64" height="32" rx="9" fill="#1a1a2e" stroke="#333" stroke-width="1.5"/>
+  <rect x="184" y="120" width="64" height="32" rx="9" fill="#1a1a2e" stroke="#333" stroke-width="1.5"/>
+  <rect x="180" y="133" width="40" height="3.5" rx="1.5" fill="#333"/>
+  <rect x="160" y="126" width="20" height="7" rx="3.5" fill="rgba(255,255,255,0.12)"/>
+  <rect x="198" y="126" width="20" height="7" rx="3.5" fill="rgba(255,255,255,0.12)"/>
+  <rect x="124" y="132" width="28" height="3.5" rx="1.5" fill="#333"/>
+  <rect x="248" y="132" width="28" height="3.5" rx="1.5" fill="#333"/>
+
+  <!-- Smile -->
+  <path d="M174 172 Q200 192 226 172" stroke="#C4906A" stroke-width="3.5" stroke-linecap="round" fill="none"/>
+
+  <!-- Neck -->
+  <rect x="182" y="195" width="36" height="28" rx="7" fill="url(#skin)"/>
+
+  <!-- Body / T-shirt -->
+  <path d="M162 225 L200 216 L238 225 L256 340 L144 340 Z" fill="url(#shirt)"/>
+  <path d="M187 218 L200 234 L213 218" stroke="#CC4000" stroke-width="2.5" fill="none"/>
+
+  <!-- LEFT ARM - holding sandwich -->
+  <path d="M238 248 Q286 240 316 212 Q326 202 336 212" stroke="url(#skin)" stroke-width="20" stroke-linecap="round" fill="none"/>
+
+  <!-- Sandwich -->
+  <g transform="translate(318, 188) rotate(-12)">
+    <ellipse cx="0" cy="0" rx="30" ry="13" fill="url(#bread)"/>
+    <ellipse cx="0" cy="2" rx="26" ry="9" fill="#E8C890"/>
+    <path d="M-26 8 Q-8 13 0 8 Q8 13 26 8" fill="#4CAF50" stroke="#3D9140" stroke-width="0.8"/>
+    <ellipse cx="-7" cy="13" rx="9" ry="4.5" fill="#E53935"/>
+    <ellipse cx="7" cy="13" rx="9" ry="4.5" fill="#E53935"/>
+    <ellipse cx="0" cy="19" rx="22" ry="6.5" fill="#8B4513"/>
+    <ellipse cx="0" cy="19" rx="18" ry="4.5" fill="#A0522D"/>
+    <path d="M-22 25 Q0 30 22 25" fill="#FFD600" stroke="#FFC107" stroke-width="0.8"/>
+    <ellipse cx="0" cy="30" rx="24" ry="7" fill="url(#bread)"/>
+  </g>
+
+  <!-- Steam -->
+  <path d="M308 172 Q306 161 312 153" stroke="rgba(255,255,255,0.25)" stroke-width="2" stroke-linecap="round" fill="none"/>
+  <path d="M326 168 Q330 156 324 147" stroke="rgba(255,255,255,0.2)" stroke-width="1.8" stroke-linecap="round" fill="none"/>
+
+  <!-- RIGHT ARM - OK sign -->
+  <path d="M162 245 Q114 242 86 262 Q72 272 68 260" stroke="url(#skin)" stroke-width="20" stroke-linecap="round" fill="none"/>
+
+  <!-- OK Hand -->
+  <g transform="translate(66, 254)">
+    <circle cx="-3" cy="-5" r="9" fill="#E8C09C" stroke="url(#skin)" stroke-width="2.5"/>
+    <circle cx="-3" cy="-5" r="5" fill="#1a1a2e" opacity="0.12"/>
+    <path d="M7 4 Q12 11 9 16" stroke="url(#skin)" stroke-width="6" stroke-linecap="round" fill="none"/>
+    <circle cx="2" cy="5" r="10" fill="url(#skin)"/>
+  </g>
+
+  <!-- Star sparkles -->
+  <path d="M108 94 L111 100 L117 102 L111 104 L108 110 L105 104 L99 102 L105 100 Z" fill="#FFB703" opacity="0.7"/>
+  <path d="M310 132 L312 136 L316 137 L312 138 L310 142 L308 138 L304 137 L308 136 Z" fill="#FFB703" opacity="0.5"/>
+  <path d="M80 160 L82 163 L85 164 L82 165 L80 168 L78 165 L75 164 L78 163 Z" fill="#FFB703" opacity="0.4"/>
+
+  </g>
+</svg>

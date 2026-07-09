@@ -7,15 +7,24 @@ export default {
   theme: {
     extend: {
       colors: {
-        gold: {
-          DEFAULT: '#D4AF37',
-          light: '#E8C84A',
-          dark: '#B8962F',
+        brand: {
+          navy: '#0B132B',
+          'navy-light': '#111C44',
+          orange: '#FF5100',
+          'orange-bright': '#FF7A00',
+          honey: '#FFB703',
+          'warm-gray': '#E2E8F0',
         },
       },
       fontFamily: {
-        display: ['Playfair Display', 'serif'],
-        sans: ['Inter', 'system-ui', 'sans-serif'],
+        display: ['Outfit', 'sans-serif'],
+        heading: ['Poppins', 'sans-serif'],
+        body: ['Inter', 'system-ui', 'sans-serif'],
+      },
+      borderRadius: {
+        'xl': '1rem',
+        '2xl': '1.25rem',
+        '3xl': '1.5rem',
       },
     },
   },

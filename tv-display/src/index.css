@@ -11,84 +11,325 @@ html, body, #root {
 }
 
 body {
-  background: radial-gradient(ellipse at center top, #1a1410 0%, #0D0D0D 70%);
   font-family: 'Inter', system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-.text-shadow-gold {
-  text-shadow: 0 0 40px rgba(212, 175, 55, 0.3),
-               0 2px 4px rgba(0, 0, 0, 0.5);
+/* ── Root canvas: crystal-clear deep navy ── */
+#root {
+  background: linear-gradient(145deg, #0d1527 0%, #0a111f 30%, #080c18 60%, #05080f 100%);
 }
 
-.text-shadow-white {
-  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+/* ── Background layers ── */
+.bg-layer {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  pointer-events: none;
 }
 
-.glass-card {
-  background: rgba(24, 24, 27, 0.75);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(212, 175, 55, 0.15);
+/* ── Restaurant icon pattern — z-index 0, behind all layers ── */
+.restaurant-pattern {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 0;
+  overflow: hidden;
 }
 
-.glass-card-strong {
-  background: rgba(24, 24, 27, 0.85);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(212, 175, 55, 0.2);
+.pattern-icon {
+  position: absolute;
+  object-fit: contain;
+  pointer-events: none;
+  image-rendering: auto;
+  will-change: transform;
+  filter: brightness(0) invert(1);
 }
 
-.menu-item-row {
+/* ── Non-overlapping size tiers ── */
+.icon-large { width: clamp(120px, 12vw, 180px); opacity: 0.04; }
+.icon-med   { width: clamp(60px, 6vw, 100px);   opacity: 0.05; }
+.icon-small { width: clamp(28px, 3vw, 56px);    opacity: 0.06; }
+
+/* ── Large positions — one per zone, spaced >20% apart ──
+     Row 1: 5%, 25%, 48%, 72%, 92%
+     Row 2: 15%, 40%, 65%, 88%
+     Row 3: 8%, 30%, 55%, 78% ── */
+.icon-a1 { left: 4%;  top: 8%;  transform: rotate(-12deg); }
+.icon-a2 { left: 23%; top: 6%;  transform: rotate(105deg); }
+.icon-a3 { right: 10%; top: 12%; transform: rotate(-78deg); }
+.icon-a4 { left: 8%;  bottom: 5%; transform: rotate(25deg); }
+.icon-a5 { right: 6%; bottom: 8%; transform: rotate(-35deg); }
+.icon-a6 { left: 48%; top: 5%;  transform: rotate(42deg); }
+
+/* ── Medium positions — between large zones ── */
+.icon-b1 { left: 16%; top: 38%;  transform: rotate(18deg); }
+.icon-b2 { left: 42%; top: 42%;  transform: rotate(-65deg); }
+.icon-b3 { right: 4%;  top: 52%;  transform: rotate(85deg); }
+.icon-b4 { left: 6%;  top: 62%;  transform: rotate(-22deg); }
+.icon-b5 { left: 55%; bottom: 42%; transform: rotate(115deg); }
+.icon-b6 { right: 22%; bottom: 45%; transform: rotate(-8deg); }
+.icon-b7 { left: 75%; top: 8%;  transform: rotate(30deg); }
+.icon-b8 { left: 32%; bottom: 8%; transform: rotate(-45deg); }
+
+/* ── Small positions — edges, corners, fill sparse gaps ── */
+.icon-c1 { left: 1%;   top: 1%;    transform: rotate(28deg); }
+.icon-c2 { left: 92%;  top: 2%;    transform: rotate(-18deg); }
+.icon-c3 { left: 88%;  bottom: 2%; transform: rotate(55deg); }
+.icon-c4 { left: 55%;  top: 1%;    transform: rotate(-105deg); }
+.icon-c5 { left: 1%;   top: 50%;   transform: rotate(12deg); }
+.icon-c6 { left: 68%;  top: 38%;   transform: rotate(-75deg); }
+.icon-c7 { left: 50%;  bottom: 1%; transform: rotate(40deg); }
+.icon-c8 { left: 98%;  top: 50%;   transform: rotate(-30deg); }
+
+/* ── Edge fade — extremely subtle border softening ── */
+.pattern-vignette {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 2;
+  background:
+    radial-gradient(ellipse at 50% 50%, transparent 50%, rgba(8, 12, 24, 0.25) 100%);
+}
+
+/* ── Deep gradient mesh overlay ── */
+.mesh-overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse at 22% 28%, rgba(255, 81, 0, 0.05) 0%, transparent 55%),
+    radial-gradient(ellipse at 80% 75%, rgba(107, 156, 255, 0.04) 0%, transparent 50%);
+  z-index: 2;
+}
+
+/* ── Extra depth layer: orange glow from bottom-right ── */
+.mesh-deep {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse at 85% 90%, rgba(255, 81, 0, 0.08) 0%, transparent 50%),
+    radial-gradient(ellipse at 15% 10%, rgba(107, 156, 255, 0.05) 0%, transparent 45%);
+  z-index: 1;
+}
+
+/* ── Full-screen wavy frame ── */
+.full-frame-wave {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 5;
+  will-change: transform;
+}
+
+/* ── Content zone — generous side padding ── */
+.content-canvas {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
   display: flex;
+  flex-direction: column;
+  padding: clamp(2.5rem, 4vw, 5rem) 0;
+}
+
+/* ── Full-width header area ── */
+.header-row {
+  display: flex;
+  align-items: flex-start;
   justify-content: space-between;
-  align-items: baseline;
-  gap: 16px;
-  padding: 6px 0;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  flex-shrink: 0;
+  padding: 0 clamp(4rem, 6vw, 8rem);
+  margin-bottom: clamp(0.75rem, 1.2vw, 1.5rem);
 }
 
-.menu-item-row:last-child {
-  border-bottom: none;
+/* ── Centered content inner ── */
+.content-inner {
+  max-width: 80rem;
+  width: 100%;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  padding: 0 clamp(2rem, 3vw, 4rem);
 }
 
-.dots {
-  flex: 1;
-  min-width: 16px;
-  height: 1px;
-  border-bottom: 1px dashed rgba(255, 255, 255, 0.15);
-  margin: 0 8px;
+/* ── Brush-stroke underline ── */
+.brush-stroke {
+  position: absolute;
+  bottom: -8px;
+  left: 0;
+  width: 100%;
+  height: 14px;
+  pointer-events: none;
+}
+
+/* ── Menu item row ── */
+.menu-item {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 0;
+  padding: 10px 0;
+  will-change: opacity, transform;
+}
+.menu-item + .menu-item {
+  border-top: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+/* ── Item name column ── */
+.item-name {
+  min-width: 0;
+  white-space: nowrap;
+  padding-right: 12px;
+}
+
+/* ── Sketchy wavy connector — fills available 1fr space ── */
+.item-connector {
+  display: flex;
+ align-items: center;
+ height: 20px;
+ margin: 0 4px;
+ overflow: visible;
+}
+
+.item-connector svg {
+  width: 100%;
+  height: 14px;
+  flex-shrink: 0;
+}
+
+/* ── Price column ── */
+.item-price {
+  text-align: right;
+  white-space: nowrap;
+  padding-left: 12px;
+}
+
+/* ── Mascot ── */
+.mascot-wrapper img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: center;
+}
+
+/* ── Fluid type scale ── */
+.text-display-xl { font-size: clamp(3rem, 5.5vw, 6rem); }
+.text-subtitle { font-size: clamp(0.9rem, 1.3vw, 1.45rem); }
+.text-category { font-size: clamp(1.6rem, 2.4vw, 2.8rem); }
+.text-item { font-size: clamp(1rem, 1.6vw, 1.85rem); }
+.text-price { font-size: clamp(1.2rem, 1.8vw, 2.1rem); }
+.text-price-currency { font-size: clamp(0.65rem, 1vw, 1.1rem); }
+.text-addon-header { font-size: clamp(1rem, 1.5vw, 1.7rem); }
+.text-addon-price { font-size: clamp(1.5rem, 2.2vw, 2.5rem); }
+.text-addon-currency { font-size: clamp(0.65rem, 0.9vw, 1rem); }
+.text-addon-prompt { font-size: clamp(0.7rem, 1vw, 1.25rem); }
+
+/* ── Keyframes ── */
+
+@keyframes ambientDrift {
+  0%   { transform: translate(0, 0) rotate(0deg); }
+  25%  { transform: translate(8px, -6px) rotate(0.3deg); }
+  50%  { transform: translate(-4px, 10px) rotate(-0.2deg); }
+  75%  { transform: translate(6px, -8px) rotate(0.4deg); }
+  100% { transform: translate(0, 0) rotate(0deg); }
+}
+
+@keyframes ambientDrift2 {
+  0%   { transform: translate(0, 0) rotate(0deg); }
+  25%  { transform: translate(-6px, 8px) rotate(-0.2deg); }
+  50%  { transform: translate(10px, -4px) rotate(0.3deg); }
+  75%  { transform: translate(-8px, 6px) rotate(-0.3deg); }
+  100% { transform: translate(0, 0) rotate(0deg); }
+}
+
+@keyframes shimmerStroke {
+  0%, 100% { opacity: var(--shimmer-base, 0.5); }
+  50%      { opacity: var(--shimmer-peak, 0.85); }
+}
+
+@keyframes shimmerStroke2 {
+  0%, 100% { opacity: var(--shimmer-base, 0.3); }
+  50%      { opacity: var(--shimmer-peak, 0.7); }
+}
+
+@keyframes cascadeIn {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes drawIn {
+  from { stroke-dashoffset: 800; }
+  to   { stroke-dashoffset: 0; }
 }
 
 @keyframes fadeInUp {
   from { opacity: 0; transform: translateY(20px); }
-  to { opacity: 1; transform: translateY(0); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes fadeInRight {
+  from { opacity: 0; transform: translateX(24px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+@keyframes popIn {
+  0%   { opacity: 0; transform: scale(0.92); }
+  70%  { transform: scale(1.02); }
+  100% { opacity: 1; transform: scale(1); }
+}
+@keyframes floatSlow {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-5px); }
+}
+
+/* ── Utility animation classes ── */
+
+.animate-ambient-drift {
+  animation: ambientDrift 28s ease-in-out infinite;
+  will-change: transform;
+}
+.animate-ambient-drift-2 {
+  animation: ambientDrift2 32s ease-in-out infinite;
+  will-change: transform;
+}
+
+.animate-shimmer {
+  animation: shimmerStroke 3s ease-in-out infinite;
+}
+.animate-shimmer-2 {
+  animation: shimmerStroke2 3.6s ease-in-out infinite;
+}
+
+.animate-cascade-item {
+  animation: cascadeIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  opacity: 0;
 }
 
 .animate-fade-in-up {
   animation: fadeInUp 0.6s ease-out forwards;
 }
-
-.animate-fade-in-up-delay-1 { animation-delay: 0.1s; }
-.animate-fade-in-up-delay-2 { animation-delay: 0.2s; }
-.animate-fade-in-up-delay-3 { animation-delay: 0.3s; }
-.animate-fade-in-up-delay-4 { animation-delay: 0.4s; }
-
-@keyframes pulse-glow {
-  0%, 100% { opacity: 0.5; }
-  50% { opacity: 1; }
+.animate-fade-in-up-d1 { animation-delay: 0.15s; }
+.animate-fade-in-up-d2 { animation-delay: 0.3s; }
+.animate-fade-in-up-d3 { animation-delay: 0.45s; }
+.animate-fade-in-right {
+  animation: fadeInRight 0.6s ease-out forwards;
 }
-
-.offline-mode {
-  position: fixed;
-  top: 20px;
-  left: 50%;
-  transform: translateX(-50%);
-  background: rgba(239, 68, 68, 0.9);
-  color: white;
-  padding: 8px 20px;
-  border-radius: 999px;
-  font-size: 14px;
-  z-index: 100;
-  backdrop-filter: blur(8px);
-  animation: pulse-glow 2s ease-in-out infinite;
+.animate-pop-in {
+  animation: popIn 0.45s ease-out forwards;
+}
+.animate-float {
+  animation: floatSlow 4s ease-in-out infinite;
+}
+.animate-draw-frame {
+  stroke-dasharray: 800;
+  animation: drawIn 2s ease-out forwards;
 }
