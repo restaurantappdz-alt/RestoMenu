@@ -14,6 +14,7 @@ const LAYOUT_OPTIONS = [
   { value: 'bistro', label: 'Bistro Chalkboard' },
   { value: 'moroccan', label: 'Moroccan' },
   { value: 'pro', label: 'Pro Premium' },
+  { value: 'natureBistro', label: 'Nature Bistro' },
 ]
 
 export default function MenuEditor({ menu, onBack }) {
