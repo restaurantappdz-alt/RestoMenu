@@ -62,34 +62,29 @@ export default function useMenuData() {
     const rid = getRestaurantId()
     if (!rid) return null
     const cachedMenu = loadCache(rid)
+    if (!cachedMenu) return null
     const cachedCfg = loadConfigCache(rid)
-    if (!cachedMenu || !cachedCfg) return null
+    if (!cachedCfg) return cachedMenu
     const sid = getScreenId()
     const raw = sid ? cachedCfg.screens?.[sid] : cachedCfg.activeMenuId
     const expectedId = (raw && typeof raw === 'object' ? raw.menuId : raw) || null
-    return cachedMenu.id === expectedId ? cachedMenu : null
+    return expectedId ? (cachedMenu.id === expectedId ? cachedMenu : null) : cachedMenu
   })
   const [loading, setLoading] = useState(() => {
     const rid = getRestaurantId()
     if (!rid) return true
     const cachedMenu = loadCache(rid)
+    if (!cachedMenu) return true
     const cachedCfg = loadConfigCache(rid)
-    if (!cachedMenu || !cachedCfg) return true
+    if (!cachedCfg) return false
     const sid = getScreenId()
     const raw = sid ? cachedCfg.screens?.[sid] : cachedCfg.activeMenuId
     const expectedId = (raw && typeof raw === 'object' ? raw.menuId : raw) || null
+    if (!expectedId) return false
     return cachedMenu.id !== expectedId
   })
   const [offline, setOffline] = useState(typeof navigator !== 'undefined' && !navigator.onLine)
-  const [waiting, setWaiting] = useState(() => {
-    const rid = getRestaurantId()
-    if (!rid) return false
-    const cached = loadConfigCache(rid)
-    if (!cached) return false
-    const sid = getScreenId()
-    const raw = sid ? cached.screens?.[sid] : cached.activeMenuId
-    return !((raw && typeof raw === 'object' ? raw.menuId : raw) || null)
-  })
+  const [waiting, setWaiting] = useState(false)
   const [needsSetup, setNeedsSetup] = useState(false)
 
   console.log('📊 useMenuData init:', { restaurantId, activeMenuId, menu: menu?.id, loading, offline, waiting, needsSetup })
