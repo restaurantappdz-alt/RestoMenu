@@ -92,9 +92,11 @@ export default function useMenuData() {
   })
   const [needsSetup, setNeedsSetup] = useState(false)
 
+  console.log('📊 useMenuData init:', { restaurantId, activeMenuId, menu: menu?.id, loading, offline, waiting, needsSetup })
+
   useEffect(() => {
-    const handleOnline = () => setOffline(false)
-    const handleOffline = () => setOffline(true)
+    const handleOnline = () => { console.log('📶 online event'); setOffline(false) }
+    const handleOffline = () => { console.log('📶 offline event'); setOffline(true) }
     window.addEventListener('online', handleOnline)
     window.addEventListener('offline', handleOffline)
     return () => {
@@ -116,11 +118,13 @@ export default function useMenuData() {
     const screenId = getScreenId()
 
     const unsubConfig = onSnapshot(doc(db, 'restaurants', id, 'config', 'display'), (snap) => {
+      console.log('🔥 Config snapshot received:', snap.id, snap.metadata.hasPendingWrites)
       const data = snap.data() || {}
       saveConfigCache(id, data)
       const raw = screenId ? data.screens?.[screenId] : data.activeMenuId
       const newId = (raw && typeof raw === 'object' ? raw.menuId : raw) || null
       if (!newId) {
+        console.log('⏳ No menu assigned → waiting screen')
         setWaiting(true)
         setLoading(false)
         setMenu(null)
@@ -129,17 +133,20 @@ export default function useMenuData() {
       }
       setWaiting(false)
       setActiveMenuId(newId)
+      console.log('✅ Config OK → activeMenuId:', newId)
     }, (error) => {
-      console.error('Config listener error:', error)
+      console.log('❌ Config listener error:', error.code, error.message)
       setLoading(false)
     })
     return () => unsubConfig()
   }, [])
 
   useEffect(() => {
+    console.log('🍽️ Menu listener effect fired:', { activeMenuId, restaurantId })
     if (!activeMenuId || !restaurantId) return
     setLoading(true)
     const unsubMenu = onSnapshot(doc(db, 'restaurants', restaurantId, 'menus', activeMenuId), (snap) => {
+      console.log('🍽️ Menu snapshot received:', snap.id, 'exists:', snap.exists(), 'pending:', snap.metadata.hasPendingWrites)
       if (snap.exists()) {
         const data = { id: snap.id, ...snap.data() }
         setMenu(data)
@@ -149,7 +156,7 @@ export default function useMenuData() {
       }
       setLoading(false)
     }, (error) => {
-      console.error('Menu listener error:', error)
+      console.log('❌ Menu listener error:', error.code, error.message)
       setLoading(false)
     })
     return () => unsubMenu()
