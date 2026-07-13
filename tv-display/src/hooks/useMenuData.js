@@ -124,6 +124,13 @@ export default function useMenuData() {
       const raw = screenId ? data.screens?.[screenId] : data.activeMenuId
       const newId = (raw && typeof raw === 'object' ? raw.menuId : raw) || null
       if (!newId) {
+        const cachedCfg = loadConfigCache(id)
+        const cachedRaw = screenId ? cachedCfg?.screens?.[screenId] : cachedCfg?.activeMenuId
+        const cachedId = cachedCfg && (cachedRaw && typeof cachedRaw === 'object' ? cachedRaw.menuId : cachedRaw) || null
+        if (cachedId) {
+          console.log('⏳ Live config has no menu, but cached config has menuId:', cachedId, '— trusting cache')
+          return
+        }
         console.log('⏳ No menu assigned → waiting screen')
         setWaiting(true)
         setLoading(false)
@@ -152,6 +159,11 @@ export default function useMenuData() {
         setMenu(data)
         saveCache(restaurantId, data)
       } else {
+        const cachedMenu = loadCache(restaurantId)
+        if (cachedMenu && cachedMenu.id === activeMenuId) {
+          console.log('🍽️ Menu doc deleted on server, but cache has it — keeping')
+          return
+        }
         setMenu(null)
       }
       setLoading(false)
