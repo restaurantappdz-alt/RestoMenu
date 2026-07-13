@@ -5,7 +5,7 @@ import { useRestaurant } from '@/RestaurantContext'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Select } from '@/components/ui/select'
+import { Select, SelectItem } from '@/components/ui/select'
 import { ArrowLeft, Plus, Eye } from 'lucide-react'
 import CategorySection from './CategorySection'
 import TVPreview from './TVPreview'
@@ -91,7 +91,7 @@ export default function MenuEditor({ menu, onBack }) {
     toast.success('Category deleted')
   }
 
-  const currentMenu = { ...menu, name: menuName, categories }
+  const currentMenu = { ...menu, name: menuName, categories, selectedLayout }
 
   return (
     <div className="animate-fade-in space-y-6">
@@ -138,16 +138,15 @@ export default function MenuEditor({ menu, onBack }) {
               <label className="text-sm text-zinc-400 min-w-[6rem]">TV Layout</label>
               <Select
                 value={selectedLayout}
-                onChange={(e) => {
-                  setSelectedLayout(e.target.value)
-                  fullSave({ selectedLayout: e.target.value })
+                onValueChange={(val) => {
+                  setSelectedLayout(val)
+                  fullSave({ selectedLayout: val })
                 }}
-                className="w-[220px]"
               >
                 {filteredOptions.map((opt) => (
-                  <option key={opt.value} value={opt.value}>
+                  <SelectItem key={opt.value} value={opt.value}>
                     {opt.label}
-                  </option>
+                  </SelectItem>
                 ))}
               </Select>
             </div>

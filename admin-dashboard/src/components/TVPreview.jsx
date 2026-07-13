@@ -2,6 +2,19 @@ export default function TVPreview({ menu }) {
   if (!menu) return null
 
   const categories = menu.categories || []
+  const selectedLayout = menu.selectedLayout || 'classic'
+
+  const LAYOUT_LABELS = {
+    classic: 'Classic Gold',
+    bistro: 'Bistro Chalkboard',
+    brasserie: 'Brasserie',
+    coffeeShop: 'Coffee Shop',
+    minimal: 'Minimal',
+    modern: 'Modern',
+    moroccan: 'Moroccan',
+    natureBistro: 'Nature Bistro',
+    pro: 'Pro Premium',
+  }
 
   return (
     <div className="rounded-xl overflow-hidden border border-zinc-800/50 bg-[#0D0D0D] shadow-2xl" style={{ aspectRatio: '16 / 9' }}>
@@ -11,7 +24,6 @@ export default function TVPreview({ menu }) {
           background: 'radial-gradient(ellipse at center top, #1a1410 0%, #0D0D0D 70%)',
         }}
       >
-        {/* Restaurant Name */}
         <div className="text-center mb-4 md:mb-6 shrink-0">
           <h1
             className="text-2xl md:text-4xl font-display font-bold tracking-wider"
@@ -19,9 +31,11 @@ export default function TVPreview({ menu }) {
           >
             {menu.name}
           </h1>
+          <p className="text-xs text-zinc-600 mt-2">
+            Layout: <span className="text-gold">{LAYOUT_LABELS[selectedLayout] || selectedLayout}</span>
+          </p>
         </div>
 
-        {/* Categories Grid */}
         {categories.length === 0 ? (
           <div className="flex-1 flex items-center justify-center">
             <p className="text-zinc-600 text-lg">No categories yet</p>

@@ -170,14 +170,14 @@ export default function MenuList() {
       </div>
 
       {menus.length === 0 ? (
-        <Card className="border-dashed border-zinc-800">
+        <Card className="border-dashed border-zinc-800 cursor-pointer hover:border-gold/50 transition-colors" onClick={() => setDialogOpen(true)}>
           <CardContent className="flex flex-col items-center justify-center py-16">
-            <div className="w-16 h-16 rounded-full bg-gold/10 flex items-center justify-center mb-4">
+            <div className="w-16 h-16 rounded-full bg-gold/10 flex items-center justify-center mb-4 group-hover:bg-gold/20 transition-colors">
               <Plus className="w-8 h-8 text-gold" />
             </div>
             <p className="text-zinc-400 text-lg font-medium">No menus yet</p>
             <p className="text-zinc-600 text-sm mt-1">
-              Create your first menu or seed the default data
+              Click here to create your first menu
             </p>
           </CardContent>
         </Card>
