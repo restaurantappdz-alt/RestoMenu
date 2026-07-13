@@ -185,7 +185,7 @@ export default function MenuEditor({ menu, onBack }) {
         </TabsContent>
 
         <TabsContent value="preview" className="mt-6">
-          <TVPreview menu={currentMenu} />
+          <TVPreview menu={currentMenu} restaurantId={restaurantId} />
         </TabsContent>
       </Tabs>
     </div>
