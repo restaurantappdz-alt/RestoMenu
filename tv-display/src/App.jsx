@@ -75,12 +75,19 @@ export default function App() {
   }
 
   return (
-    <LayoutComponent
-      categories={categories}
-      allAddons={allAddons}
-      offline={offline}
-      menu={menu}
-      title={title}
-    />
+    <>
+      {offline && (
+        <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 bg-black/60 text-white/50 text-xs px-3 py-1.5 rounded-full backdrop-blur-sm border border-white/10 font-medium tracking-wide animate-pop-in">
+          Offline — cached menu
+        </div>
+      )}
+      <LayoutComponent
+        categories={categories}
+        allAddons={allAddons}
+        offline={offline}
+        menu={menu}
+        title={title}
+      />
+    </>
   )
 }

@@ -42,17 +42,6 @@ export default function LayoutNatureBistro({ categories = [], allAddons = [], of
         animation: 'pixelShift 300s linear infinite',
       }}>
         <div className="noise-overlay" />
-        {offline && (
-          <div style={{
-            position: 'fixed', top: '1.5rem', left: '50%', transform: 'translateX(-50%)',
-            zIndex: 50, background: '#5A7A5A', color: '#FAF8F5',
-            padding: '0.5rem 1.5rem', fontSize: '0.875rem', fontWeight: 600,
-            fontFamily: "'Inter', sans-serif", letterSpacing: '2px',
-            borderRadius: 30, boxShadow: '0 4px 16px rgba(90,122,90,0.3)',
-          }}>
-            OFFLINE — CACHED MENU
-          </div>
-        )}
 
         {/* ── Background plants (blurred, color-graded, overlap behind card) ── */}
         <div style={{ position: 'absolute', bottom: '-3%', left: '6%', zIndex: 0 }}>

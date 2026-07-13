@@ -65,8 +65,6 @@ export default function LayoutModern({ categories = [], allAddons = [], offline,
           opacity: mounted ? 1 : 0,
           transition: 'opacity 0.6s ease',
         }}>
-          {offline && <OfflineBanner />}
-
           <div style={{ flex: 'none', textAlign: 'center' }}>
             <GoldCircleLine />
             <div style={{ height: 'clamp(0.75rem, 1.2vw, 1.5rem)' }} />
@@ -243,15 +241,3 @@ export default function LayoutModern({ categories = [], allAddons = [], offline,
   )
 }
 
-function OfflineBanner() {
-  return (
-    <div style={{
-      position: 'fixed', top: '1.5rem', left: '50%', transform: 'translateX(-50%)',
-      zIndex: 50, background: '#1A1A1A', color: '#FFFFFF',
-      padding: '0.5rem 1.5rem', fontSize: '0.875rem', fontWeight: 600,
-      fontFamily: "'Inter', sans-serif", letterSpacing: '2px',
-    }}>
-      OFFLINE — CACHED MENU
-    </div>
-  )
-}

@@ -95,12 +95,6 @@ export default function LayoutClassic({ categories, allAddons, offline, menu, ti
       <FullScreenWavyFrame />
 
       <div className="content-canvas">
-        {offline && (
-          <div className="fixed top-6 left-1/2 -translate-x-1/2 z-50 bg-brand-orange/90 text-white px-6 py-2.5 rounded-full text-sm font-bold shadow-lg backdrop-blur-md animate-pop-in">
-            Offline — showing cached menu
-          </div>
-        )}
-
         <div className="header-row">
           <div className="animate-pop-in">
             <h1 className="font-display text-white leading-[1.05] tracking-tight text-display-xl">

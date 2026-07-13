@@ -151,17 +151,6 @@ export default function LayoutPro({ categories = [], allAddons = [], offline, me
           opacity: mounted ? 1 : 0,
           transition: 'opacity 0.8s ease',
         }}>
-          {offline && (
-            <div style={{
-              position: 'fixed', top: '1.5rem', left: '50%', transform: 'translateX(-50%)',
-              zIndex: 50, background: '#D4AF37', color: '#1A1A1A',
-              padding: '0.5rem 1.5rem', fontSize: '0.875rem', fontWeight: 600,
-              fontFamily: "'Inter', sans-serif", letterSpacing: '2px',
-            }}>
-              OFFLINE — CACHED MENU
-            </div>
-          )}
-
           {/* Header */}
           <div style={{ flex: 'none', textAlign: 'center' }}>
             <div style={{ height: 'clamp(0.5rem, 0.8vw, 1rem)' }} />

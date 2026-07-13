@@ -90,8 +90,6 @@ export default function LayoutBrasserie({ categories = [], allAddons = [], offli
           opacity: mounted ? 1 : 0,
           transition: 'opacity 0.6s ease',
         }}>
-          {offline && <OfflineBanner />}
-
           <div style={{ flex: 'none', textAlign: 'center' }}>
             <GoldLine />
             <div style={{ height: 'clamp(1rem, 1.5vw, 2rem)' }} />
@@ -247,15 +245,3 @@ export default function LayoutBrasserie({ categories = [], allAddons = [], offli
   )
 }
 
-function OfflineBanner() {
-  return (
-    <div style={{
-      position: 'fixed', top: '1.5rem', left: '50%', transform: 'translateX(-50%)',
-      zIndex: 50, background: '#2C1810', color: '#FDF8F0',
-      padding: '0.5rem 1.5rem', fontSize: '0.875rem', fontWeight: 700,
-      fontFamily: "'Inter', sans-serif",
-    }}>
-      OFFLINE — CACHED MENU
-    </div>
-  )
-}

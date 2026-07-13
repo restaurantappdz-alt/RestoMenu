@@ -227,20 +227,7 @@ const styles = {
     fontFamily: "'Courier New', monospace",
     fontWeight: 500,
   },
-  offlineBanner: {
-    position: 'fixed',
-    top: '1.5rem',
-    left: '50%',
-    transform: 'translateX(-50%)',
-    zIndex: 50,
-    background: 'rgba(240, 234, 214, 0.9)',
-    color: '#1a2a1a',
-    padding: '0.5rem 1.5rem',
-    fontSize: '0.875rem',
-    fontWeight: 700,
-    fontFamily: "'Courier New', monospace",
-    letterSpacing: '0.05em',
-  },
+
 }
 
 function BistroItemImage({ url }) {
@@ -253,8 +240,6 @@ export default function LayoutBistro({ categories, allAddons, offline, menu, tit
     <div style={styles.wrapper}>
       <div style={styles.chalkBorder} />
       <div style={styles.innerBorder} />
-      {offline && <div style={styles.offlineBanner}>Offline — cached menu</div>}
-
       <div style={styles.content}>
         <div style={styles.header}>
           <div style={styles.titleBlock}>

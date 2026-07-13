@@ -59,24 +59,6 @@ export default function LayoutCoffeeShop({
           fontFamily: "'Inter', 'Arial', sans-serif",
         }}
       >
-        {offline && (
-          <div
-            style={{
-              position: 'fixed',
-              top: '1.5rem',
-              left: '50%',
-              transform: 'translateX(-50%)',
-              zIndex: 50,
-              background: '#C9A84C',
-              color: '#0D0D0D',
-              padding: '0.5rem 1.5rem',
-              fontSize: '0.875rem',
-              fontWeight: 700,
-            }}
-          >
-            OFFLINE — CACHED MENU
-          </div>
-        )}
         <GoldLine width="50%" />
         <div style={{ height: 'clamp(1rem, 1.5vw, 2rem)' }} />
         <h1

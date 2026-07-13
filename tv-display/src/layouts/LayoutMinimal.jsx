@@ -135,20 +135,7 @@ const styles = {
     fontSize: '1.25rem',
     fontWeight: 500,
   },
-  offlineBanner: {
-    position: 'fixed',
-    top: '1.5rem',
-    left: '50%',
-    transform: 'translateX(-50%)',
-    zIndex: 50,
-    background: '#2ECC71',
-    color: '#fff',
-    padding: '0.5rem 1.5rem',
-    borderRadius: '999px',
-    fontSize: '0.875rem',
-    fontWeight: 700,
-    boxShadow: '0 4px 12px rgba(46, 204, 113, 0.3)',
-  },
+
 }
 
 function ItemImage({ url }) {
@@ -172,8 +159,6 @@ function ItemImage({ url }) {
 export default function LayoutMinimal({ categories, allAddons, offline, menu, title }) {
   return (
     <div style={styles.wrapper}>
-      {offline && <div style={styles.offlineBanner}>Offline — showing cached menu</div>}
-
       <div style={styles.header}>
         <div>
           <h1 style={styles.title}>
