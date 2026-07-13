@@ -8,6 +8,7 @@ import {
   doc,
   setDoc,
   serverTimestamp,
+  deleteField,
   query,
   where,
   orderBy,
@@ -83,6 +84,39 @@ export function onDisplayConfigSnapshot(restaurantId, callback) {
 export async function setActiveMenu(restaurantId, menuId) {
   await setDoc(doc(db, 'restaurants', restaurantId, 'config', 'display'), {
     activeMenuId: menuId,
+    updatedAt: serverTimestamp(),
+  })
+}
+
+export async function assignMenuToScreen(restaurantId, menuId, screenId) {
+  await updateDoc(doc(db, 'restaurants', restaurantId, 'config', 'display'), {
+    [`screens.${screenId}.menuId`]: menuId,
+    updatedAt: serverTimestamp(),
+  })
+}
+
+export async function clearScreen(restaurantId, screenId) {
+  await updateDoc(doc(db, 'restaurants', restaurantId, 'config', 'display'), {
+    [`screens.${screenId}.menuId`]: deleteField(),
+    updatedAt: serverTimestamp(),
+  })
+}
+
+export async function addScreen(restaurantId, label) {
+  const id = crypto.randomUUID().slice(0, 6)
+  const ref = doc(db, 'restaurants', restaurantId, 'config', 'display')
+  await setDoc(ref, {
+    screens: {
+      [id]: { label, menuId: null },
+    },
+    updatedAt: serverTimestamp(),
+  }, { merge: true })
+  return id
+}
+
+export async function removeScreen(restaurantId, screenId) {
+  await updateDoc(doc(db, 'restaurants', restaurantId, 'config', 'display'), {
+    [`screens.${screenId}`]: deleteField(),
     updatedAt: serverTimestamp(),
   })
 }
