@@ -49,9 +49,9 @@ jobs:
 
       - name: Combine both apps into one artifact
         run: |
-          mkdir -p combined/admin
+          mkdir -p combined/dashboard
           cp -r tv-display/dist/* combined/
-          cp -r admin-dashboard/dist/* combined/admin/
+          cp -r admin-dashboard/dist/* combined/dashboard/
 
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
