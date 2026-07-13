@@ -21,6 +21,7 @@ export default defineConfig({
         ]
       },
       workbox: {
+        navigateFallback: null,
         runtimeCaching: [
           {
             urlPattern: /^https:\/\/firestore\.googleapis\.com\/.*/i,
