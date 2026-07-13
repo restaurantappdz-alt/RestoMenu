@@ -2,13 +2,12 @@ import { initializeApp } from 'firebase/app'
 import { getFirestore } from 'firebase/firestore'
 
 const firebaseConfig = {
-  apiKey: 'AIzaSyDJHRZS9mxCGrTBMfyrVVKI_rgOZdBt5uA',
-  authDomain: 'restomenu2.firebaseapp.com',
-  projectId: 'restomenu2',
-  storageBucket: 'restomenu2.firebasestorage.app',
-  messagingSenderId: '758372743630',
-  appId: '1:758372743630:web:6eb5255c98ef94a1e7539f',
-  measurementId: 'G-RSVEJ2ZQNG',
+  apiKey: 'AIzaSyDlM1Zm5zwsaZ5vhXHZ3gTP-SqFQWkV18Y',
+  authDomain: 'menu-85c70.firebaseapp.com',
+  projectId: 'menu-85c70',
+  storageBucket: 'menu-85c70.firebasestorage.app',
+  messagingSenderId: '601922860088',
+  appId: '1:601922860088:web:f75c4d8bfd4cf50cd4a2cd',
 }
 
 const app = initializeApp(firebaseConfig)

@@ -10,10 +10,33 @@ function StateScreen({ children, className = '' }) {
   )
 }
 
+function NeedsSetupScreen() {
+  return (
+    <StateScreen>
+      <div className="text-center animate-pop-in z-10 max-w-lg px-8">
+        <div className="w-32 h-32 mx-auto mb-8 rounded-full bg-white/5 border border-brand-orange/20 flex items-center justify-center">
+          <img src="/svgs/cutlery.png" alt="" className="w-16 h-16 object-contain opacity-30" />
+        </div>
+        <h2 className="font-heading font-bold text-white text-4xl">Not Set Up</h2>
+        <p className="text-white/50 text-xl mt-3 leading-relaxed">
+          This TV hasn't been linked to a restaurant yet.
+        </p>
+        <p className="text-white/30 text-lg mt-2">
+          Add <code className="text-brand-orange bg-white/5 px-2 py-0.5 rounded">?r=YOUR_RESTAURANT_ID</code> to the URL, or copy the TV link from your admin dashboard.
+        </p>
+      </div>
+    </StateScreen>
+  )
+}
+
 export default function App() {
-  const { menu, loading, waiting, offline, categories, allAddons, selectedLayout } = useMenuData()
+  const { menu, loading, waiting, offline, needsSetup, categories, allAddons, selectedLayout } = useMenuData()
   const LayoutComponent = getLayout(selectedLayout)
   const title = menu?.name || 'Notre Menu'
+
+  if (needsSetup) {
+    return <NeedsSetupScreen />
+  }
 
   if (waiting) {
     return (

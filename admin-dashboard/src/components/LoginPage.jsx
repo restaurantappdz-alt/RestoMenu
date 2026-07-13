@@ -41,13 +41,21 @@ export default function LoginPage() {
         toast.success('Welcome back!')
       }
     } catch (e) {
-      const msg =
-        e.code === 'auth/user-not-found' || e.code === 'auth/invalid-credential'
-          ? 'Invalid email or password'
-          : e.code === 'auth/email-already-in-use'
-            ? 'An account with this email already exists'
-            : e.message
-      toast.error(msg)
+      if (e.code === 'auth/user-not-found' && !isRegister) {
+        try {
+          await createUserWithEmailAndPassword(auth, data.email, data.password)
+          await signInWithEmailAndPassword(auth, data.email, data.password)
+          toast.success('Account created! Welcome!')
+        } catch (createErr) {
+          toast.error(createErr.message)
+        }
+      } else if (e.code === 'auth/invalid-credential') {
+        toast.error('Invalid email or password')
+      } else if (e.code === 'auth/email-already-in-use') {
+        toast.error('An account with this email already exists')
+      } else {
+        toast.error(e.message)
+      }
     } finally {
       setLoading(false)
     }

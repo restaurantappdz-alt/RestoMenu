@@ -4,6 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { toast } from 'sonner'
 import { onMenusSnapshot, createMenu, deleteMenu, setActiveMenu, seedDefaultMenu } from '@/api'
+import { useRestaurant } from '@/RestaurantContext'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from '@/components/ui/table'
 import { Button } from '@/components/ui/button'
@@ -19,7 +20,7 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
-import { Plus, Trash2, Monitor, ChefHat, RefreshCw, Eye } from 'lucide-react'
+import { Plus, Trash2, Monitor, ChefHat, RefreshCw, Eye, Copy } from 'lucide-react'
 import MenuEditor from './MenuEditor'
 
 const menuSchema = z.object({
@@ -27,15 +28,16 @@ const menuSchema = z.object({
 })
 
 export default function MenuList() {
+  const { restaurantId, tvLink } = useRestaurant()
   const [menus, setMenus] = useState([])
   const [selectedMenu, setSelectedMenu] = useState(null)
   const [dialogOpen, setDialogOpen] = useState(false)
   const [seeding, setSeeding] = useState(false)
 
   useEffect(() => {
-    const unsub = onMenusSnapshot((data) => setMenus(data))
+    const unsub = onMenusSnapshot(restaurantId, (data) => setMenus(data))
     return unsub
-  }, [])
+  }, [restaurantId])
 
   const {
     register,
@@ -49,7 +51,7 @@ export default function MenuList() {
 
   const onCreate = async (data) => {
     try {
-      await createMenu(data.name)
+      await createMenu(restaurantId, data.name)
       toast.success(`Menu "${data.name}" created`)
       setDialogOpen(false)
       reset()
@@ -60,7 +62,7 @@ export default function MenuList() {
 
   const onDelete = async (menu) => {
     try {
-      await deleteMenu(menu.id)
+      await deleteMenu(restaurantId, menu.id)
       toast.success(`Menu "${menu.name}" deleted`)
     } catch (e) {
       toast.error(e.message)
@@ -69,7 +71,7 @@ export default function MenuList() {
 
   const onSetDisplay = async (menuId) => {
     try {
-      await setActiveMenu(menuId)
+      await setActiveMenu(restaurantId, menuId)
       toast.success('TV display updated!')
     } catch (e) {
       toast.error(e.message)
@@ -79,9 +81,9 @@ export default function MenuList() {
   const onSeed = async () => {
     setSeeding(true)
     try {
-      const id = await seedDefaultMenu()
+      const id = await seedDefaultMenu(restaurantId)
       toast.success("Sandwich N'delda menu created!")
-      await setActiveMenu(id)
+      await setActiveMenu(restaurantId, id)
       toast.success('TV display set to new menu')
     } catch (e) {
       toast.error(e.message)
@@ -90,12 +92,28 @@ export default function MenuList() {
     }
   }
 
+  const copyTvLink = () => {
+    navigator.clipboard.writeText(tvLink)
+    toast.success('TV link copied!')
+  }
+
   if (selectedMenu) {
     return <MenuEditor menu={selectedMenu} onBack={() => setSelectedMenu(null)} />
   }
 
   return (
     <div className="animate-fade-in space-y-6">
+      {/* Mobile TV link — visible on small screens only */}
+      <div className="sm:hidden rounded-xl border border-zinc-800 bg-zinc-900/50 p-4 space-y-2">
+        <p className="text-xs text-zinc-500 uppercase tracking-wider">TV Link</p>
+        <div className="flex items-center gap-2">
+          <code className="flex-1 text-xs text-zinc-400 truncate bg-zinc-800/50 px-2 py-1.5 rounded">{tvLink}</code>
+          <button onClick={copyTvLink} className="text-gold hover:text-gold/80 shrink-0" title="Copy">
+            <Copy className="w-4 h-4" />
+          </button>
+        </div>
+      </div>
+
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-display font-bold text-gold">Your Menus</h2>

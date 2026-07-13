@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { toast } from 'sonner'
 import { updateMenu } from '@/api'
+import { useRestaurant } from '@/RestaurantContext'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -18,6 +19,7 @@ const LAYOUT_OPTIONS = [
 ]
 
 export default function MenuEditor({ menu, onBack }) {
+  const { restaurantId } = useRestaurant()
   const [menuName, setMenuName] = useState(menu.name)
   const [categories, setCategories] = useState(menu.categories || [])
   const [selectedLayout, setSelectedLayout] = useState(menu.selectedLayout || 'classic')
@@ -26,7 +28,7 @@ export default function MenuEditor({ menu, onBack }) {
   const fullSave = async (overrides) => {
     setSaving(true)
     try {
-      await updateMenu(menu.id, {
+      await updateMenu(restaurantId, menu.id, {
         name: menuName,
         categories: categories,
         selectedLayout,
@@ -43,7 +45,7 @@ export default function MenuEditor({ menu, onBack }) {
     const cats = newCategories || categories
     setSaving(true)
     try {
-      await updateMenu(menu.id, { name: menuName, categories: cats, selectedLayout })
+      await updateMenu(restaurantId, menu.id, { name: menuName, categories: cats, selectedLayout })
     } catch (e) {
       toast.error('Failed to save: ' + e.message)
     } finally {

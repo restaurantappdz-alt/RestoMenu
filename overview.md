@@ -135,48 +135,30 @@ Use the credentials created in Firebase Console:
 
 ---
 
-## Deploy to Firebase Hosting
+## Deploy
 
-### 1. Login to Firebase CLI
-
-```bash
-firebase login
-```
-
-### 2. Build Both Apps
+### Admin Dashboard — Firebase Hosting
 
 ```bash
-cd ~/Programing/Restmenu-web/admin-dashboard && npm run build
-cd ~/Programing/Restmenu-web/tv-display && npm run build
+cd admin-dashboard && npm run build
+cd ..
+firebase deploy --only hosting:admin
 ```
 
-### 3. Initialize Hosting (first time only)
+### TV Display — GitHub Pages
 
-```bash
-cd ~/Programing/Restmenu-web
-firebase init hosting
-```
+Pushes to `main` that touch `tv-display/**` or `.github/workflows/deploy-tv.yml` trigger the GitHub Action at `.github/workflows/deploy-tv.yml`, which builds `tv-display/` and deploys it to GitHub Pages.
 
-Select:
-- **Use an existing project** → `restomenu2`
-- **What do you want to use as your public directory?** — we'll skip this since `firebase.json` already configures multisite hosting
+To trigger manually: **Actions → Deploy TV display to GitHub Pages → Run workflow**.
 
-### 4. Deploy
+**One-time repo setup:** Go to **Settings → Pages → Build and deployment → Source → GitHub Actions**.
 
-```bash
-firebase deploy
-```
-
-### 5. Access Live
+### Access Live
 
 - **Admin Dashboard:** https://restomenu2.web.app
-- **TV Display:** https://restomenu2-tv.web.app
+- **TV Display:** https://restaurantappdz-alt.github.io/RestoMenu/
 
-> **Note:** Multisite hosting targets must be configured once:
-> ```bash
-> firebase target:apply hosting admin restomenu2
-> firebase target:apply hosting tv restomenu2-tv
-> ```
+> **Note:** The admin dashboard deploys to Firebase Hosting. The TV display deploys to GitHub Pages via GitHub Actions (`.github/workflows/deploy-tv.yml`).
 
 ---
 
@@ -184,31 +166,41 @@ firebase deploy
 
 ### Admin Flow
 1. Sign in with email/password
-2. View all menus in a table
-3. Create/edit menus with categories, items, and add-ons
-4. Click **"Display on TV"** to select which menu shows on the TV
-5. TV Preview tab shows exactly what customers see
+2. If no restaurant exists yet, name your restaurant (creates a `restaurants/{id}` doc)
+3. View all menus for your restaurant in a table
+4. Create/edit menus with categories, items, and add-ons
+5. Click **"Display on TV"** to select which menu shows on the TV
+6. Copy your restaurant's unique TV link from the header to configure the TV
+7. TV Preview tab shows exactly what customers see
 
 ### TV Display Flow
-1. `onSnapshot(config/display)` listens for `activeMenuId` changes
-2. When admin selects a menu → TV detects the change instantly
-3. `onSnapshot(menus/{activeMenuId})` renders the menu in real-time
-4. If network fails → displays cached menu with "Offline Mode" badge
-5. No scrolling — full 16:9 layout with glassmorphism cards
+1. TV loads with `?r={restaurantId}` in the URL, cached in `localStorage`
+2. `onSnapshot(restaurants/{restaurantId}/config/display)` listens for `activeMenuId` changes
+3. When admin selects a menu → TV detects the change instantly
+4. `onSnapshot(restaurants/{restaurantId}/menus/{activeMenuId})` renders the menu in real-time
+5. If network fails → displays cached menu with "Offline Mode" badge
+6. No scrolling — full 16:9 layout with glassmorphism cards
 
 ### Firestore Data Model
 
 ```
-Collection: menus/
+Collection: restaurants/
   { auto-id }
+    ownerUid: string
     name: string
-    categories: array
-      [{ name, items: [{ name, price }], addons: [{ name, price }] }]
     createdAt: timestamp
 
-Document: config/display
-  activeMenuId: string | null
-  updatedAt: timestamp
+  Collection: restaurants/{restaurantId}/menus/
+    { auto-id }
+      name: string
+      categories: array
+        [{ name, items: [{ name, price }], addons: [{ name, price }] }]
+      selectedLayout: string
+      createdAt: timestamp
+
+  Document: restaurants/{restaurantId}/config/display
+    activeMenuId: string | null
+    updatedAt: timestamp
 ```
 
 ---
@@ -219,6 +211,8 @@ Current rules (in `firestore.rules`):
 - **Read:** Anyone can read menus and config
 - **Write:** Only authenticated users can modify
 - **Delete:** Only authenticated users can delete
+
+> **Note:** The current rules only cover the old root-level paths (`/menus/{menuId}` and `/config/{docId}`). After switching to the nested structure under `restaurants/{restaurantId}/`, these rules must be updated to match the new paths with an `ownerUid` check. This is a separate task.
 
 ---
 
