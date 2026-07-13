@@ -5,7 +5,7 @@ import { RestaurantProvider } from '@/RestaurantContext'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from '@/components/ui/table'
 import { Button } from '@/components/ui/button'
-import { LogOut, ArrowLeft, Copy, Check } from 'lucide-react'
+import { LogOut, ArrowLeft, Check } from 'lucide-react'
 import { toast } from 'sonner'
 import MenuList from './MenuList'
 
@@ -112,12 +112,10 @@ function RestaurantList({ restaurants, onSelect }) {
               <TableRow>
                 <TableHead>Restaurant</TableHead>
                 <TableHead>Owner</TableHead>
-                <TableHead className="text-right">TV Link</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {restaurants.map((r) => {
-                const tvLink = `https://restaurantappdz-alt.github.io/RestoMenu/?r=${r.id}`
                 return (
                   <TableRow
                     key={r.id}
@@ -129,20 +127,6 @@ function RestaurantList({ restaurants, onSelect }) {
                     </TableCell>
                     <TableCell className="text-zinc-400 font-mono text-xs">
                       {r.ownerUid?.slice(0, 16)}...
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          navigator.clipboard.writeText(tvLink)
-                          toast.success('TV link copied!')
-                        }}
-                        title="Copy TV link"
-                      >
-                        <Copy className="w-4 h-4 text-zinc-400" />
-                      </Button>
                     </TableCell>
                   </TableRow>
                 )
@@ -165,16 +149,14 @@ export default function AdminDashboard({ user }) {
   }, [])
 
   if (selectedRestaurant) {
-    const tvLink = `https://restaurantappdz-alt.github.io/RestoMenu/?r=${selectedRestaurant.id}`
     return (
       <RestaurantProvider
         restaurantId={selectedRestaurant.id}
         restaurantName={selectedRestaurant.name}
-        tvLink={tvLink}
       >
         <div className="min-h-screen bg-[#0D0D0D]">
           <header className="border-b border-zinc-800 bg-[#0D0D0D]/80 backdrop-blur-sm sticky top-0 z-50">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
+            <div className="max-w-screen-2xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <Button variant="ghost" size="sm" onClick={() => setSelectedRestaurant(null)}>
                   <ArrowLeft className="w-4 h-4" />
@@ -186,18 +168,7 @@ export default function AdminDashboard({ user }) {
                 <span className="text-xs text-zinc-500 ml-2 bg-gold/10 text-gold px-2 py-0.5 rounded">Admin</span>
               </div>
               <div className="flex items-center gap-4">
-                <div className="hidden sm:flex items-center gap-2 text-xs">
-                  <span className="text-zinc-600">TV Link:</span>
-                  <span className="text-zinc-400 font-mono max-w-[200px] truncate">{tvLink}</span>
-                  <button
-                    onClick={() => { navigator.clipboard.writeText(tvLink); toast.success('TV link copied!') }}
-                    className="text-gold hover:text-gold/80"
-                    title="Copy TV link"
-                  >
-                    <Copy className="w-3.5 h-3.5" />
-                  </button>
-                </div>
-                <span className="text-sm text-zinc-400 hidden sm:block">{user.email}</span>
+                <span className="text-sm text-zinc-300 hidden sm:block">{user.email}</span>
                 <button
                   onClick={() => auth.signOut()}
                   className="text-xs text-zinc-500 hover:text-zinc-300 transition-colors px-3 py-1.5 rounded-md border border-zinc-800 hover:border-zinc-600 flex items-center gap-1"
@@ -207,7 +178,7 @@ export default function AdminDashboard({ user }) {
               </div>
             </div>
           </header>
-          <main className="max-w-7xl mx-auto px-4 sm:px-6 py-8 space-y-6">
+            <main className="max-w-screen-2xl mx-auto px-4 sm:px-6 py-8 space-y-6">
             <MenuList />
             <LayoutAccessPanel restaurantId={selectedRestaurant.id} />
           </main>
@@ -219,14 +190,14 @@ export default function AdminDashboard({ user }) {
   return (
     <div className="min-h-screen bg-[#0D0D0D]">
       <header className="border-b border-zinc-800 bg-[#0D0D0D]/80 backdrop-blur-sm sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
+        <div className="max-w-screen-2xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <span className="text-2xl">🍽️</span>
             <h1 className="text-xl font-display font-bold text-gold tracking-wide">RestoMenu</h1>
-            <span className="text-xs text-zinc-500 ml-2 bg-gold/10 text-gold px-2 py-0.5 rounded">Admin</span>
+            <span className="text-xs text-zinc-300 ml-2 bg-gold/10 text-gold px-2 py-0.5 rounded">Admin</span>
           </div>
           <div className="flex items-center gap-4">
-            <span className="text-sm text-zinc-400 hidden sm:block">{user.email}</span>
+            <span className="text-sm text-zinc-300 hidden sm:block">{user.email}</span>
             <button
               onClick={() => auth.signOut()}
               className="text-xs text-zinc-500 hover:text-zinc-300 transition-colors px-3 py-1.5 rounded-md border border-zinc-800 hover:border-zinc-600 flex items-center gap-1"
@@ -236,7 +207,7 @@ export default function AdminDashboard({ user }) {
           </div>
         </div>
       </header>
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
+      <main className="max-w-screen-2xl mx-auto px-4 sm:px-6 py-8">
         <RestaurantList
           restaurants={restaurants}
           onSelect={(r) => setSelectedRestaurant(r)}

@@ -82,35 +82,22 @@ function OwnerDashboard({ user }) {
 
   if (!restaurantId) return <SetupRestaurant user={user} onDone={(id, name) => { setRestaurantId(id); setRestaurantName(name) }} />
 
-  const tvLink = `https://restaurantappdz-alt.github.io/RestoMenu/?r=${restaurantId}`
-
   return (
-    <RestaurantProvider restaurantId={restaurantId} restaurantName={restaurantName} tvLink={tvLink}>
+    <RestaurantProvider restaurantId={restaurantId} restaurantName={restaurantName}>
       <div className="min-h-screen bg-[#0D0D0D]">
         <header className="border-b border-zinc-800 bg-[#0D0D0D]/80 backdrop-blur-sm sticky top-0 z-50">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
+          <div className="max-w-screen-2xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
             <div className="flex items-center gap-3">
               <span className="text-2xl">🍽️</span>
               <h1 className="text-xl font-display font-bold text-gold tracking-wide">
                 RestoMenu
               </h1>
-              <span className="hidden sm:inline text-xs text-zinc-500 ml-2">Owner</span>
+              <span className="hidden sm:inline text-xs text-zinc-300 ml-2">Owner</span>
             </div>
             <div className="flex items-center gap-4">
-              <div className="hidden sm:flex items-center gap-2 text-xs">
-                <span className="text-zinc-600">TV Link:</span>
-                <span className="text-zinc-400 font-mono max-w-[200px] truncate">{tvLink}</span>
-                <button
-                  onClick={() => { navigator.clipboard.writeText(tvLink); toast.success('TV link copied!') }}
-                  className="text-gold hover:text-gold/80 transition-colors"
-                  title="Copy TV link"
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
-                </button>
-              </div>
-              <span className="text-sm text-zinc-400 hidden sm:block">
-                {user.email}
-              </span>
+              <span className="text-sm text-zinc-300 hidden sm:block">
+                  {user.email}
+                </span>
               <button
                 onClick={() => auth.signOut()}
                 className="text-xs text-zinc-500 hover:text-zinc-300 transition-colors px-3 py-1.5 rounded-md border border-zinc-800 hover:border-zinc-600"
@@ -120,7 +107,7 @@ function OwnerDashboard({ user }) {
             </div>
           </div>
         </header>
-        <main className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
+        <main className="max-w-screen-2xl mx-auto px-4 sm:px-6 py-8">
           <MenuList />
         </main>
       </div>
