@@ -264,7 +264,7 @@ export default function LayoutBistro({ categories, allAddons, offline, menu, tit
             <p style={styles.tagline}>{menu?.tagline || 'Fait maison avec amour'}</p>
           </div>
           <div style={styles.mascotWrap}>
-            <img src="/mascot.svg" alt="" style={styles.mascotImg} />
+            <img src={(import.meta.env.BASE_URL || '/') + 'mascot.svg'} alt="" style={styles.mascotImg} />
           </div>
         </div>
 
@@ -308,7 +308,7 @@ export default function LayoutBistro({ categories, allAddons, offline, menu, tit
                   Barquette<br /><span style={{ color: '#F0EAD6' }}>de Frites</span>
                 </h3>
                 <div style={{ margin: '0.75rem 0', width: '2rem', borderTop: '1px dotted rgba(240, 234, 214, 0.15)' }} />
-                <img src="/fries.svg" alt="" style={{ width: 'clamp(70px, 9vw, 110px)', opacity: 0.25, marginBottom: '0.75rem' }} />
+                <img src={(import.meta.env.BASE_URL || '/') + 'fries.svg'} alt="" style={{ width: 'clamp(70px, 9vw, 110px)', opacity: 0.25, marginBottom: '0.75rem' }} />
                 {allAddons.map((addon, j) => (
                   <p key={j} style={styles.addonPrice}>
                     {addon.price}<span style={styles.addonCurrency}>MAD</span>

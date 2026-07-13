@@ -1,30 +1,32 @@
 import React from 'react'
 
+const base = import.meta.env.BASE_URL || '/'
+
 /* ── Cutlery wallpaper ── */
 function RestaurantPattern() {
   const items = [
-    { src: '/svgs/cutlery.png', tier: 'large', pos: 'a1' },
-    { src: '/svgs/fork.png', tier: 'large', pos: 'a2' },
-    { src: '/svgs/spoon.png', tier: 'large', pos: 'a3' },
-    { src: '/svgs/tray.png', tier: 'large', pos: 'a4' },
-    { src: '/svgs/spoon-and-fork.png', tier: 'large', pos: 'a5' },
-    { src: '/svgs/coffee-cup.png', tier: 'large', pos: 'a6' },
-    { src: '/svgs/fork.png', tier: 'med', pos: 'b1' },
-    { src: '/svgs/spoon.png', tier: 'med', pos: 'b2' },
-    { src: '/svgs/cutlery.png', tier: 'med', pos: 'b3' },
-    { src: '/svgs/tea.png', tier: 'med', pos: 'b4' },
-    { src: '/svgs/coffee.png', tier: 'med', pos: 'b5' },
-    { src: '/svgs/sugar.png', tier: 'med', pos: 'b6' },
-    { src: '/svgs/coffee-2.png', tier: 'med', pos: 'b7' },
-    { src: '/svgs/tray.png', tier: 'med', pos: 'b8' },
-    { src: '/svgs/fork.png', tier: 'small', pos: 'c1' },
-    { src: '/svgs/spoon.png', tier: 'small', pos: 'c2' },
-    { src: '/svgs/cutlery.png', tier: 'small', pos: 'c3' },
-    { src: '/svgs/coffee-2.png', tier: 'small', pos: 'c4' },
-    { src: '/svgs/tea.png', tier: 'small', pos: 'c5' },
-    { src: '/svgs/sugar.png', tier: 'small', pos: 'c6' },
-    { src: '/svgs/spoon-and-fork.png', tier: 'small', pos: 'c7' },
-    { src: '/svgs/coffee-cup.png', tier: 'small', pos: 'c8' },
+    { src: base + 'svgs/cutlery.png', tier: 'large', pos: 'a1' },
+    { src: base + 'svgs/fork.png', tier: 'large', pos: 'a2' },
+    { src: base + 'svgs/spoon.png', tier: 'large', pos: 'a3' },
+    { src: base + 'svgs/tray.png', tier: 'large', pos: 'a4' },
+    { src: base + 'svgs/spoon-and-fork.png', tier: 'large', pos: 'a5' },
+    { src: base + 'svgs/coffee-cup.png', tier: 'large', pos: 'a6' },
+    { src: base + 'svgs/fork.png', tier: 'med', pos: 'b1' },
+    { src: base + 'svgs/spoon.png', tier: 'med', pos: 'b2' },
+    { src: base + 'svgs/cutlery.png', tier: 'med', pos: 'b3' },
+    { src: base + 'svgs/tea.png', tier: 'med', pos: 'b4' },
+    { src: base + 'svgs/coffee.png', tier: 'med', pos: 'b5' },
+    { src: base + 'svgs/sugar.png', tier: 'med', pos: 'b6' },
+    { src: base + 'svgs/coffee-2.png', tier: 'med', pos: 'b7' },
+    { src: base + 'svgs/tray.png', tier: 'med', pos: 'b8' },
+    { src: base + 'svgs/fork.png', tier: 'small', pos: 'c1' },
+    { src: base + 'svgs/spoon.png', tier: 'small', pos: 'c2' },
+    { src: base + 'svgs/cutlery.png', tier: 'small', pos: 'c3' },
+    { src: base + 'svgs/coffee-2.png', tier: 'small', pos: 'c4' },
+    { src: base + 'svgs/tea.png', tier: 'small', pos: 'c5' },
+    { src: base + 'svgs/sugar.png', tier: 'small', pos: 'c6' },
+    { src: base + 'svgs/spoon-and-fork.png', tier: 'small', pos: 'c7' },
+    { src: base + 'svgs/coffee-cup.png', tier: 'small', pos: 'c8' },
   ]
   return (
     <div className="restaurant-pattern">
@@ -85,7 +87,7 @@ function FullScreenWavyFrame() {
 export default function LayoutClassic({ categories, allAddons, offline, menu, title }) {
   return (
     <div className="h-full w-full relative overflow-hidden">
-      <img src="/waves.svg" alt="" className="bg-layer z-0" />
+      <img src={base + 'waves.svg'} alt="" className="bg-layer z-0" />
       <div className="mesh-deep z-[1]" />
       <div className="mesh-overlay z-[2]" />
       <RestaurantPattern />
@@ -110,7 +112,7 @@ export default function LayoutClassic({ categories, allAddons, offline, menu, ti
           </div>
           <div className="animate-fade-in-right flex-shrink-0" style={{ width: 'clamp(150px, 18vw, 240px)', height: 'clamp(150px, 18vw, 240px)' }}>
             <div className="mascot-wrapper w-full h-full animate-float">
-              <img src="/mascot.svg" alt="" className="w-full h-full object-contain drop-shadow-2xl" style={{ filter: 'drop-shadow(0 8px 40px rgba(255,81,0,0.1))' }} />
+              <img src={base + 'mascot.svg'} alt="" className="w-full h-full object-contain drop-shadow-2xl" style={{ filter: 'drop-shadow(0 8px 40px rgba(255,81,0,0.1))' }} />
             </div>
           </div>
         </div>
@@ -159,7 +161,7 @@ export default function LayoutClassic({ categories, allAddons, offline, menu, ti
                     Barquette<br /><span className="text-brand-honey">de Frites</span>
                   </h3>
                   <div className="my-6 w-20 border-t border-white/10" />
-                  <img src="/fries.svg" alt="" className="w-28 h-28 xl:w-32 xl:h-32 object-contain drop-shadow-lg mb-6 animate-float" style={{ animationDuration: '5s' }} />
+                  <img src={base + 'fries.svg'} alt="" className="w-28 h-28 xl:w-32 xl:h-32 object-contain drop-shadow-lg mb-6 animate-float" style={{ animationDuration: '5s' }} />
                   {allAddons.map((addon, j) => (
                     <p key={j} className="font-heading font-black text-brand-honey text-addon-price animate-cascade-item" style={{ animationDelay: `${(j + 0.5) * 0.1}s` }}>
                       {addon.price}

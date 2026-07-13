@@ -182,7 +182,7 @@ export default function LayoutMinimal({ categories, allAddons, offline, menu, ti
           <p style={styles.tagline}>{menu?.tagline || 'Fraîchement préparé chaque jour'}</p>
         </div>
         <div style={styles.mascotWrap}>
-          <img src="/mascot.svg" alt="" style={styles.mascotImg} />
+          <img src={(import.meta.env.BASE_URL || '/') + 'mascot.svg'} alt="" style={styles.mascotImg} />
         </div>
       </div>
 
@@ -222,7 +222,7 @@ export default function LayoutMinimal({ categories, allAddons, offline, menu, ti
                 Barquette<br /><span style={{ color: '#2ECC71' }}>de Frites</span>
               </h3>
               <div style={{ margin: '1.25rem 0', width: '3rem', borderTop: '1px solid #ddd' }} />
-              <img src="/fries.svg" alt="" style={{ width: 'clamp(80px, 10vw, 120px)', opacity: 0.4, marginBottom: '1rem' }} />
+              <img src={(import.meta.env.BASE_URL || '/') + 'fries.svg'} alt="" style={{ width: 'clamp(80px, 10vw, 120px)', opacity: 0.4, marginBottom: '1rem' }} />
               {allAddons.map((addon, j) => (
                 <p key={j} style={styles.addonPrice}>
                   {addon.price} <span style={{ fontWeight: 500, fontSize: '0.65em', color: '#888' }}>MAD</span>
