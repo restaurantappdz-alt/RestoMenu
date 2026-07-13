@@ -15,6 +15,11 @@ function getRestaurantId() {
   try { return localStorage.getItem(RESTAURANT_ID_KEY) } catch { return null }
 }
 
+function getScreenId() {
+  const params = new URLSearchParams(window.location.search)
+  return params.get('s') || null
+}
+
 function cacheKey(restaurantId) {
   return `${CACHE_KEY_PREFIX}_${restaurantId}`
 }
@@ -50,9 +55,12 @@ export default function useMenuData() {
     setNeedsSetup(false)
     setMenu(loadCache(id))
 
+    const screenId = getScreenId()
+
     const unsubConfig = onSnapshot(doc(db, 'restaurants', id, 'config', 'display'), (snap) => {
-      const data = snap.data()
-      const newId = data?.activeMenuId || null
+      const data = snap.data() || {}
+      const raw = screenId ? data.screens?.[screenId] : data.activeMenuId
+      const newId = (raw && typeof raw === 'object' ? raw.menuId : raw) || null
       if (!newId) {
         setWaiting(true)
         setLoading(false)
