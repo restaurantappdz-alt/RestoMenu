@@ -33,6 +33,14 @@ export default {
           800: '#80661F',
           900: '#644E17',
         },
+        brand: {
+          navy: '#0B132B',
+          'navy-light': '#111C44',
+          orange: '#FF5100',
+          'orange-bright': '#FF7A00',
+          honey: '#FFB703',
+          'warm-gray': '#E2E8F0',
+        },
         slate: {
           850: '#111827',
           950: '#0D0D0D',
@@ -70,6 +78,8 @@ export default {
       fontFamily: {
         sans: ['Inter', 'system-ui', 'sans-serif'],
         display: ['Playfair Display', 'serif'],
+        heading: ['Poppins', 'sans-serif'],
+        body: ['Inter', 'system-ui', 'sans-serif'],
       },
       keyframes: {
         'fade-in': {

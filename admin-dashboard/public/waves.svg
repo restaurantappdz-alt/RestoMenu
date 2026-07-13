@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1080" preserveAspectRatio="none">
+  <defs>
+    <linearGradient id="wave1" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#0B132B" stop-opacity="0.5"/>
+      <stop offset="100%" stop-color="#1E3A8A" stop-opacity="0.15"/>
+    </linearGradient>
+    <linearGradient id="wave2" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#FF5100" stop-opacity="0.12"/>
+      <stop offset="50%" stop-color="#FF5100" stop-opacity="0.06"/>
+      <stop offset="100%" stop-color="#FF5100" stop-opacity="0"/>
+    </linearGradient>
+    <linearGradient id="wave3" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#1E3A8A" stop-opacity="0.08"/>
+      <stop offset="100%" stop-color="#0B132B" stop-opacity="0.3"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="0" y1="0" x2="0.5" y2="1">
+      <stop offset="0%" stop-color="#FFB703" stop-opacity="0"/>
+      <stop offset="50%" stop-color="#FFB703" stop-opacity="0.06"/>
+      <stop offset="100%" stop-color="#FF5100" stop-opacity="0.1"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Wave 1: Deep midnight blue - sweeping diagonal from bottom-left -->
+  <path d="M0 680 C 300 750, 500 600, 800 700 S 1200 550, 1920 650 L 1920 1080 L 0 1080 Z" fill="url(#wave1)"/>
+
+  <!-- Wave 2: Orange accent - thinner, higher energy sweep -->
+  <path d="M0 760 C 250 700, 450 820, 750 780 S 1100 700, 1920 800 L 1920 1080 L 0 1080 Z" fill="url(#wave2)"/>
+
+  <!-- Wave 3: Blue mid-layer -->
+  <path d="M0 850 C 400 800, 600 920, 1000 880 S 1400 780, 1920 880 L 1920 1080 L 0 1080 Z" fill="url(#wave3)"/>
+
+  <!-- Top-right diagonal accent sweep -->
+  <path d="M1400 0 C 1600 200, 1750 400, 1920 350 L 1920 0 Z" fill="url(#accent)"/>
+
+  <!-- Subtle top-left accent curve -->
+  <path d="M0 0 C 200 80, 400 40, 500 150 C 550 200, 400 250, 300 220 C 150 180, 100 100, 0 120 Z" fill="url(#accent)" opacity="0.5"/>
+</svg>

@@ -5,10 +5,10 @@ import { useRestaurant } from '@/RestaurantContext'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Select, SelectItem } from '@/components/ui/select'
-import { ArrowLeft, Plus, Eye } from 'lucide-react'
+import { ArrowLeft, Plus, Pencil, Eye } from 'lucide-react'
 import CategorySection from './CategorySection'
 import TVPreview from './TVPreview'
+import LayoutPicker from './LayoutPicker'
 
 const LAYOUT_OPTIONS = [
   { value: 'classic', label: 'Classic Gold' },
@@ -118,11 +118,12 @@ export default function MenuEditor({ menu, onBack }) {
       <Tabs defaultValue="edit" className="w-full">
         <TabsList>
           <TabsTrigger value="edit">
-            <Plus className="w-4 h-4 mr-1.5" />
+            <Pencil className="w-4 h-4 mr-1.5" />
             Edit
           </TabsTrigger>
           <TabsTrigger value="preview">
-            Eye TV Preview
+            <Eye className="w-4 h-4 mr-1.5" />
+            TV Preview
           </TabsTrigger>
         </TabsList>
 
@@ -134,21 +135,16 @@ export default function MenuEditor({ menu, onBack }) {
                 Display Settings
               </h3>
             </div>
-            <div className="flex items-center gap-3">
-              <label className="text-sm text-zinc-400 min-w-[6rem]">TV Layout</label>
-              <Select
+            <div>
+              <label className="text-sm text-zinc-300 block mb-3">TV Layout</label>
+              <LayoutPicker
                 value={selectedLayout}
                 onValueChange={(val) => {
                   setSelectedLayout(val)
                   fullSave({ selectedLayout: val })
                 }}
-              >
-                {filteredOptions.map((opt) => (
-                  <SelectItem key={opt.value} value={opt.value}>
-                    {opt.label}
-                  </SelectItem>
-                ))}
-              </Select>
+                options={filteredOptions}
+              />
             </div>
           </div>
 
@@ -185,7 +181,7 @@ export default function MenuEditor({ menu, onBack }) {
         </TabsContent>
 
         <TabsContent value="preview" className="mt-6">
-          <TVPreview menu={currentMenu} restaurantId={restaurantId} />
+          <TVPreview menu={currentMenu} />
         </TabsContent>
       </Tabs>
     </div>
