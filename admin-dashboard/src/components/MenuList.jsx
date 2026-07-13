@@ -3,7 +3,7 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { toast } from 'sonner'
-import { onMenusSnapshot, createMenu, deleteMenu, setActiveMenu, seedDefaultMenu } from '@/api'
+import { onMenusSnapshot, createMenu, deleteMenu, setActiveMenu, seedDefaultMenu, onDisplayConfigSnapshot, assignMenuToScreen, clearScreen } from '@/api'
 import { useRestaurant } from '@/RestaurantContext'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from '@/components/ui/table'
@@ -20,22 +20,32 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
-import { Plus, Trash2, Monitor, ChefHat, RefreshCw, Eye, Copy } from 'lucide-react'
+import { Plus, Trash2, ChefHat, X } from 'lucide-react'
 import MenuEditor from './MenuEditor'
+import ScreenManager from './ScreenManager'
 
 const menuSchema = z.object({
   name: z.string().min(1, 'Menu name is required'),
 })
 
 export default function MenuList() {
-  const { restaurantId, tvLink } = useRestaurant()
+  const { restaurantId } = useRestaurant()
   const [menus, setMenus] = useState([])
   const [selectedMenu, setSelectedMenu] = useState(null)
   const [dialogOpen, setDialogOpen] = useState(false)
   const [seeding, setSeeding] = useState(false)
+  const [screenConfig, setScreenConfig] = useState({ screens: {} })
 
   useEffect(() => {
     const unsub = onMenusSnapshot(restaurantId, (data) => setMenus(data))
+    return unsub
+  }, [restaurantId])
+
+  useEffect(() => {
+    const unsub = onDisplayConfigSnapshot(restaurantId, (data) => {
+      const screens = data.screens || {}
+      setScreenConfig({ ...data, screens })
+    })
     return unsub
   }, [restaurantId])
 
@@ -63,16 +73,29 @@ export default function MenuList() {
   const onDelete = async (menu) => {
     try {
       await deleteMenu(restaurantId, menu.id)
+      const stale = Object.entries(screenConfig.screens || {})
+        .filter(([, s]) => s.menuId === menu.id)
+        .map(([key]) => key)
+      await Promise.all(stale.map((key) => clearScreen(restaurantId, key)))
       toast.success(`Menu "${menu.name}" deleted`)
     } catch (e) {
       toast.error(e.message)
     }
   }
 
-  const onSetDisplay = async (menuId) => {
+  const onAssign = async (menuId, screenKey) => {
     try {
-      await setActiveMenu(restaurantId, menuId)
-      toast.success('TV display updated!')
+      await assignMenuToScreen(restaurantId, menuId, screenKey)
+      toast.success(`Assigned to TV ${screenKey}`)
+    } catch (e) {
+      toast.error(e.message)
+    }
+  }
+
+  const onClear = async (screenKey) => {
+    try {
+      await clearScreen(restaurantId, screenKey)
+      toast.success(`TV ${screenKey} cleared`)
     } catch (e) {
       toast.error(e.message)
     }
@@ -92,9 +115,32 @@ export default function MenuList() {
     }
   }
 
-  const copyTvLink = () => {
-    navigator.clipboard.writeText(tvLink)
-    toast.success('TV link copied!')
+  function TvStatus({ menuId, screenKey }) {
+    const isLive = screenConfig.screens?.[screenKey]?.menuId === menuId
+
+    if (isLive) {
+      return (
+        <div className="flex items-center justify-center gap-1">
+          <span className="bg-gold text-[#0D0D0D] text-[10px] font-bold px-2 py-0.5 rounded-full">LIVE</span>
+          <button
+            onClick={(e) => { e.stopPropagation(); onClear(screenKey) }}
+            className="text-zinc-600 hover:text-red-400 transition-colors"
+            title={`Clear TV ${screenKey}`}
+          >
+            <X className="w-3.5 h-3.5" />
+          </button>
+        </div>
+      )
+    }
+
+    return (
+      <button
+        onClick={(e) => { e.stopPropagation(); onAssign(menuId, screenKey) }}
+        className="text-[11px] text-zinc-500 hover:text-gold border border-zinc-700 hover:border-gold/50 px-2 py-0.5 rounded transition-colors"
+      >
+        Set
+      </button>
+    )
   }
 
   if (selectedMenu) {
@@ -103,17 +149,6 @@ export default function MenuList() {
 
   return (
     <div className="animate-fade-in space-y-6">
-      {/* Mobile TV link — visible on small screens only */}
-      <div className="sm:hidden rounded-xl border border-zinc-800 bg-zinc-900/50 p-4 space-y-2">
-        <p className="text-xs text-zinc-500 uppercase tracking-wider">TV Link</p>
-        <div className="flex items-center gap-2">
-          <code className="flex-1 text-xs text-zinc-400 truncate bg-zinc-800/50 px-2 py-1.5 rounded">{tvLink}</code>
-          <button onClick={copyTvLink} className="text-gold hover:text-gold/80 shrink-0" title="Copy">
-            <Copy className="w-4 h-4" />
-          </button>
-        </div>
-      </div>
-
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-display font-bold text-gold">Your Menus</h2>
@@ -169,16 +204,18 @@ export default function MenuList() {
         </div>
       </div>
 
+      <ScreenManager
+        screens={screenConfig.screens || {}}
+        menus={menus}
+      />
+
       {menus.length === 0 ? (
-        <Card className="border-dashed border-zinc-800 cursor-pointer hover:border-gold/50 transition-colors" onClick={() => setDialogOpen(true)}>
+        <Card className="border-dashed border-zinc-800">
           <CardContent className="flex flex-col items-center justify-center py-16">
-            <div className="w-16 h-16 rounded-full bg-gold/10 flex items-center justify-center mb-4 group-hover:bg-gold/20 transition-colors">
-              <Plus className="w-8 h-8 text-gold" />
+            <div className="w-16 h-16 rounded-full bg-gold/10 flex items-center justify-center mb-4">
+              <Plus className="w-8 h-8 text-gold/40" />
             </div>
             <p className="text-zinc-400 text-lg font-medium">No menus yet</p>
-            <p className="text-zinc-600 text-sm mt-1">
-              Click here to create your first menu
-            </p>
           </CardContent>
         </Card>
       ) : (
@@ -186,9 +223,12 @@ export default function MenuList() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead className="w-[40%]">Name</TableHead>
+                <TableHead className="w-[28%]">Name</TableHead>
                 <TableHead>Categories</TableHead>
                 <TableHead>Items</TableHead>
+                {Object.entries(screenConfig.screens || {}).sort(([, a], [, b]) => a.label.localeCompare(b.label)).map(([key, screen]) => (
+                  <TableHead key={key} className="text-center">{screen.label}</TableHead>
+                ))}
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
@@ -210,19 +250,13 @@ export default function MenuList() {
                     </TableCell>
                     <TableCell className="text-zinc-400">{catCount}</TableCell>
                     <TableCell className="text-zinc-400">{itemCount}</TableCell>
+                    {Object.entries(screenConfig.screens || {}).sort(([, a], [, b]) => a.label.localeCompare(b.label)).map(([key]) => (
+                      <TableCell key={key} className="text-center">
+                        <TvStatus menuId={menu.id} screenKey={key} />
+                      </TableCell>
+                    ))}
                     <TableCell className="text-right">
                       <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            onSetDisplay(menu.id)
-                          }}
-                          title="Display on TV"
-                        >
-                          <Monitor className="w-4 h-4 text-gold" />
-                        </Button>
                         <Button
                           variant="ghost"
                           size="sm"
