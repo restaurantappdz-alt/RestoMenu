@@ -2,6 +2,19 @@ import { useState, useEffect } from 'react'
 import { onSnapshot, doc } from 'firebase/firestore'
 import { db } from '../firebase'
 
+async function checkConnectivity() {
+  try {
+    await fetch('https://firestore.googleapis.com/v1/projects/menu-85c70/databases/(default)/documents', {
+      method: 'HEAD',
+      mode: 'no-cors',
+      signal: AbortSignal.timeout(3000)
+    })
+    return true
+  } catch {
+    return false
+  }
+}
+
 const RESTAURANT_ID_KEY = 'restomenu-tv-restaurant'
 const CACHE_KEY_PREFIX = 'restomenu-tv-cache'
 const CONFIG_CACHE_KEY_PREFIX = 'restomenu-tv-config'
@@ -88,6 +101,11 @@ export default function useMenuData() {
   const [needsSetup, setNeedsSetup] = useState(false)
 
   console.log('📊 useMenuData init:', { restaurantId, activeMenuId, menu: menu?.id, loading, offline, waiting, needsSetup })
+  if (restaurantId) {
+    const cfgRaw = (() => { try { return localStorage.getItem(`${CONFIG_CACHE_KEY_PREFIX}_${restaurantId}`) } catch { return null } })()
+    const menuRaw = (() => { try { return localStorage.getItem(`${CACHE_KEY_PREFIX}_${restaurantId}`) } catch { return null } })()
+    console.log('📦 Cache check:', { configKey: `${CONFIG_CACHE_KEY_PREFIX}_${restaurantId}`, configExists: !!cfgRaw, configSize: cfgRaw?.length, menuKey: `${CACHE_KEY_PREFIX}_${restaurantId}`, menuExists: !!menuRaw, menuSize: menuRaw?.length })
+  }
 
   useEffect(() => {
     const handleOnline = () => {
@@ -97,6 +115,14 @@ export default function useMenuData() {
     const handleOffline = () => { console.log('📶 offline event'); setOffline(true) }
     window.addEventListener('online', handleOnline)
     window.addEventListener('offline', handleOffline)
+
+    checkConnectivity().then(reachable => {
+      console.log('📶 Connectivity probe:', reachable ? 'online' : 'offline', '| navigator.onLine:', navigator.onLine)
+      if (!reachable && navigator.onLine) {
+        setOffline(true)
+      }
+    })
+
     return () => {
       window.removeEventListener('online', handleOnline)
       window.removeEventListener('offline', handleOffline)
@@ -136,20 +162,31 @@ export default function useMenuData() {
     }
 
     const unsubConfig = onSnapshot(doc(db, 'restaurants', id, 'config', 'display'), (snap) => {
-      console.log('🔥 Config snapshot received:', snap.id, snap.metadata.hasPendingWrites)
+      console.log('🔥 Config snapshot received:', snap.id, snap.metadata.hasPendingWrites, snap.metadata.fromCache)
       const data = snap.data() || {}
       saveConfigCache(id, data)
       const raw = screenId ? data.screens?.[screenId] : data.activeMenuId
       const newId = (raw && typeof raw === 'object' ? raw.menuId : raw) || null
       if (!newId) {
-        if (mountedOffline || (typeof navigator !== 'undefined' && !navigator.onLine)) {
-          const cachedCfg = loadConfigCache(id)
-          const cachedRaw = screenId ? cachedCfg?.screens?.[screenId] : cachedCfg?.activeMenuId
-          const cachedId = cachedCfg && (cachedRaw && typeof cachedRaw === 'object' ? cachedRaw.menuId : cachedRaw) || null
-          if (cachedId) {
-            console.log('⏳ Config has no menu but cache has', cachedId, '— trusting cache')
-            return
-          }
+        const cachedCfg = loadConfigCache(id)
+        const cachedRaw = screenId ? cachedCfg?.screens?.[screenId] : cachedCfg?.activeMenuId
+        const cachedId = cachedCfg && (cachedRaw && typeof cachedRaw === 'object' ? cachedRaw.menuId : cachedRaw) || null
+        if (cachedId) {
+          console.log('⏳ Config has no menu but cache has', cachedId, '— trusting cache')
+          return
+        }
+        const cachedMenu = loadCache(id)
+        if (cachedMenu) {
+          console.log('⏳ No menuId in config but menu cache exists — restoring from cache')
+          setActiveMenuId(cachedMenu.id)
+          setMenu(cachedMenu)
+          setWaiting(false)
+          setLoading(false)
+          return
+        }
+        if (typeof navigator !== 'undefined' && !navigator.onLine) {
+          console.log('⏳ Offline with no cache — cannot determine state, keeping current')
+          return
         }
         console.log('⏳ No menu assigned → waiting screen')
         setWaiting(true)
@@ -162,7 +199,7 @@ export default function useMenuData() {
       setActiveMenuId(newId)
       console.log('✅ Config OK → activeMenuId:', newId)
     }, (error) => {
-      console.log('❌ Config listener error:', error.code, error.message)
+      console.log('❌ Config listener error:', error.code, error.message, 'fromCache:', error._metadata?.fromCache)
       setLoading(false)
     })
     return () => unsubConfig()
