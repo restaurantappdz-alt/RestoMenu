@@ -4,6 +4,7 @@ import { db } from '../firebase'
 
 const RESTAURANT_ID_KEY = 'restomenu-tv-restaurant'
 const CACHE_KEY_PREFIX = 'restomenu-tv-cache'
+const CONFIG_CACHE_KEY_PREFIX = 'restomenu-tv-config'
 
 function getRestaurantId() {
   const params = new URLSearchParams(window.location.search)
@@ -35,14 +36,72 @@ function saveCache(restaurantId, data) {
   try { localStorage.setItem(cacheKey(restaurantId), JSON.stringify(data)) } catch {}
 }
 
+function loadConfigCache(restaurantId) {
+  try {
+    const raw = localStorage.getItem(`${CONFIG_CACHE_KEY_PREFIX}_${restaurantId}`)
+    return raw ? JSON.parse(raw) : null
+  } catch { return null }
+}
+
+function saveConfigCache(restaurantId, data) {
+  try { localStorage.setItem(`${CONFIG_CACHE_KEY_PREFIX}_${restaurantId}`, JSON.stringify(data)) } catch {}
+}
+
 export default function useMenuData() {
   const [restaurantId, setRestaurantId] = useState(getRestaurantId)
-  const [menu, setMenu] = useState(() => restaurantId ? loadCache(restaurantId) : null)
-  const [loading, setLoading] = useState(true)
-  const [offline, setOffline] = useState(false)
-  const [waiting, setWaiting] = useState(false)
+  const [activeMenuId, setActiveMenuId] = useState(() => {
+    const rid = getRestaurantId()
+    if (!rid) return null
+    const cached = loadConfigCache(rid)
+    if (!cached) return null
+    const sid = getScreenId()
+    const raw = sid ? cached.screens?.[sid] : cached.activeMenuId
+    return (raw && typeof raw === 'object' ? raw.menuId : raw) || null
+  })
+  const [menu, setMenu] = useState(() => {
+    const rid = getRestaurantId()
+    if (!rid) return null
+    const cachedMenu = loadCache(rid)
+    const cachedCfg = loadConfigCache(rid)
+    if (!cachedMenu || !cachedCfg) return null
+    const sid = getScreenId()
+    const raw = sid ? cachedCfg.screens?.[sid] : cachedCfg.activeMenuId
+    const expectedId = (raw && typeof raw === 'object' ? raw.menuId : raw) || null
+    return cachedMenu.id === expectedId ? cachedMenu : null
+  })
+  const [loading, setLoading] = useState(() => {
+    const rid = getRestaurantId()
+    if (!rid) return true
+    const cachedMenu = loadCache(rid)
+    const cachedCfg = loadConfigCache(rid)
+    if (!cachedMenu || !cachedCfg) return true
+    const sid = getScreenId()
+    const raw = sid ? cachedCfg.screens?.[sid] : cachedCfg.activeMenuId
+    const expectedId = (raw && typeof raw === 'object' ? raw.menuId : raw) || null
+    return cachedMenu.id !== expectedId
+  })
+  const [offline, setOffline] = useState(typeof navigator !== 'undefined' && !navigator.onLine)
+  const [waiting, setWaiting] = useState(() => {
+    const rid = getRestaurantId()
+    if (!rid) return false
+    const cached = loadConfigCache(rid)
+    if (!cached) return false
+    const sid = getScreenId()
+    const raw = sid ? cached.screens?.[sid] : cached.activeMenuId
+    return !((raw && typeof raw === 'object' ? raw.menuId : raw) || null)
+  })
   const [needsSetup, setNeedsSetup] = useState(false)
-  const [activeMenuId, setActiveMenuId] = useState(null)
+
+  useEffect(() => {
+    const handleOnline = () => setOffline(false)
+    const handleOffline = () => setOffline(true)
+    window.addEventListener('online', handleOnline)
+    window.addEventListener('offline', handleOffline)
+    return () => {
+      window.removeEventListener('online', handleOnline)
+      window.removeEventListener('offline', handleOffline)
+    }
+  }, [])
 
   useEffect(() => {
     const id = getRestaurantId()
@@ -53,12 +112,12 @@ export default function useMenuData() {
       return
     }
     setNeedsSetup(false)
-    setMenu(loadCache(id))
 
     const screenId = getScreenId()
 
     const unsubConfig = onSnapshot(doc(db, 'restaurants', id, 'config', 'display'), (snap) => {
       const data = snap.data() || {}
+      saveConfigCache(id, data)
       const raw = screenId ? data.screens?.[screenId] : data.activeMenuId
       const newId = (raw && typeof raw === 'object' ? raw.menuId : raw) || null
       if (!newId) {
@@ -70,8 +129,8 @@ export default function useMenuData() {
       }
       setWaiting(false)
       setActiveMenuId(newId)
-    }, () => {
-      setOffline(true)
+    }, (error) => {
+      console.error('Config listener error:', error)
       setLoading(false)
     })
     return () => unsubConfig()
@@ -79,20 +138,18 @@ export default function useMenuData() {
 
   useEffect(() => {
     if (!activeMenuId || !restaurantId) return
-    setOffline(false)
     setLoading(true)
     const unsubMenu = onSnapshot(doc(db, 'restaurants', restaurantId, 'menus', activeMenuId), (snap) => {
       if (snap.exists()) {
         const data = { id: snap.id, ...snap.data() }
         setMenu(data)
         saveCache(restaurantId, data)
-        setOffline(false)
       } else {
         setMenu(null)
       }
       setLoading(false)
-    }, () => {
-      setOffline(true)
+    }, (error) => {
+      console.error('Menu listener error:', error)
       setLoading(false)
     })
     return () => unsubMenu()
