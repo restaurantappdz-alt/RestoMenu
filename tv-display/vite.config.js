@@ -21,12 +21,16 @@ export default defineConfig({
         ]
       },
       workbox: {
-        navigateFallback: null,
+        navigateFallback: '/RestoMenu/index.html',
         runtimeCaching: [
           {
-            urlPattern: /^https:\/\/firestore\.googleapis\.com\/.*/i,
-            handler: 'NetworkFirst',
-            options: { cacheName: 'firestore-fallback', networkTimeoutSeconds: 4 }
+            urlPattern: /^https:\/\/fonts\.(googleapis|gstatic)\.com\/.*/i,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'google-fonts',
+              expiration: { maxEntries: 10, maxAgeSeconds: 60 * 60 * 24 * 365 },
+              cacheableResponse: { statuses: [0, 200] }
+            }
           }
         ]
       }
