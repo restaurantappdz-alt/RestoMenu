@@ -1,10 +1,11 @@
-name: Deploy TV display to GitHub Pages
+name: Deploy to GitHub Pages
 
 on:
   push:
     branches: [main]
     paths:
       - 'tv-display/**'
+      - 'admin-dashboard/**'
       - '.github/workflows/deploy-tv.yml'
   workflow_dispatch:
 
@@ -25,18 +26,36 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
+
       - uses: actions/setup-node@v4
         with:
           node-version: 22
           cache: 'npm'
-          cache-dependency-path: tv-display/package-lock.json
-      - run: npm ci
+          cache-dependency-path: |
+            tv-display/package-lock.json
+            admin-dashboard/package-lock.json
+
+      - name: Build TV display
+        run: |
+          npm ci
+          npm run build
         working-directory: tv-display
-      - run: npm run build
-        working-directory: tv-display
+
+      - name: Build Admin dashboard
+        run: |
+          npm ci
+          npm run build
+        working-directory: admin-dashboard
+
+      - name: Combine both apps into one artifact
+        run: |
+          mkdir -p combined/admin
+          cp -r tv-display/dist/* combined/
+          cp -r admin-dashboard/dist/* combined/admin/
+
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
-          path: tv-display/dist
+          path: combined
       - id: deployment
         uses: actions/deploy-pages@v4

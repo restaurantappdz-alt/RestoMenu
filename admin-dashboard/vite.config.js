@@ -6,6 +6,7 @@ const projectDir = path.resolve(__dirname)
 
 export default defineConfig({
   root: projectDir,
+  base: '/RestoMenu/admin/',
   plugins: [react()],
   resolve: {
     alias: {

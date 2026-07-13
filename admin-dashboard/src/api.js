@@ -27,6 +27,7 @@ export async function createRestaurant(name, uid) {
   const ref = await addDoc(collection(db, 'restaurants'), {
     name,
     ownerUid: uid,
+    availableLayouts: ['classic', 'bistro', 'moroccan', 'pro', 'natureBistro'],
     createdAt: serverTimestamp(),
   })
   return ref.id
@@ -84,6 +85,22 @@ export async function setActiveMenu(restaurantId, menuId) {
     activeMenuId: menuId,
     updatedAt: serverTimestamp(),
   })
+}
+
+export function onAllRestaurantsSnapshot(callback) {
+  return onSnapshot(collection(db, 'restaurants'), (snap) => {
+    callback(snap.docs.map((d) => ({ id: d.id, ...d.data() })))
+  })
+}
+
+export function onRestaurantDoc(restaurantId, callback) {
+  return onSnapshot(doc(db, 'restaurants', restaurantId), (snap) => {
+    if (snap.exists()) callback({ id: snap.id, ...snap.data() })
+  })
+}
+
+export async function updateRestaurant(restaurantId, data) {
+  await updateDoc(doc(db, 'restaurants', restaurantId), data)
 }
 
 export async function seedDefaultMenu(restaurantId) {

@@ -1,0 +1,25 @@
+name: Build check
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'tv-display/**'
+      - 'admin-dashboard/**'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'npm'
+          cache-dependency-path: |
+            tv-display/package-lock.json
+            admin-dashboard/package-lock.json
+      - run: npm ci && npm run build
+        working-directory: tv-display
+      - run: npm ci && npm run build
+        working-directory: admin-dashboard

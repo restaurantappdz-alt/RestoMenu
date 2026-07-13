@@ -1,6 +1,6 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { toast } from 'sonner'
-import { updateMenu } from '@/api'
+import { updateMenu, onRestaurantDoc } from '@/api'
 import { useRestaurant } from '@/RestaurantContext'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
 import { Button } from '@/components/ui/button'
@@ -13,9 +13,13 @@ import TVPreview from './TVPreview'
 const LAYOUT_OPTIONS = [
   { value: 'classic', label: 'Classic Gold' },
   { value: 'bistro', label: 'Bistro Chalkboard' },
+  { value: 'brasserie', label: 'Brasserie' },
+  { value: 'coffeeShop', label: 'Coffee Shop' },
+  { value: 'minimal', label: 'Minimal' },
+  { value: 'modern', label: 'Modern' },
   { value: 'moroccan', label: 'Moroccan' },
-  { value: 'pro', label: 'Pro Premium' },
   { value: 'natureBistro', label: 'Nature Bistro' },
+  { value: 'pro', label: 'Pro Premium' },
 ]
 
 export default function MenuEditor({ menu, onBack }) {
@@ -24,6 +28,19 @@ export default function MenuEditor({ menu, onBack }) {
   const [categories, setCategories] = useState(menu.categories || [])
   const [selectedLayout, setSelectedLayout] = useState(menu.selectedLayout || 'classic')
   const [saving, setSaving] = useState(false)
+  const [availableLayouts, setAvailableLayouts] = useState(null)
+
+  useEffect(() => {
+    if (!restaurantId) return
+    const unsub = onRestaurantDoc(restaurantId, (data) => {
+      setAvailableLayouts(data.availableLayouts || null)
+    })
+    return unsub
+  }, [restaurantId])
+
+  const filteredOptions = availableLayouts
+    ? LAYOUT_OPTIONS.filter((o) => availableLayouts.includes(o.value))
+    : LAYOUT_OPTIONS
 
   const fullSave = async (overrides) => {
     setSaving(true)
@@ -127,7 +144,7 @@ export default function MenuEditor({ menu, onBack }) {
                 }}
                 className="w-[220px]"
               >
-                {LAYOUT_OPTIONS.map((opt) => (
+                {filteredOptions.map((opt) => (
                   <option key={opt.value} value={opt.value}>
                     {opt.label}
                   </option>

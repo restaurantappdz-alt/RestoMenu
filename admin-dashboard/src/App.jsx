@@ -2,10 +2,12 @@ import { useState, useEffect } from 'react'
 import { onAuthStateChanged } from 'firebase/auth'
 import { auth } from './firebase'
 import { onRestaurantsSnapshot, createRestaurant } from './api'
+import useUserRole from './useUserRole'
 import { RestaurantProvider } from './RestaurantContext'
 import { toast } from 'sonner'
 import LoginPage from './components/LoginPage'
 import MenuList from './components/MenuList'
+import AdminDashboard from './components/AdminDashboard'
 
 function SetupRestaurant({ user, onDone }) {
   const [name, setName] = useState('')
@@ -51,27 +53,12 @@ function SetupRestaurant({ user, onDone }) {
   )
 }
 
-export default function App() {
-  const [user, setUser] = useState(null)
-  const [loading, setLoading] = useState(true)
+function OwnerDashboard({ user }) {
   const [restaurantId, setRestaurantId] = useState(null)
   const [restaurantName, setRestaurantName] = useState('')
-  const [resolvingRestaurant, setResolvingRestaurant] = useState(false)
+  const [resolving, setResolving] = useState(true)
 
   useEffect(() => {
-    const unsub = onAuthStateChanged(auth, (u) => {
-      setUser(u)
-      setLoading(false)
-    })
-    return unsub
-  }, [])
-
-  useEffect(() => {
-    if (!user) {
-      setRestaurantId(null)
-      return
-    }
-    setResolvingRestaurant(true)
     const unsub = onRestaurantsSnapshot(user.uid, (list) => {
       if (list.length > 0) {
         setRestaurantId(list[0].id)
@@ -80,30 +67,20 @@ export default function App() {
         setRestaurantId(null)
         setRestaurantName('')
       }
-      setResolvingRestaurant(false)
+      setResolving(false)
     })
     return unsub
   }, [user])
 
-  const handleSetupDone = (id, name) => {
-    setRestaurantId(id)
-    setRestaurantName(name)
-  }
-
-  if (loading || resolvingRestaurant) {
+  if (resolving) {
     return (
       <div className="h-screen flex items-center justify-center bg-[#0D0D0D]">
-        <div className="flex flex-col items-center gap-4">
-          <div className="w-8 h-8 border-2 border-gold border-t-transparent rounded-full animate-spin" />
-          <p className="text-zinc-400 text-sm">Loading...</p>
-        </div>
+        <div className="w-8 h-8 border-2 border-gold border-t-transparent rounded-full animate-spin" />
       </div>
     )
   }
 
-  if (!user) return <LoginPage />
-
-  if (!restaurantId) return <SetupRestaurant user={user} onDone={handleSetupDone} />
+  if (!restaurantId) return <SetupRestaurant user={user} onDone={(id, name) => { setRestaurantId(id); setRestaurantName(name) }} />
 
   const tvLink = `https://restaurantappdz-alt.github.io/RestoMenu/?r=${restaurantId}`
 
@@ -117,7 +94,7 @@ export default function App() {
               <h1 className="text-xl font-display font-bold text-gold tracking-wide">
                 RestoMenu
               </h1>
-              <span className="hidden sm:inline text-xs text-zinc-500 ml-2">Admin</span>
+              <span className="hidden sm:inline text-xs text-zinc-500 ml-2">Owner</span>
             </div>
             <div className="flex items-center gap-4">
               <div className="hidden sm:flex items-center gap-2 text-xs">
@@ -149,4 +126,35 @@ export default function App() {
       </div>
     </RestaurantProvider>
   )
+}
+
+export default function App() {
+  const [user, setUser] = useState(null)
+  const [loading, setLoading] = useState(true)
+  const { isAdmin, loading: roleLoading } = useUserRole(user)
+
+  useEffect(() => {
+    const unsub = onAuthStateChanged(auth, (u) => {
+      setUser(u)
+      setLoading(false)
+    })
+    return unsub
+  }, [])
+
+  if (loading || roleLoading) {
+    return (
+      <div className="h-screen flex items-center justify-center bg-[#0D0D0D]">
+        <div className="flex flex-col items-center gap-4">
+          <div className="w-8 h-8 border-2 border-gold border-t-transparent rounded-full animate-spin" />
+          <p className="text-zinc-400 text-sm">Loading...</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (!user) return <LoginPage />
+
+  if (isAdmin) return <AdminDashboard user={user} />
+
+  return <OwnerDashboard user={user} />
 }
