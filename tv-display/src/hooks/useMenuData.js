@@ -95,7 +95,10 @@ export default function useMenuData() {
   console.log('📊 useMenuData init:', { restaurantId, activeMenuId, menu: menu?.id, loading, offline, waiting, needsSetup })
 
   useEffect(() => {
-    const handleOnline = () => { console.log('📶 online event'); setOffline(false) }
+    const handleOnline = () => {
+      console.log('📶 back online — reloading for live data')
+      setTimeout(() => window.location.reload(), 1000)
+    }
     const handleOffline = () => { console.log('📶 offline event'); setOffline(true) }
     window.addEventListener('online', handleOnline)
     window.addEventListener('offline', handleOffline)
@@ -116,6 +119,26 @@ export default function useMenuData() {
     setNeedsSetup(false)
 
     const screenId = getScreenId()
+    const mountedOffline = typeof navigator !== 'undefined' && !navigator.onLine
+
+    // Mounted offline with cache -> skip Firestore, load from cache
+    if (mountedOffline) {
+      const cachedCfg = loadConfigCache(id)
+      if (cachedCfg) {
+        const raw = screenId ? cachedCfg.screens?.[screenId] : cachedCfg.activeMenuId
+        const cachedMenuId = (raw && typeof raw === 'object' ? raw.menuId : raw) || null
+        if (cachedMenuId) {
+          setActiveMenuId(cachedMenuId)
+          setWaiting(false)
+          const cachedMenu = loadCache(id)
+          if (cachedMenu && cachedMenu.id === cachedMenuId) {
+            setMenu(cachedMenu)
+          }
+          setLoading(false)
+          return
+        }
+      }
+    }
 
     const unsubConfig = onSnapshot(doc(db, 'restaurants', id, 'config', 'display'), (snap) => {
       console.log('🔥 Config snapshot received:', snap.id, snap.metadata.hasPendingWrites)
@@ -124,12 +147,14 @@ export default function useMenuData() {
       const raw = screenId ? data.screens?.[screenId] : data.activeMenuId
       const newId = (raw && typeof raw === 'object' ? raw.menuId : raw) || null
       if (!newId) {
-        const cachedCfg = loadConfigCache(id)
-        const cachedRaw = screenId ? cachedCfg?.screens?.[screenId] : cachedCfg?.activeMenuId
-        const cachedId = cachedCfg && (cachedRaw && typeof cachedRaw === 'object' ? cachedRaw.menuId : cachedRaw) || null
-        if (cachedId) {
-          console.log('⏳ Live config has no menu, but cached config has menuId:', cachedId, '— trusting cache')
-          return
+        if (mountedOffline || (typeof navigator !== 'undefined' && !navigator.onLine)) {
+          const cachedCfg = loadConfigCache(id)
+          const cachedRaw = screenId ? cachedCfg?.screens?.[screenId] : cachedCfg?.activeMenuId
+          const cachedId = cachedCfg && (cachedRaw && typeof cachedRaw === 'object' ? cachedRaw.menuId : cachedRaw) || null
+          if (cachedId) {
+            console.log('⏳ Config has no menu but cache has', cachedId, '— trusting cache')
+            return
+          }
         }
         console.log('⏳ No menu assigned → waiting screen')
         setWaiting(true)
