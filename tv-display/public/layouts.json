@@ -1,0 +1,11 @@
+[
+  {"value": "classic", "label": "Classic Gold"},
+  {"value": "bistro", "label": "Bistro Chalkboard"},
+  {"value": "brasserie", "label": "Brasserie"},
+  {"value": "coffeeShop", "label": "Coffee Shop"},
+  {"value": "minimal", "label": "Minimal"},
+  {"value": "modern", "label": "Modern"},
+  {"value": "moroccan", "label": "Moroccan"},
+  {"value": "natureBistro", "label": "Nature Bistro"},
+  {"value": "pro", "label": "Pro Premium"}
+]
