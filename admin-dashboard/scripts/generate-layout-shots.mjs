@@ -80,7 +80,7 @@ async function main() {
       layouts: layouts.map(l => ({
         id: l.id,
         name: l.name,
-        image: `/RestoMenu/dashboard/layout-shots/${l.id}.jpg`,
+        image: `/RestoMenu/dashboard/layout-shots/${l.id}.jpg`, // site-relative — works on any domain
       })),
     }
     fs.writeFileSync(

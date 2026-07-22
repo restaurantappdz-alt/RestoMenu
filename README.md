@@ -20,7 +20,7 @@ Generate 1280×720 screenshots of each TV layout template in empty state (no men
 ### Endpoint
 
 ```
-GET https://restomenu2.web.app/RestoMenu/dashboard/layout-shots/layouts.json
+GET https://restaurantappdz-alt.github.io/RestoMenu/dashboard/layout-shots/layouts.json
 ```
 
 Returns all 9 layouts with name + image URL:
@@ -40,7 +40,9 @@ Returns all 9 layouts with name + image URL:
 1. A new `LayoutShotsPage` component renders a single layout at 16:9 with empty data when URL has `?layout=` param — no auth, no Firebase, no admin chrome
 2. A Playwright script (`admin-dashboard/scripts/generate-layout-shots.mjs`) starts the Vite dev server, visits each layout URL, and screenshots at 1280×720 JPEG quality 80
 3. Screenshots + `layouts.json` are saved to `admin-dashboard/public/layout-shots/` which Vite bundles into `dist/` on build
-4. Your mobile app fetches the JSON endpoint and displays the images
+4. Your mobile app fetches the JSON endpoint and displays the images.
+
+**Base URL:** `https://restaurantappdz-alt.github.io/RestoMenu`
 
 ### Generate screenshots
 
@@ -70,12 +72,13 @@ No auth needed — the page renders the layout directly at 16:9 without any admi
 
 ### Deploy
 
+Both apps deploy together via GitHub Actions. Push to `main`:
+
 ```bash
-cd admin-dashboard
-npm run build
-cd ..
-firebase deploy --only hosting:admin
+git push origin main
 ```
+
+Or trigger manually: **GitHub → Actions → Deploy to GitHub Pages → Run workflow**.
 
 The `layout-shots/` directory is included in the build output automatically.
 
