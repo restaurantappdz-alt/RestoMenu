@@ -8,6 +8,7 @@ import { toast } from 'sonner'
 import LoginPage from './components/LoginPage'
 import MenuList from './components/MenuList'
 import AdminDashboard from './components/AdminDashboard'
+import LayoutShotsPage from './components/LayoutShotsPage'
 
 function SetupRestaurant({ user, onDone }) {
   const [name, setName] = useState('')
@@ -116,6 +117,12 @@ function OwnerDashboard({ user }) {
 }
 
 export default function App() {
+  // --- Layout shots bypass (no auth, no Firebase) ---
+  const lsParams = new URLSearchParams(window.location.search)
+  if (lsParams.has('layout')) {
+    return <LayoutShotsPage />
+  }
+
   const [user, setUser] = useState(null)
   const [loading, setLoading] = useState(true)
   const { isAdmin, loading: roleLoading } = useUserRole(user)

@@ -1,0 +1,49 @@
+{
+  "layouts": [
+    {
+      "id": "classic",
+      "name": "Classic Gold",
+      "image": "/RestoMenu/dashboard/layout-shots/classic.jpg"
+    },
+    {
+      "id": "bistro",
+      "name": "Bistro Chalkboard",
+      "image": "/RestoMenu/dashboard/layout-shots/bistro.jpg"
+    },
+    {
+      "id": "brasserie",
+      "name": "Brasserie",
+      "image": "/RestoMenu/dashboard/layout-shots/brasserie.jpg"
+    },
+    {
+      "id": "coffeeShop",
+      "name": "Coffee Shop",
+      "image": "/RestoMenu/dashboard/layout-shots/coffeeShop.jpg"
+    },
+    {
+      "id": "minimal",
+      "name": "Minimal",
+      "image": "/RestoMenu/dashboard/layout-shots/minimal.jpg"
+    },
+    {
+      "id": "modern",
+      "name": "Modern",
+      "image": "/RestoMenu/dashboard/layout-shots/modern.jpg"
+    },
+    {
+      "id": "moroccan",
+      "name": "Moroccan",
+      "image": "/RestoMenu/dashboard/layout-shots/moroccan.jpg"
+    },
+    {
+      "id": "natureBistro",
+      "name": "Nature Bistro",
+      "image": "/RestoMenu/dashboard/layout-shots/natureBistro.jpg"
+    },
+    {
+      "id": "pro",
+      "name": "Pro Premium",
+      "image": "/RestoMenu/dashboard/layout-shots/pro.jpg"
+    }
+  ]
+}
