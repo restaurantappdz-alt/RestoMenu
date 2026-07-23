@@ -28,7 +28,7 @@ export async function createRestaurant(name, uid) {
   const ref = await addDoc(collection(db, 'restaurants'), {
     name,
     ownerUid: uid,
-    availableLayouts: ['classic', 'bistro', 'moroccan', 'pro', 'natureBistro'],
+    availableLayouts: ['classic', 'bistro', 'moroccan', 'pro', 'natureBistro', 'photoMenu'],
     createdAt: serverTimestamp(),
   })
   return ref.id
