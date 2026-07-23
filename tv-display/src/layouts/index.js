@@ -32,3 +32,9 @@ export function getLayout(layoutKey) {
   if (entry) return entry.component
   return LayoutClassic
 }
+
+export {
+  LAYOUT_CAPABILITIES,
+  getLayoutCapabilities,
+  getLayoutOptionalFields,
+} from './capabilities'
