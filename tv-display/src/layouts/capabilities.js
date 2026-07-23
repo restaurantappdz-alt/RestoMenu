@@ -18,7 +18,9 @@ const DEFAULT_CAPABILITIES = {
   itemAreaPx: null,
   categoryHeaderPx: null,
   categoryGapPx: 0,
+  rowGapPx: 0,
   itemHeightPx: null,
+  bottomBufferPx: 20,
   columns: 1,
   supportsDescriptions: false,
   supportsTags: false,
@@ -36,7 +38,7 @@ export const LAYOUT_CAPABILITIES = {
     ...DEFAULT_CAPABILITIES,
     name: 'Classic Gold',
     itemAreaPx: 647,
-    categoryHeaderPx: 78,
+    categoryHeaderPx: 86,
     categoryGapPx: 36,
     itemHeightPx: 63,
     columns: 1,
@@ -58,6 +60,7 @@ export const LAYOUT_CAPABILITIES = {
     itemAreaPx: 735,
     categoryHeaderPx: 66,
     categoryGapPx: 35,
+    rowGapPx: 12,
     itemHeightPx: 42,
     columns: 2,
     supportsAddons: 'sidebar',
@@ -95,6 +98,7 @@ export const LAYOUT_CAPABILITIES = {
     itemAreaPx: 692,
     categoryHeaderPx: 71,
     categoryGapPx: 29,
+    rowGapPx: 10,
     itemHeightPx: 75,
     columns: 2,
     supportsAddons: 'footer',
@@ -105,6 +109,7 @@ export const LAYOUT_CAPABILITIES = {
     itemAreaPx: 631,
     categoryHeaderPx: 54,
     categoryGapPx: 7,
+    rowGapPx: 4,
     itemHeightPx: 55,
     columns: 2,
     supportsAddons: 'sidebar',
@@ -115,6 +120,7 @@ export const LAYOUT_CAPABILITIES = {
     itemAreaPx: 700,
     categoryHeaderPx: 46,
     categoryGapPx: 23,
+    rowGapPx: 6,
     itemHeightPx: 54,
     columns: 2,
     supportsAddons: 'sidebar',
@@ -187,10 +193,15 @@ export function getMaxItems(layoutKey, categoryCount) {
 
   const catGap = (caps.categoryGapPx || 0) * Math.max(0, categoryCount - 1)
   const totalCatCost = categoryCount * caps.categoryHeaderPx + catGap
-  const remaining = caps.itemAreaPx - totalCatCost
+  const buffer = caps.bottomBufferPx || 0
+  const remaining = caps.itemAreaPx - totalCatCost - buffer
   if (remaining <= 0) return 0
 
   const itemsPerRow = caps.columns || 1
-  const rows = Math.floor(remaining / caps.itemHeightPx)
+  const rowGap = caps.rowGapPx || 0
+  // N rows: N * itemHeightPx + (N-1) * rowGapPx <= remaining
+  // N * (itemHeightPx + rowGapPx) <= remaining + rowGapPx
+  const effectiveRowHeight = caps.itemHeightPx + rowGap
+  const rows = Math.floor((remaining + rowGap) / effectiveRowHeight)
   return Math.max(0, rows * itemsPerRow)
 }
