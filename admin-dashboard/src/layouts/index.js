@@ -7,6 +7,7 @@ import LayoutModern from './LayoutModern'
 import LayoutMoroccan from './LayoutMoroccan'
 import LayoutNatureBistro from './LayoutNatureBistro'
 import LayoutPro from './LayoutPro'
+import LayoutPhotoMenu from './LayoutPhotoMenu'
 
 export const layouts = {
   classic:      { name: 'Classic Gold', component: LayoutClassic },
@@ -18,6 +19,7 @@ export const layouts = {
   moroccan:     { name: 'Moroccan', component: LayoutMoroccan },
   natureBistro: { name: 'Nature Bistro', component: LayoutNatureBistro },
   pro:          { name: 'Pro Premium', component: LayoutPro },
+  photoMenu:    { name: 'Photo Menu', component: LayoutPhotoMenu },
 }
 
 export const layoutOptions = Object.entries(layouts).map(([value, { name }]) => ({
@@ -30,3 +32,9 @@ export function getLayout(layoutKey) {
   if (entry) return entry.component
   return LayoutClassic
 }
+
+export {
+  LAYOUT_CAPABILITIES,
+  getLayoutCapabilities,
+  getLayoutOptionalFields,
+} from './capabilities'
