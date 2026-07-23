@@ -3,52 +3,142 @@
     {
       "id": "classic",
       "name": "Classic Gold",
-      "image": "/RestoMenu/dashboard/layout-shots/classic.jpg"
+      "image": "/RestoMenu/dashboard/layout-shots/classic.jpg",
+      "capabilities": {
+        "heroPhoto": false,
+        "descriptions": false,
+        "tags": false,
+        "itemImages": false,
+        "allergyNote": false,
+        "pricingNote": false,
+        "maxItems": null
+      }
     },
     {
       "id": "bistro",
       "name": "Bistro Chalkboard",
-      "image": "/RestoMenu/dashboard/layout-shots/bistro.jpg"
+      "image": "/RestoMenu/dashboard/layout-shots/bistro.jpg",
+      "capabilities": {
+        "heroPhoto": false,
+        "descriptions": false,
+        "tags": false,
+        "itemImages": false,
+        "allergyNote": false,
+        "pricingNote": false,
+        "maxItems": null
+      }
     },
     {
       "id": "brasserie",
       "name": "Brasserie",
-      "image": "/RestoMenu/dashboard/layout-shots/brasserie.jpg"
+      "image": "/RestoMenu/dashboard/layout-shots/brasserie.jpg",
+      "capabilities": {
+        "heroPhoto": false,
+        "descriptions": false,
+        "tags": false,
+        "itemImages": false,
+        "allergyNote": false,
+        "pricingNote": false,
+        "maxItems": null
+      }
     },
     {
       "id": "coffeeShop",
       "name": "Coffee Shop",
-      "image": "/RestoMenu/dashboard/layout-shots/coffeeShop.jpg"
+      "image": "/RestoMenu/dashboard/layout-shots/coffeeShop.jpg",
+      "capabilities": {
+        "heroPhoto": false,
+        "descriptions": false,
+        "tags": false,
+        "itemImages": false,
+        "allergyNote": false,
+        "pricingNote": false,
+        "maxItems": null
+      }
     },
     {
       "id": "minimal",
       "name": "Minimal",
-      "image": "/RestoMenu/dashboard/layout-shots/minimal.jpg"
+      "image": "/RestoMenu/dashboard/layout-shots/minimal.jpg",
+      "capabilities": {
+        "heroPhoto": false,
+        "descriptions": false,
+        "tags": false,
+        "itemImages": false,
+        "allergyNote": false,
+        "pricingNote": false,
+        "maxItems": null
+      }
     },
     {
       "id": "modern",
       "name": "Modern",
-      "image": "/RestoMenu/dashboard/layout-shots/modern.jpg"
+      "image": "/RestoMenu/dashboard/layout-shots/modern.jpg",
+      "capabilities": {
+        "heroPhoto": false,
+        "descriptions": false,
+        "tags": false,
+        "itemImages": false,
+        "allergyNote": false,
+        "pricingNote": false,
+        "maxItems": null
+      }
     },
     {
       "id": "moroccan",
       "name": "Moroccan",
-      "image": "/RestoMenu/dashboard/layout-shots/moroccan.jpg"
+      "image": "/RestoMenu/dashboard/layout-shots/moroccan.jpg",
+      "capabilities": {
+        "heroPhoto": false,
+        "descriptions": false,
+        "tags": false,
+        "itemImages": false,
+        "allergyNote": false,
+        "pricingNote": false,
+        "maxItems": null
+      }
     },
     {
       "id": "natureBistro",
       "name": "Nature Bistro",
-      "image": "/RestoMenu/dashboard/layout-shots/natureBistro.jpg"
+      "image": "/RestoMenu/dashboard/layout-shots/natureBistro.jpg",
+      "capabilities": {
+        "heroPhoto": false,
+        "descriptions": false,
+        "tags": false,
+        "itemImages": false,
+        "allergyNote": false,
+        "pricingNote": false,
+        "maxItems": null
+      }
     },
     {
       "id": "pro",
       "name": "Pro Premium",
-      "image": "/RestoMenu/dashboard/layout-shots/pro.jpg"
+      "image": "/RestoMenu/dashboard/layout-shots/pro.jpg",
+      "capabilities": {
+        "heroPhoto": false,
+        "descriptions": false,
+        "tags": false,
+        "itemImages": false,
+        "allergyNote": false,
+        "pricingNote": false,
+        "maxItems": null
+      }
     },
     {
       "id": "photoMenu",
       "name": "Photo Menu",
-      "image": "/RestoMenu/dashboard/layout-shots/photoMenu.jpg"
+      "image": "/RestoMenu/dashboard/layout-shots/photoMenu.jpg",
+      "capabilities": {
+        "heroPhoto": true,
+        "descriptions": true,
+        "tags": true,
+        "itemImages": false,
+        "allergyNote": true,
+        "pricingNote": true,
+        "maxItems": 8
+      }
     }
   ]
 }
