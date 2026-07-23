@@ -37,4 +37,5 @@ export {
   LAYOUT_CAPABILITIES,
   getLayoutCapabilities,
   getLayoutOptionalFields,
+  getMaxItems,
 } from './capabilities'

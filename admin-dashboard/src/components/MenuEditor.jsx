@@ -9,6 +9,7 @@ import { ArrowLeft, Plus, Pencil, Eye } from 'lucide-react'
 import CategorySection from './CategorySection'
 import TVPreview from './TVPreview'
 import LayoutPicker from './LayoutPicker'
+import { getMaxItems } from '@/layouts'
 
 const LAYOUT_OPTIONS = [
   { value: 'classic', label: 'Classic Gold' },
@@ -93,6 +94,9 @@ export default function MenuEditor({ menu, onBack }) {
 
   const currentMenu = { ...menu, name: menuName, categories, selectedLayout }
 
+  const dynamicMax = getMaxItems(selectedLayout, categories.length)
+  const totalItemCount = categories.reduce((sum, c) => sum + (c.items?.length || 0), 0)
+
   return (
     <div className="animate-fade-in space-y-6">
       <div className="flex items-center gap-4">
@@ -136,7 +140,14 @@ export default function MenuEditor({ menu, onBack }) {
               </h3>
             </div>
             <div>
-              <label className="text-sm text-zinc-300 block mb-3">TV Layout</label>
+              <div className="flex items-center justify-between mb-3">
+                <label className="text-sm text-zinc-300">TV Layout</label>
+                {dynamicMax != null && (
+                  <span className="text-xs text-zinc-500">
+                    {totalItemCount}/{dynamicMax} items
+                  </span>
+                )}
+              </div>
               <LayoutPicker
                 value={selectedLayout}
                 onValueChange={(val) => {
@@ -152,10 +163,17 @@ export default function MenuEditor({ menu, onBack }) {
             <h3 className="text-sm font-medium text-zinc-400 uppercase tracking-wider">
               Categories ({categories.length})
             </h3>
-            <Button size="sm" variant="outline" onClick={addCategory}>
-              <Plus className="w-4 h-4" />
-              Add Category
-            </Button>
+            <div className="flex items-center gap-3">
+              {dynamicMax != null && (
+                <span className="text-xs text-zinc-500">
+                  {totalItemCount}/{dynamicMax} items
+                </span>
+              )}
+              <Button size="sm" variant="outline" onClick={addCategory}>
+                <Plus className="w-4 h-4" />
+                Add Category
+              </Button>
+            </div>
           </div>
 
           {categories.length === 0 ? (
@@ -172,6 +190,8 @@ export default function MenuEditor({ menu, onBack }) {
                   key={index}
                   category={category}
                   index={index}
+                  totalItemCount={totalItemCount}
+                  layoutMaxItems={dynamicMax}
                   onUpdate={(updated) => updateCategory(index, updated)}
                   onDelete={() => deleteCategory(index)}
                 />

@@ -6,7 +6,7 @@ import { Trash2, Plus, Pizza } from 'lucide-react'
 import ItemRow from './ItemRow'
 import AddonRow from './AddonRow'
 
-export default function CategorySection({ category, index, onUpdate, onDelete }) {
+export default function CategorySection({ category, index, totalItemCount, layoutMaxItems, onUpdate, onDelete }) {
   const [editingName, setEditingName] = useState(false)
   const [nameInput, setNameInput] = useState(category.name)
   const [newItemName, setNewItemName] = useState('')
@@ -26,8 +26,11 @@ export default function CategorySection({ category, index, onUpdate, onDelete })
     setEditingName(false)
   }
 
+  const atMax = layoutMaxItems != null && totalItemCount >= layoutMaxItems
+
   const addItem = () => {
     if (!newItemName.trim()) return
+    if (atMax) return
     const price = parseFloat(newItemPrice)
     if (isNaN(price) || price < 0) return
     const updated = {
@@ -125,7 +128,14 @@ export default function CategorySection({ category, index, onUpdate, onDelete })
         {/* Items */}
         <div>
           <div className="flex items-center justify-between mb-3">
-            <h4 className="text-xs font-medium text-zinc-500 uppercase tracking-wider">Items</h4>
+            <div className="flex items-center gap-2">
+              <h4 className="text-xs font-medium text-zinc-500 uppercase tracking-wider">Items</h4>
+              {layoutMaxItems != null && (
+                <span className="text-xs text-zinc-600">
+                  max {layoutMaxItems} total
+                </span>
+              )}
+            </div>
             <span className="text-xs text-zinc-600">Name · Price (D.A)</span>
           </div>
           <div className="space-y-1">
@@ -153,7 +163,7 @@ export default function CategorySection({ category, index, onUpdate, onDelete })
               onChange={(e) => setNewItemPrice(e.target.value)}
               className="h-8 text-sm w-24"
             />
-            <Button size="sm" variant="ghost" onClick={addItem} className="shrink-0">
+            <Button size="sm" variant="ghost" onClick={addItem} disabled={atMax} className="shrink-0">
               <Plus className="w-4 h-4" />
             </Button>
           </div>
