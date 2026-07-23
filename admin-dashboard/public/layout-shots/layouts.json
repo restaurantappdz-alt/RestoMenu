@@ -11,7 +11,7 @@
         "itemImages": false,
         "allergyNote": false,
         "pricingNote": false,
-        "maxItems": null
+        "maxItems": 8
       }
     },
     {
@@ -25,7 +25,7 @@
         "itemImages": false,
         "allergyNote": false,
         "pricingNote": false,
-        "maxItems": null
+        "maxItems": 10
       }
     },
     {
@@ -39,7 +39,7 @@
         "itemImages": false,
         "allergyNote": false,
         "pricingNote": false,
-        "maxItems": null
+        "maxItems": 18
       }
     },
     {
@@ -53,7 +53,7 @@
         "itemImages": false,
         "allergyNote": false,
         "pricingNote": false,
-        "maxItems": null
+        "maxItems": 10
       }
     },
     {
@@ -67,7 +67,7 @@
         "itemImages": false,
         "allergyNote": false,
         "pricingNote": false,
-        "maxItems": null
+        "maxItems": 12
       }
     },
     {
@@ -81,7 +81,7 @@
         "itemImages": false,
         "allergyNote": false,
         "pricingNote": false,
-        "maxItems": null
+        "maxItems": 10
       }
     },
     {
@@ -95,7 +95,7 @@
         "itemImages": false,
         "allergyNote": false,
         "pricingNote": false,
-        "maxItems": null
+        "maxItems": 14
       }
     },
     {
@@ -109,7 +109,7 @@
         "itemImages": false,
         "allergyNote": false,
         "pricingNote": false,
-        "maxItems": null
+        "maxItems": 16
       }
     },
     {
@@ -123,7 +123,7 @@
         "itemImages": false,
         "allergyNote": false,
         "pricingNote": false,
-        "maxItems": null
+        "maxItems": 18
       }
     },
     {
