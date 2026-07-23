@@ -44,6 +44,11 @@
       "id": "pro",
       "name": "Pro Premium",
       "image": "/RestoMenu/dashboard/layout-shots/pro.jpg"
+    },
+    {
+      "id": "photoMenu",
+      "name": "Photo Menu",
+      "image": "/RestoMenu/dashboard/layout-shots/photoMenu.jpg"
     }
   ]
 }
