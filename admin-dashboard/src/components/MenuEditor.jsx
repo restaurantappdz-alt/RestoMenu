@@ -31,6 +31,10 @@ export default function MenuEditor({ menu, onBack }) {
   const [saving, setSaving] = useState(false)
   const [availableLayouts, setAvailableLayouts] = useState(null)
 
+  const dynamicMax = getMaxItems(selectedLayout, categories.length)
+  const categoryItemsCounts = categories.map((c) => (c.items || []).length)
+  const totalItemCount = categoryItemsCounts.reduce((sum, count) => sum + count, 0)
+
   useEffect(() => {
     if (!restaurantId) return
     const unsub = onRestaurantDoc(restaurantId, (data) => {
@@ -61,6 +65,15 @@ export default function MenuEditor({ menu, onBack }) {
 
   const save = async (newCategories) => {
     const cats = newCategories || categories
+    const oldTotal = categories.reduce((sum, c) => sum + (c.items || []).length, 0)
+    const newTotal = cats.reduce((sum, c) => sum + (c.items || []).length, 0)
+
+    // Only block item additions beyond budget — allow edits/deletes even when over budget (pre-existing data)
+    if (dynamicMax != null && newTotal > dynamicMax && newTotal > oldTotal) {
+      toast.error(`Maximum items reached for this layout (${dynamicMax})`)
+      return
+    }
+
     setSaving(true)
     try {
       await updateMenu(restaurantId, menu.id, { name: menuName, categories: cats, selectedLayout })
@@ -93,9 +106,6 @@ export default function MenuEditor({ menu, onBack }) {
   }
 
   const currentMenu = { ...menu, name: menuName, categories, selectedLayout }
-
-  const dynamicMax = getMaxItems(selectedLayout, categories.length)
-  const totalItemCount = categories.reduce((sum, c) => sum + (c.items?.length || 0), 0)
 
   return (
     <div className="animate-fade-in space-y-6">
@@ -190,7 +200,7 @@ export default function MenuEditor({ menu, onBack }) {
                   key={index}
                   category={category}
                   index={index}
-                  totalItemCount={totalItemCount}
+                  categoryItemsCounts={categoryItemsCounts}
                   layoutMaxItems={dynamicMax}
                   onUpdate={(updated) => updateCategory(index, updated)}
                   onDelete={() => deleteCategory(index)}

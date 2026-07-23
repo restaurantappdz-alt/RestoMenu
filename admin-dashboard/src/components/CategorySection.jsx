@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -6,7 +7,7 @@ import { Trash2, Plus, Pizza } from 'lucide-react'
 import ItemRow from './ItemRow'
 import AddonRow from './AddonRow'
 
-export default function CategorySection({ category, index, totalItemCount, layoutMaxItems, onUpdate, onDelete }) {
+export default function CategorySection({ category, index, onUpdate, onDelete, layoutMaxItems, categoryItemsCounts }) {
   const [editingName, setEditingName] = useState(false)
   const [nameInput, setNameInput] = useState(category.name)
   const [newItemName, setNewItemName] = useState('')
@@ -26,11 +27,15 @@ export default function CategorySection({ category, index, totalItemCount, layou
     setEditingName(false)
   }
 
-  const atMax = layoutMaxItems != null && totalItemCount >= layoutMaxItems
+  const totalItems = (categoryItemsCounts || []).reduce((s, c) => s + c, 0)
+  const atMax = layoutMaxItems != null && totalItems >= layoutMaxItems
 
   const addItem = () => {
     if (!newItemName.trim()) return
-    if (atMax) return
+    if (atMax) {
+      toast.error(`Maximum items reached for this layout (${layoutMaxItems})`)
+      return
+    }
     const price = parseFloat(newItemPrice)
     if (isNaN(price) || price < 0) return
     const updated = {
@@ -132,7 +137,7 @@ export default function CategorySection({ category, index, totalItemCount, layou
               <h4 className="text-xs font-medium text-zinc-500 uppercase tracking-wider">Items</h4>
               {layoutMaxItems != null && (
                 <span className="text-xs text-zinc-600">
-                  max {layoutMaxItems} total
+                  ({layoutMaxItems} max)
                 </span>
               )}
             </div>

@@ -15,6 +15,7 @@ const DEFAULT_CAPABILITIES = {
   maxItems: null,
   itemAreaPx: null,
   categoryHeaderPx: null,
+  categoryGapPx: 0,
   itemHeightPx: null,
   columns: 1,
   supportsDescriptions: false,
@@ -32,24 +33,29 @@ export const LAYOUT_CAPABILITIES = {
   classic: {
     ...DEFAULT_CAPABILITIES,
     name: 'Classic Gold',
-    itemAreaPx: 792,
-    categoryHeaderPx: 144,
-    itemHeightPx: 72,
+    itemAreaPx: 647,
+    categoryHeaderPx: 78,
+    categoryGapPx: 36,
+    itemHeightPx: 63,
+    columns: 1,
     supportsAddons: 'sidebar',
   },
   bistro: {
     ...DEFAULT_CAPABILITIES,
     name: 'Bistro Chalkboard',
-    itemAreaPx: 850,
-    categoryHeaderPx: 104,
-    itemHeightPx: 68,
+    itemAreaPx: 756,
+    categoryHeaderPx: 67,
+    categoryGapPx: 48,
+    itemHeightPx: 46,
+    columns: 1,
     supportsAddons: 'footer',
   },
   brasserie: {
     ...DEFAULT_CAPABILITIES,
     name: 'Brasserie',
-    itemAreaPx: 672,
+    itemAreaPx: 735,
     categoryHeaderPx: 66,
+    categoryGapPx: 35,
     itemHeightPx: 42,
     columns: 2,
     supportsAddons: 'sidebar',
@@ -57,51 +63,57 @@ export const LAYOUT_CAPABILITIES = {
   coffeeShop: {
     ...DEFAULT_CAPABILITIES,
     name: 'Coffee Shop',
-    itemAreaPx: 780,
-    categoryHeaderPx: 100,
-    itemHeightPx: 44,
-    columns: 2,
+    itemAreaPx: 632,
+    categoryHeaderPx: 78,
+    categoryGapPx: 38,
+    itemHeightPx: 47,
+    columns: 1,
   },
   minimal: {
     ...DEFAULT_CAPABILITIES,
     name: 'Minimal',
-    itemAreaPx: 830,
-    categoryHeaderPx: 90,
-    itemHeightPx: 46,
-    columns: 2,
+    itemAreaPx: 754,
+    categoryHeaderPx: 58,
+    categoryGapPx: 38,
+    itemHeightPx: 49,
+    columns: 1,
   },
   modern: {
     ...DEFAULT_CAPABILITIES,
     name: 'Modern',
-    itemAreaPx: 860,
-    categoryHeaderPx: 82,
-    itemHeightPx: 50,
-    columns: 3,
+    itemAreaPx: 746,
+    categoryHeaderPx: 52,
+    categoryGapPx: 29,
+    itemHeightPx: 49,
+    columns: 1,
   },
   moroccan: {
     ...DEFAULT_CAPABILITIES,
     name: 'Moroccan',
-    itemAreaPx: 800,
-    categoryHeaderPx: 96,
-    itemHeightPx: 44,
+    itemAreaPx: 692,
+    categoryHeaderPx: 71,
+    categoryGapPx: 29,
+    itemHeightPx: 75,
     columns: 2,
     supportsAddons: 'footer',
   },
   natureBistro: {
     ...DEFAULT_CAPABILITIES,
     name: 'Nature Bistro',
-    itemAreaPx: 780,
-    categoryHeaderPx: 88,
-    itemHeightPx: 40,
+    itemAreaPx: 631,
+    categoryHeaderPx: 54,
+    categoryGapPx: 7,
+    itemHeightPx: 55,
     columns: 2,
     supportsAddons: 'sidebar',
   },
   pro: {
     ...DEFAULT_CAPABILITIES,
     name: 'Pro Premium',
-    itemAreaPx: 680,
+    itemAreaPx: 700,
     categoryHeaderPx: 46,
-    itemHeightPx: 52,
+    categoryGapPx: 23,
+    itemHeightPx: 54,
     columns: 2,
     supportsAddons: 'sidebar',
   },
@@ -143,9 +155,11 @@ export function getLayoutOptionalFields(layoutKey) {
  * Compute the maximum number of items a layout can display without overflowing.
  *
  * Uses pixel budgets: itemAreaPx is the total height available for rendering
- * categories and items. Each category consumes categoryHeaderPx, then each
- * item row consumes itemHeightPx / columns (since multi-column layouts fit
- * more items per row).
+ * categories and items after fixed chrome. categoryHeaderPx accounts for the
+ * title, separator, and its bottom margin. categoryGapPx is the gap BETWEEN
+ * consecutive category blocks.
+ *
+ * Items may be laid out in multiple columns (columns field).
  *
  * @param {string} layoutKey - Layout identifier
  * @param {number} categoryCount - Number of categories in the menu
@@ -155,17 +169,18 @@ export function getMaxItems(layoutKey, categoryCount) {
   const caps = LAYOUT_CAPABILITIES[layoutKey]
   if (!caps) return null
 
-  // Layouts with hard-coded maxItems (e.g. PhotoMenu) skip the pixel math
   if (caps.maxItems != null) return caps.maxItems
 
-  // Layouts without pixel budgets have no limit
   if (caps.itemAreaPx == null || caps.categoryHeaderPx == null || caps.itemHeightPx == null) {
     return null
   }
 
-  const headersCost = categoryCount * caps.categoryHeaderPx
-  const remaining = caps.itemAreaPx - headersCost
-  const max = Math.floor(remaining / caps.itemHeightPx)
+  const catGap = (caps.categoryGapPx || 0) * Math.max(0, categoryCount - 1)
+  const totalCatCost = categoryCount * caps.categoryHeaderPx + catGap
+  const remaining = caps.itemAreaPx - totalCatCost
+  if (remaining <= 0) return 0
 
-  return Math.max(0, max)
+  const itemsPerRow = caps.columns || 1
+  const rows = Math.floor(remaining / caps.itemHeightPx)
+  return Math.max(0, rows * itemsPerRow)
 }
