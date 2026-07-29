@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { onSnapshot, doc } from 'firebase/firestore'
+import { onSnapshot, doc, getDoc } from 'firebase/firestore'
 import { db } from '../firebase'
 import { updateFromServer, checkAccess, syncServerOffset } from '../subscriptionGuard'
 
@@ -175,9 +175,26 @@ export default function useMenuData() {
       }
     }
 
+    // Active fetch: if the cached value says blocked but we're online,
+    // the stored expiresAt might be stale from a prior session (e.g.
+    // subscription was renewed while the TV was off). Do a one-time
+    // getDoc to overwrite localStorage with fresh server data.
+    if (!checkAccess().allowed && navigator.onLine) {
+      getDoc(doc(db, 'restaurants', id, 'config', 'display')).then((fetchSnap) => {
+        if (fetchSnap.exists() && !fetchSnap.metadata.fromCache) {
+          updateFromServer(fetchSnap.data(), false)
+          const result = checkAccess()
+          if (result.allowed) {
+            console.log('🔓 Active fetch — subscription unblocked (future expiresAt)')
+            setSubscriptionBlocked(false)
+          }
+        }
+      }).catch(() => {})
+    }
+
     // Kick off an initial clock offset sync — the snapshot callback below
     // also triggers one on the first live response, so this is a head start
-    syncServerOffset(id)
+    syncServerOffset(id).catch(() => {})
 
     const unsubConfig = onSnapshot(doc(db, 'restaurants', id, 'config', 'display'), (snap) => {
       console.log('🔥 Config snapshot received:', snap.id, snap.metadata.hasPendingWrites, snap.metadata.fromCache)
@@ -187,15 +204,19 @@ export default function useMenuData() {
 
       // Sync the RTDB clock offset whenever we get genuine live data
       if (!snap.metadata.fromCache) {
-        syncServerOffset(id)
+        syncServerOffset(id).catch(() => {})
       }
 
       const access = checkAccess()
+      const wasBlocked = subscriptionBlocked
       setSubscriptionBlocked(!access.allowed)
       if (!access.allowed) {
         console.log('🔒 Subscription blocked:', access.reason)
         setLoading(false)
         return
+      }
+      if (wasBlocked) {
+        console.log('🔓 Subscription UNBLOCKED — menu should now appear')
       }
 
       saveConfigCache(id, data)
