@@ -26,6 +26,10 @@ restomenu-web/
 
 ---
 
+> **Note:** The subscription-guard feature (TV-side expiration enforcement with RTDB clock offset) is implemented in `tv-display/src/subscriptionGuard.js`. The admin-dashboard UI to set `expiresAt` on the Firestore `config/display` document is **not yet built** — without it the TV will always show a black screen (`no_expiration`). See [subscription guard design doc](docs/superpowers/specs/2026-07-29-subscription-guard-design.md) for the full spec.
+
+---
+
 ## Layout Shots API
 
 Static endpoint that serves 1280x720 preview images of each empty layout template. Your mobile app fetches this to show users what each layout looks like before selecting it.
