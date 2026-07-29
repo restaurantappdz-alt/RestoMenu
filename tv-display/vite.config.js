@@ -1,9 +1,18 @@
+/// <reference types="vitest" />
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { VitePWA } from 'vite-plugin-pwa'
+import path from 'path'
 
 export default defineConfig({
   base: '/RestoMenu/',
+  resolve: {
+    alias: {
+      '@layouts': path.resolve(__dirname, '../shared/layouts'),
+      '@svgs': path.resolve(__dirname, '../shared/svgs'),
+      '@': path.resolve(__dirname, 'src'),
+    },
+  },
   plugins: [
     react(),
     VitePWA({
@@ -36,6 +45,10 @@ export default defineConfig({
       }
     })
   ],
+  test: {
+    environment: 'jsdom',
+    globals: true,
+  },
   server: {
     port: 5174,
     strictPort: true,
