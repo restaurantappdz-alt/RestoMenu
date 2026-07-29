@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { onSnapshot, doc } from 'firebase/firestore'
 import { db } from '../firebase'
-import { updateFromServer, checkAccess } from '../subscriptionGuard'
+import { updateFromServer, checkAccess, syncServerOffset } from '../subscriptionGuard'
 
 async function checkConnectivity() {
   try {
@@ -175,11 +175,21 @@ export default function useMenuData() {
       }
     }
 
+    // Kick off an initial clock offset sync — the snapshot callback below
+    // also triggers one on the first live response, so this is a head start
+    syncServerOffset(id)
+
     const unsubConfig = onSnapshot(doc(db, 'restaurants', id, 'config', 'display'), (snap) => {
       console.log('🔥 Config snapshot received:', snap.id, snap.metadata.hasPendingWrites, snap.metadata.fromCache)
       const data = snap.data() || {}
 
       updateFromServer(data, snap.metadata.fromCache)
+
+      // Sync the RTDB clock offset whenever we get genuine live data
+      if (!snap.metadata.fromCache) {
+        syncServerOffset(id)
+      }
+
       const access = checkAccess()
       setSubscriptionBlocked(!access.allowed)
       if (!access.allowed) {

@@ -1,0 +1,11 @@
+{
+  "rules": {
+    "serverTimeCheck": {
+      "$restaurantId": {
+        ".read": true,
+        ".write": true,
+        ".validate": "newData.child('time').val() === now"
+      }
+    }
+  }
+}

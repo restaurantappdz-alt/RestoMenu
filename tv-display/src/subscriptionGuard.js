@@ -2,6 +2,13 @@
 //
 // Subscription-expiration enforcement for the TV display app.
 // Pure functions, zero React dependencies. All state lives in localStorage.
+//
+// Server clock offset is obtained via Firebase Realtime Database's built-in
+// ServerValue.TIMESTAMP — no Cloud Functions needed. The TV simply writes
+// the timestamp placeholder to serverTimeCheck/{restaurantId} and reads back
+// the server-resolved value.
+
+import { getDatabase, ref, set, onValue } from 'firebase/database'
 
 // Storage keys
 const KEYS = {
@@ -24,9 +31,52 @@ export function toDayStart(ms) {
 }
 
 /**
+ * Sync the TV's clock offset against Firebase Realtime Database's built-in
+ * server timestamp. Writes ServerValue.TIMESTAMP to a per-restaurant RTDB
+ * path and reads back the resolved server value.
+ *
+ * The computed offset (= serverTime - clientTime) is stored in localStorage
+ * so checkAccess() can correct for device clock drift.
+ *
+ * Called alongside updateFromServer() whenever the TV has a live connection.
+ *
+ * @param {string} restaurantId - The restaurant ID for the RTDB path
+ */
+export async function syncServerOffset(restaurantId) {
+  const db = getDatabase()
+  const timeRef = ref(db, `serverTimeCheck/${restaurantId}`)
+
+  // Write the timestamp placeholder — the server resolves {".sv":"timestamp"}
+  // to an actual millisecond epoch value
+  await set(timeRef, { time: { '.sv': 'timestamp' } })
+
+  // Read back the resolved server timestamp
+  return new Promise((resolve) => {
+    onValue(timeRef, (snap) => {
+      const serverTime = snap.val()?.time
+      if (typeof serverTime === 'number') {
+        const offset = serverTime - Date.now()
+        try {
+          localStorage.setItem(KEYS.CLOCK_OFFSET, String(offset))
+          // A live server round-trip proves the device is online — stamp
+          // lastSeenTime to clear any prior clock-rollback block
+          localStorage.setItem(KEYS.LAST_SEEN_TIME, String(Date.now()))
+        } catch (e) {
+          // localStorage full or unavailable — skip silently
+        }
+      }
+      resolve()
+    }, { onlyOnce: true })
+  })
+}
+
+/**
  * Called from the onSnapshot callback with data from config/display.
  * Only updates stored values when the snapshot is a genuine server read
  * (fromCache === false).
+ *
+ * Stores expiresAt and stamps lastSeenTime. Clock offset is handled
+ * independently by syncServerOffset().
  *
  * @param {object} data - snapshot.data() from config/display doc
  * @param {boolean} fromCache - snapshot.metadata.fromCache
@@ -34,13 +84,7 @@ export function toDayStart(ms) {
 export function updateFromServer(data, fromCache) {
   if (fromCache) return
 
-  const heartbeatAt = data.heartbeatAt?.toMillis()
-  if (!heartbeatAt) return
-
-  const offset = heartbeatAt - Date.now()
   try {
-    localStorage.setItem(KEYS.CLOCK_OFFSET, String(offset))
-
     if (data.expiresAt) {
       localStorage.setItem(KEYS.EXPIRES_AT, String(data.expiresAt.toMillis()))
     }

@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest'
-import { toDayStart, updateFromServer, checkAccess, revokeAccess } from '../src/subscriptionGuard'
+import { toDayStart, updateFromServer, checkAccess, revokeAccess, syncServerOffset } from '../src/subscriptionGuard'
 
 function setItem(key, value) {
   localStorage.setItem(key, String(value))
@@ -33,34 +33,40 @@ describe('updateFromServer', () => {
     localStorage.clear()
   })
 
-  it('stores expiresAt and clockOffset from a live snapshot', () => {
+  it('stores expiresAt and stamps lastSeenTime from a live snapshot', () => {
     const now = Date.now()
     const expiresAtTs = ts(now + 86400000 * 30)
-    const heartbeatTs = ts(now)
 
     updateFromServer(
-      { expiresAt: expiresAtTs, heartbeatAt: heartbeatTs },
+      { expiresAt: expiresAtTs },
       false,
     )
 
     expect(localStorage.getItem('restomenu-tv-expiresAt')).toBe(String(now + 86400000 * 30))
-    expect(localStorage.getItem('restomenu-tv-clockOffset')).toBe('0')
+    // clockOffset is NOT set by updateFromServer anymore — syncServerOffset handles it
+    expect(localStorage.getItem('restomenu-tv-clockOffset')).toBeNull()
     expect(localStorage.getItem('restomenu-tv-lastSeenTime')).toBeTruthy()
   })
 
   it('does nothing when fromCache is true', () => {
     localStorage.setItem('restomenu-tv-expiresAt', 'old_value')
     updateFromServer(
-      { expiresAt: ts(Date.now() + 86400000), heartbeatAt: ts(Date.now()) },
+      { expiresAt: ts(Date.now() + 86400000) },
       true,
     )
     expect(localStorage.getItem('restomenu-tv-expiresAt')).toBe('old_value')
+    expect(localStorage.getItem('restomenu-tv-lastSeenTime')).toBeNull()
   })
 
-  it('does nothing when heartbeatAt is missing', () => {
+  it('stores expiresAt even when no other fields are present', () => {
+    const now = Date.now()
     localStorage.setItem('restomenu-tv-expiresAt', 'old_value')
-    updateFromServer({ expiresAt: ts(Date.now()) }, false)
-    expect(localStorage.getItem('restomenu-tv-expiresAt')).toBe('old_value')
+    updateFromServer(
+      { expiresAt: ts(now + 86400000 * 7) },
+      false,
+    )
+    expect(localStorage.getItem('restomenu-tv-expiresAt')).toBe(String(now + 86400000 * 7))
+    expect(localStorage.getItem('restomenu-tv-lastSeenTime')).toBeTruthy()
   })
 })
 

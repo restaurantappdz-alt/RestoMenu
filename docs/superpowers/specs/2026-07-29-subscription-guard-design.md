@@ -2,7 +2,7 @@
 
 **Date:** 2026-07-29
 **Project:** RestoMenuWeb
-**Status:** Approved for implementation
+**Status:** Approved for implementation (updated 2026-07-29 — RTDB timestamp replaces Cloud Function heartbeat)
 
 ---
 
@@ -10,50 +10,31 @@
 
 Add subscription-expiration enforcement to the TV display app. The TV must stop displaying the menu and show a plain black screen once the current time passes a stored expiration timestamp — even when fully offline. The system must resist clock-tampering (rollback) and fail closed on uncertainty.
 
+A server-anchored clock offset is obtained via **Firebase Realtime Database's built-in `ServerValue.TIMESTAMP`** — no Cloud Functions, no scheduled tasks, zero backend code. The TV writes the timestamp placeholder to the RTDB and immediately reads back the server-resolved value.
+
 ---
 
-## Data Model (Firestore)
+## Data Model
 
-All fields live in the existing document the TV already listens to:
+### Firestore (existing)
 
 **Document:** `restaurants/{restaurantId}/config/display`
 
 | Field | Type | Set by | Purpose |
 |---|---|---|---|
 | `expiresAt` | Timestamp | Admin dashboard / manual Firestore write | Absolute expiration bound |
-| `heartbeatAt` | Timestamp (serverTimestamp) | Cloud Function every 30 min | Server-anchored "now" for clock offset |
 
-No new collections, no new documents, no new listeners.
+No `heartbeatAt` field — replaced by RTDB server timestamp read.
 
----
+### Realtime Database (new)
 
-## Cloud Function: Heartbeat
+**Path:** `serverTimeCheck/{restaurantId}`
 
-```
-exports.heartbeat = functions.pubsub.schedule('every 30 minutes').onRun(async () => {
-  // ⚠️ collectionGroup('display') matches by subcollection name across
-  // the entire Firestore database, not just under restaurants/{id}/config/.
-  // Do NOT add an unrelated "display" subcollection elsewhere without
-  // updating this query to be path-scoped.
-  const snap = await db.collectionGroup('display').get()
-  const docs = snap.docs
+| Field | Type | Set by | Purpose |
+|---|---|---|---|
+| `time` | number (ms epoch) | TV client writes `.sv: "timestamp"`, server resolves | Server-anchored "now" for clock offset |
 
-  // batch() supports max 500 operations — chunk to avoid silent failure
-  const chunks = []
-  for (let i = 0; i < docs.length; i += 500)
-    chunks.push(docs.slice(i, i + 500))
-
-  await Promise.all(chunks.map((chunk) => {
-    const batch = db.batch()
-    chunk.forEach((doc) =>
-      batch.update(doc.ref, {
-        heartbeatAt: admin.firestore.FieldValue.serverTimestamp(),
-      })
-    )
-    return batch.commit()
-  }))
-})
-```
+Created ephemerally: the TV writes, reads back, and leaves the value in place for the next read. No TTL needed — data is tiny (< 100 bytes per restaurant).
 
 ---
 
@@ -96,16 +77,10 @@ export function revokeAccess() { ... }
 
 ### `updateFromServer(data, fromCache)` Logic
 
+Now only handles `expiresAt` and liveness stamp. Clock offset is managed by `syncServerOffset()`.
+
 ```
 if (fromCache === true) → return (do nothing, stale data)
-
-// Extract server timestamp
-const heartbeatAt = data.heartbeatAt?.toMillis()
-if (!heartbeatAt) → return (no server time reference yet)
-
-// Compute and store clock offset
-const offset = heartbeatAt - Date.now()
-localStorage.setItem('clockOffset', offset)
 
 // Store expiration timestamp
 if (data.expiresAt) {
@@ -116,6 +91,33 @@ if (data.expiresAt) {
 // stamp lastSeenTime to clear any prior clock-rollback block
 localStorage.setItem('lastSeenTime', Date.now())
 ```
+
+### `syncServerOffset(restaurantId)` — New
+
+Called alongside `updateFromServer()` to obtain a server-anchored clock offset via Realtime Database.
+
+```
+async function syncServerOffset(restaurantId) {
+  // 1. Write the timestamp placeholder to RTDB
+  db.ref = serverTimeCheck/{restaurantId}
+  await set({ time: { ".sv": "timestamp" } })
+
+  // 2. Read back the server-resolved value
+  const snap = await onValue(onlyOnce: true)
+  const serverTime = snap.val().time
+
+  // 3. Compute and store offset
+  const offset = serverTime - Date.now()
+  localStorage.setItem('clockOffset', offset)
+  localStorage.setItem('lastSeenTime', Date.now())
+}
+```
+
+**Why this works without Cloud Functions:** RTDB's `{ ".sv": "timestamp" }` is a server-side placeholder — the server replaces it with the actual epoch millisecond at write time. No backend code runs, no scheduled function needed. The security rule `".validate": "newData.child('time').val() === now"` ensures only a valid server timestamp can be written.
+
+**Called:**
+- On initial mount (when the TV has network)
+- Inside every `onSnapshot` callback on the non-cached (`!fromCache`) branch — so the offset refreshes on the same cadence as live Firestore data
 
 ### Helpers
 
@@ -269,5 +271,5 @@ No other component needs to know about subscription state. The black screen is r
 ## Limitations
 
 1. **Requires at least one online session.** A device that has never been online has no `expiresAt`, no `clockOffset` — it stays blocked. This is by design and is not solvable without a network round-trip.
-2. **`clockOffset` drifts.** The offset is computed when a live snapshot arrives. Device clocks drift over time (especially cheap Android TVs). After days offline, the corrected time could meaningfully diverge from actual server time. Acceptable — the worst case is the screen stays black a few minutes early or late. Next online sync resets the offset.
-3. **`collectionGroup('display')` is name-scoped.** Documented in the Cloud Function code with a warning comment. If another `display` subcollection appears elsewhere in the DB, the heartbeat will write to it too.
+2. **`clockOffset` drifts.** The offset is computed when a live RTDB round-trip completes. Device clocks drift over time (especially cheap Android TVs). After days offline, the corrected time could meaningfully diverge from actual server time. Acceptable — the worst case is the screen stays black a few minutes early or late. Next online sync resets the offset.
+3. **RTDB write is per-TV, not shared.** Each TV writes and reads its own `serverTimeCheck/{restaurantId}` entry. With N TVs in the same restaurant, there are N independent RTDB paths. This is by design — each TV computes its own offset independently.
