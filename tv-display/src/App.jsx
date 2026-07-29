@@ -1,6 +1,30 @@
 import useMenuData from './hooks/useMenuData'
-import { getLayout } from './layouts'
+import { getLayout, getMaxItems } from '@layouts'
 import './index.css'
+
+function truncateCategories(categories, maxItems) {
+  if (maxItems == null || !categories.length) return categories
+
+  const totalItems = categories.reduce((sum, c) => sum + (c.items || []).length, 0)
+  if (totalItems <= maxItems) return categories
+
+  const result = categories.map((c) => ({ ...c, items: [...(c.items || [])] }))
+  let remaining = maxItems
+
+  for (let i = 0; i < result.length; i++) {
+    if (remaining <= 0) {
+      result[i].items = []
+      continue
+    }
+    const catItems = result[i].items.length
+    const share = Math.max(1, Math.round(remaining / (result.length - i)))
+    const take = Math.min(catItems, share)
+    result[i].items = result[i].items.slice(0, take)
+    remaining -= take
+  }
+
+  return result
+}
 
 function StateScreen({ children, className = '' }) {
   return (
@@ -30,12 +54,20 @@ function NeedsSetupScreen() {
 }
 
 export default function App() {
-  const { menu, loading, waiting, offline, needsSetup, categories, allAddons, selectedLayout } = useMenuData()
+  const { menu, loading, waiting, offline, needsSetup, subscriptionBlocked, categories, allAddons, selectedLayout } = useMenuData()
   const LayoutComponent = getLayout(selectedLayout)
+
+  const capItemLimit = getMaxItems(selectedLayout, categories?.length || 0)
+  const menuCategories = truncateCategories(categories, capItemLimit)
+
   const title = menu?.name || 'Notre Menu'
 
   if (needsSetup) {
     return <NeedsSetupScreen />
+  }
+
+  if (subscriptionBlocked) {
+    return <div className="h-full w-full bg-black" />
   }
 
   if (waiting) {
@@ -75,12 +107,14 @@ export default function App() {
   }
 
   return (
-    <LayoutComponent
-      categories={categories}
-      allAddons={allAddons}
-      offline={offline}
-      menu={menu}
-      title={title}
-    />
+    <div className="relative h-full w-full">
+      <LayoutComponent
+        categories={menuCategories}
+        allAddons={allAddons}
+        offline={offline}
+        menu={menu}
+        title={title}
+      />
+    </div>
   )
 }

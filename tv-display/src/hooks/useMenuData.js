@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { onSnapshot, doc } from 'firebase/firestore'
 import { db } from '../firebase'
+import { updateFromServer, checkAccess } from '../subscriptionGuard'
 
 async function checkConnectivity() {
   try {
@@ -99,6 +100,11 @@ export default function useMenuData() {
   const [offline, setOffline] = useState(typeof navigator !== 'undefined' && !navigator.onLine)
   const [waiting, setWaiting] = useState(false)
   const [needsSetup, setNeedsSetup] = useState(false)
+  const [subscriptionBlocked, setSubscriptionBlocked] = useState(() => {
+    const result = checkAccess()
+    console.log('🔒 Subscription check (mount):', result)
+    return !result.allowed
+  })
 
   console.log('📊 useMenuData init:', { restaurantId, activeMenuId, menu: menu?.id, loading, offline, waiting, needsSetup })
   if (restaurantId) {
@@ -123,9 +129,17 @@ export default function useMenuData() {
       }
     })
 
+    // Hourly subscription re-check (safety net for offline countdown hitting zero)
+    const subInterval = setInterval(() => {
+      const result = checkAccess()
+      setSubscriptionBlocked(!result.allowed)
+      if (!result.allowed) console.log('🔒 Subscription blocked (hourly check):', result.reason)
+    }, 60 * 60 * 1000)
+
     return () => {
       window.removeEventListener('online', handleOnline)
       window.removeEventListener('offline', handleOffline)
+      clearInterval(subInterval)
     }
   }, [])
 
@@ -164,6 +178,16 @@ export default function useMenuData() {
     const unsubConfig = onSnapshot(doc(db, 'restaurants', id, 'config', 'display'), (snap) => {
       console.log('🔥 Config snapshot received:', snap.id, snap.metadata.hasPendingWrites, snap.metadata.fromCache)
       const data = snap.data() || {}
+
+      updateFromServer(data, snap.metadata.fromCache)
+      const access = checkAccess()
+      setSubscriptionBlocked(!access.allowed)
+      if (!access.allowed) {
+        console.log('🔒 Subscription blocked:', access.reason)
+        setLoading(false)
+        return
+      }
+
       saveConfigCache(id, data)
       const raw = screenId ? data.screens?.[screenId] : data.activeMenuId
       const newId = (raw && typeof raw === 'object' ? raw.menuId : raw) || null
@@ -241,6 +265,7 @@ export default function useMenuData() {
     offline,
     waiting,
     needsSetup,
+    subscriptionBlocked,
     categories,
     allAddons,
     selectedLayout,
