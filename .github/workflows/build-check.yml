@@ -6,6 +6,7 @@ on:
     paths:
       - 'tv-display/**'
       - 'admin-dashboard/**'
+      - 'shared/**'
 
 jobs:
   build:
@@ -23,3 +24,4 @@ jobs:
         working-directory: tv-display
       - run: npm ci && npm run build
         working-directory: admin-dashboard
+

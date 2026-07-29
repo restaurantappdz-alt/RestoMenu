@@ -6,6 +6,7 @@ on:
     paths:
       - 'tv-display/**'
       - 'admin-dashboard/**'
+      - 'shared/**'
       - '.github/workflows/deploy-tv.yml'
   workflow_dispatch:
 
