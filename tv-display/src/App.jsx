@@ -1,5 +1,6 @@
 import useMenuData from './hooks/useMenuData'
 import useDeviceLock from './hooks/useDeviceLock'
+import PhoneMenuPage from './pages/PhoneMenuPage'
 import { getLayout, getMaxItems } from '@layouts'
 import './index.css'
 
@@ -71,6 +72,13 @@ function DisplayedElsewhereScreen() {
 }
 
 export default function App() {
+  // Phone menu mode: no device lock, no TV subscription guard black screen.
+  // Must return before any TV hooks run (useMenuData / useDeviceLock).
+  const params = new URLSearchParams(window.location.search)
+  if (params.get('phone') === '1') {
+    return <PhoneMenuPage />
+  }
+
   const { menu, loading, waiting, offline, needsSetup, subscriptionBlocked, restaurantId, categories, allAddons, selectedLayout } = useMenuData()
   const deviceStatus = useDeviceLock(restaurantId, !offline)
   const LayoutComponent = getLayout(selectedLayout)

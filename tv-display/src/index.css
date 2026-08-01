@@ -351,3 +351,54 @@ body {
     min-height: 100vh !important;
   }
 }
+
+/* ── Phone menu page (mode ?phone=1) ──
+   The TV app is a fixed 1920x1080 canvas; the phone page is a
+   self-contained scroll container that overrides that.
+   Note: the existing `@media (orientation: portrait)` block already makes
+   html/body scrollable on phones; this container scrolls internally too.
+
+   Use min-height with a 100vh fallback + 100dvh: on mobile browsers the
+   address bar makes 100vh taller than the visible viewport, so a plain
+   height:100vh clips the bottom of the menu. dvh tracks the dynamic
+   viewport; vh remains the fallback for browsers without dvh support. */
+.phone-menu-page {
+  min-height: 100vh;
+  min-height: 100dvh;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+}
+
+.phone-menu-restaurant {
+  padding: 1.75rem 1.25rem 0.25rem;
+  text-align: center;
+}
+
+.phone-menu-restaurant h1 {
+  font-family: var(--font-display, inherit);
+  font-size: 1.75rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: #fff;
+}
+
+.phone-menu-section {
+  position: relative;
+}
+
+.phone-menu-name {
+  margin: 1.5rem 1.25rem 0.5rem;
+  padding-top: 1rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+  font-size: 1.15rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #fff;
+}
+
+.phone-menu-section:first-of-type .phone-menu-name {
+  border-top: none;
+  margin-top: 0.5rem;
+}
