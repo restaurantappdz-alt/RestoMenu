@@ -1,0 +1,144 @@
+{
+  "layouts": [
+    {
+      "id": "classic",
+      "name": "Classic Gold",
+      "image": "/RestoMenu/layout-shots/classic.jpg",
+      "capabilities": {
+        "heroPhoto": false,
+        "descriptions": false,
+        "tags": false,
+        "itemImages": false,
+        "allergyNote": false,
+        "pricingNote": false,
+        "maxItems": 8
+      }
+    },
+    {
+      "id": "bistro",
+      "name": "Bistro Chalkboard",
+      "image": "/RestoMenu/layout-shots/bistro.jpg",
+      "capabilities": {
+        "heroPhoto": false,
+        "descriptions": false,
+        "tags": false,
+        "itemImages": false,
+        "allergyNote": false,
+        "pricingNote": false,
+        "maxItems": 10
+      }
+    },
+    {
+      "id": "brasserie",
+      "name": "Brasserie",
+      "image": "/RestoMenu/layout-shots/brasserie.jpg",
+      "capabilities": {
+        "heroPhoto": false,
+        "descriptions": false,
+        "tags": false,
+        "itemImages": false,
+        "allergyNote": false,
+        "pricingNote": false,
+        "maxItems": 18
+      }
+    },
+    {
+      "id": "coffeeShop",
+      "name": "Coffee Shop",
+      "image": "/RestoMenu/layout-shots/coffeeShop.jpg",
+      "capabilities": {
+        "heroPhoto": false,
+        "descriptions": false,
+        "tags": false,
+        "itemImages": false,
+        "allergyNote": false,
+        "pricingNote": false,
+        "maxItems": 10
+      }
+    },
+    {
+      "id": "minimal",
+      "name": "Minimal",
+      "image": "/RestoMenu/layout-shots/minimal.jpg",
+      "capabilities": {
+        "heroPhoto": false,
+        "descriptions": false,
+        "tags": false,
+        "itemImages": false,
+        "allergyNote": false,
+        "pricingNote": false,
+        "maxItems": 12
+      }
+    },
+    {
+      "id": "modern",
+      "name": "Modern",
+      "image": "/RestoMenu/layout-shots/modern.jpg",
+      "capabilities": {
+        "heroPhoto": false,
+        "descriptions": false,
+        "tags": false,
+        "itemImages": false,
+        "allergyNote": false,
+        "pricingNote": false,
+        "maxItems": 10
+      }
+    },
+    {
+      "id": "moroccan",
+      "name": "Moroccan",
+      "image": "/RestoMenu/layout-shots/moroccan.jpg",
+      "capabilities": {
+        "heroPhoto": false,
+        "descriptions": false,
+        "tags": false,
+        "itemImages": false,
+        "allergyNote": false,
+        "pricingNote": false,
+        "maxItems": 14
+      }
+    },
+    {
+      "id": "natureBistro",
+      "name": "Nature Bistro",
+      "image": "/RestoMenu/layout-shots/natureBistro.jpg",
+      "capabilities": {
+        "heroPhoto": false,
+        "descriptions": false,
+        "tags": false,
+        "itemImages": false,
+        "allergyNote": false,
+        "pricingNote": false,
+        "maxItems": 16
+      }
+    },
+    {
+      "id": "pro",
+      "name": "Pro Premium",
+      "image": "/RestoMenu/layout-shots/pro.jpg",
+      "capabilities": {
+        "heroPhoto": false,
+        "descriptions": false,
+        "tags": false,
+        "itemImages": false,
+        "allergyNote": false,
+        "pricingNote": false,
+        "maxItems": 18
+      }
+    },
+    {
+      "id": "photoMenu",
+      "name": "Photo Menu",
+      "image": "/RestoMenu/layout-shots/photoMenu.jpg",
+      "capabilities": {
+        "heroPhoto": true,
+        "descriptions": true,
+        "tags": true,
+        "itemImages": false,
+        "allergyNote": true,
+        "pricingNote": true,
+        "maxItems": 8
+      }
+    }
+  ]
+}
