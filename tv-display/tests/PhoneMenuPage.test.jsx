@@ -29,6 +29,7 @@ describe('PhoneMenuPage', () => {
       loading: false,
       expired: false,
       needsSetup: false,
+      menuIds: [],
     }
   })
 
@@ -76,5 +77,12 @@ describe('PhoneMenuPage', () => {
     render(<PhoneMenuPage />)
     expect(screen.getByText('No Menu Yet')).toBeTruthy()
     expect(screen.queryByText('Eggs')).toBeNull()
+  })
+
+  it('shows "No Menu Available" when the m filter matches no menus', () => {
+    hookState = { ...hookState, menus: [], menuIds: ['m1', 'm2'] }
+    render(<PhoneMenuPage />)
+    expect(screen.getByText('No Menu Available')).toBeTruthy()
+    expect(screen.queryByText('No Menu Yet')).toBeNull()
   })
 })

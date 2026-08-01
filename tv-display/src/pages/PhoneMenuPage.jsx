@@ -12,7 +12,7 @@ function StateScreen({ children }) {
 }
 
 export default function PhoneMenuPage() {
-  const { restaurantName, layout, menus, loading, expired, needsSetup } = useAllMenus()
+  const { restaurantName, layout, menus, loading, expired, needsSetup, menuIds } = useAllMenus()
   const LayoutComponent = getLayout(layout)
   const combined = useMemo(() => combineMenus(menus), [menus])
 
@@ -64,11 +64,20 @@ export default function PhoneMenuPage() {
   }
 
   if (combined.length === 0) {
+    // Distinguish "owner filtered to menus that no longer exist" from
+    // "restaurant has no menus at all" — different copy for each.
+    const filteredEmpty = menuIds.length > 0
     return (
       <StateScreen>
         <div className="text-center max-w-lg px-8">
-          <h2 className="font-heading font-bold text-white text-4xl">No Menu Yet</h2>
-          <p className="text-white/50 text-xl mt-3">This restaurant hasn't published a menu.</p>
+          <h2 className="font-heading font-bold text-white text-4xl">
+            {filteredEmpty ? 'No Menu Available' : 'No Menu Yet'}
+          </h2>
+          <p className="text-white/50 text-xl mt-3">
+            {filteredEmpty
+              ? 'This menu is no longer available. Please check back soon.'
+              : "This restaurant hasn't published a menu."}
+          </p>
         </div>
       </StateScreen>
     )
