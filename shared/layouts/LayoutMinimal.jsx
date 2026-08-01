@@ -158,8 +158,38 @@ function ItemImage({ url }) {
 
 export default function LayoutMinimal({ categories, allAddons, offline, menu, title }) {
   return (
-    <div style={styles.wrapper}>
-      <div style={styles.header}>
+    <>
+      <style>{`
+        /* Portrait phone adaptation — TV/landscape rules untouched. */
+        @media (orientation: portrait) {
+          .layout-minimal-root {
+            height: auto !important;
+            min-height: 100vh !important;
+            overflow: visible !important;
+            padding: clamp(1.75rem, 4vw, 3rem) clamp(1.25rem, 4vw, 2rem) !important;
+          }
+          .layout-minimal-root .lm-header {
+            flex-direction: column !important;
+            justify-content: center !important;
+            text-align: center !important;
+            gap: clamp(0.75rem, 2vh, 1.5rem);
+          }
+          .layout-minimal-root .lm-main {
+            flex-direction: column !important;
+          }
+          .layout-minimal-root .lm-menu-col {
+            flex: none !important;
+            width: 100% !important;
+          }
+          .layout-minimal-root .lm-addon-col {
+            flex: none !important;
+            width: 100% !important;
+            max-width: none !important;
+          }
+        }
+      `}</style>
+      <div className="layout-minimal-root" style={styles.wrapper}>
+      <div className="lm-header" style={styles.header}>
         <div>
           <h1 style={styles.title}>
             {title || 'Notre Menu'}
@@ -171,8 +201,8 @@ export default function LayoutMinimal({ categories, allAddons, offline, menu, ti
         </div>
       </div>
 
-      <div style={styles.main}>
-        <div style={styles.menuCol}>
+      <div className="lm-main" style={styles.main}>
+        <div className="lm-menu-col" style={styles.menuCol}>
           {categories.length === 0 ? (
             <div style={styles.empty}>No items yet</div>
           ) : (
@@ -200,7 +230,7 @@ export default function LayoutMinimal({ categories, allAddons, offline, menu, ti
         </div>
 
         {allAddons.length > 0 && (
-          <div style={styles.addonCol}>
+          <div className="lm-addon-col" style={styles.addonCol}>
             <div style={styles.addonSection}>
               <div style={{ width: 40, height: 2, background: '#2ECC71', marginBottom: '1.5rem', opacity: 0.6 }} />
               <h3 style={styles.addonTitle}>
@@ -220,6 +250,7 @@ export default function LayoutMinimal({ categories, allAddons, offline, menu, ti
           </div>
         )}
       </div>
-    </div>
+      </div>
+    </>
   )
 }

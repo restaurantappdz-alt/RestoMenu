@@ -28,9 +28,46 @@ export default function LayoutNatureBistro({ categories = [], allAddons = [], of
           background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
           background-size: 256px 256px;
         }
+        /* Portrait (phone) adaptation only — TV/landscape untouched */
+        @media (orientation: portrait) {
+          .layout-naturebistro-root {
+            height: auto !important;
+            min-height: 100vh;
+            overflow: visible !important;
+            animation: none !important;
+          }
+          .layout-naturebistro-root .nb-plant-tl,
+          .layout-naturebistro-root .nb-plant-tm,
+          .layout-naturebistro-root .nb-plant-bl,
+          .layout-naturebistro-root .nb-plant-br {
+            position: fixed !important;
+          }
+          .layout-naturebistro-root .nb-plant-tl { top: -20px !important; left: 2% !important; }
+          .layout-naturebistro-root .nb-plant-tm { top: -20px !important; left: 50% !important; }
+          .layout-naturebistro-root .nb-plant-bl { bottom: 0 !important; left: 4% !important; }
+          .layout-naturebistro-root .nb-plant-br { bottom: 0 !important; right: 8% !important; }
+          .layout-naturebistro-root .layout-naturebistro-card {
+            top: auto !important;
+            transform: none !important;
+            max-height: none !important;
+            overflow: visible !important;
+            justify-content: flex-start !important;
+            margin: clamp(1rem, 3vh, 2rem) auto !important;
+          }
+          .layout-naturebistro-root .nb-card-content {
+            flex: 0 0 auto !important;
+            overflow: visible !important;
+          }
+          .layout-naturebistro-root .nb-grid {
+            grid-template-columns: 1fr !important;
+          }
+          .layout-naturebistro-root .nb-item-name {
+            white-space: normal !important;
+          }
+        }
       `}</style>
 
-      <div style={{
+      <div className="layout-naturebistro-root" style={{
         position: 'relative',
         width: '100%',
         height: '100%',
@@ -44,7 +81,7 @@ export default function LayoutNatureBistro({ categories = [], allAddons = [], of
         <div className="noise-overlay" />
 
         {/* ── Background plants (blurred, color-graded, overlap behind card) ── */}
-        <div style={{ position: 'absolute', bottom: '-3%', left: '6%', zIndex: 0 }}>
+        <div className="nb-plant-bl" style={{ position: 'absolute', bottom: '-3%', left: '6%', zIndex: 0 }}>
           <img
             src={bottomLeftPot}
             alt=""
@@ -60,7 +97,7 @@ export default function LayoutNatureBistro({ categories = [], allAddons = [], of
             }}
           />
         </div>
-        <div style={{ position: 'absolute', bottom: '2%', right: '12%', zIndex: 0 }}>
+        <div className="nb-plant-br" style={{ position: 'absolute', bottom: '2%', right: '12%', zIndex: 0 }}>
           <img
             src={bottomRightPot}
             alt=""
@@ -81,7 +118,7 @@ export default function LayoutNatureBistro({ categories = [], allAddons = [], of
           <img
             src={topLeftIvy}
             alt=""
-            className="sway"
+            className="sway nb-plant-tl"
             style={{
               position: 'absolute',
               top: '-20px',
@@ -99,7 +136,7 @@ export default function LayoutNatureBistro({ categories = [], allAddons = [], of
           <img
             src={topMiddlePlant}
             alt=""
-            className="sway"
+            className="sway nb-plant-tm"
             style={{
               position: 'absolute',
               top: '-20px',
@@ -117,7 +154,7 @@ export default function LayoutNatureBistro({ categories = [], allAddons = [], of
         />
 
         {/* ── Glassmorphism Card ── */}
-        <div style={{
+        <div className="layout-naturebistro-card" style={{
           position: 'relative',
           zIndex: 10,
           width: 'min(90%, 1040px)',
@@ -166,7 +203,7 @@ export default function LayoutNatureBistro({ categories = [], allAddons = [], of
             {menu?.tagline || 'Fresh from nature, served with love'}
           </p>
 
-          <div style={{
+          <div className="nb-card-content" style={{
             flex: 1,
             overflow: 'hidden',
             display: 'flex',
@@ -197,7 +234,7 @@ export default function LayoutNatureBistro({ categories = [], allAddons = [], of
                   }}>
                     🌿 {cat.name} 🌿
                   </h2>
-                  <div style={{
+                  <div className="nb-grid" style={{
                     display: 'grid',
                     gridTemplateColumns: cat.items?.length > 4 ? '1fr 1fr' : '1fr',
                     gap: 'clamp(0.15rem,0.2vw,0.25rem)',
@@ -211,7 +248,7 @@ export default function LayoutNatureBistro({ categories = [], allAddons = [], of
                         background: 'rgba(255,255,255,0.06)',
                         borderRadius: 12,
                       }}>
-                        <span style={{
+                        <span className="nb-item-name" style={{
                           fontFamily: "'Inter', sans-serif",
                           fontWeight: 500,
                           fontSize: 'clamp(1.3rem, 1.8vw, 1.7rem)',

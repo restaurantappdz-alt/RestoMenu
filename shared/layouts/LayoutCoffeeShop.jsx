@@ -41,9 +41,21 @@ export default function LayoutCoffeeShop({
         .coffee-burn-protect {
           animation: pixelShift 300s linear infinite;
         }
+
+        /* Portrait: unlock scrolling (TV/landscape untouched) */
+        @media (orientation: portrait) {
+          .layout-coffeeshop-root {
+            height: auto !important;
+            min-height: 100vh !important;
+            overflow: visible !important;
+          }
+          .layout-coffeeshop-root .coffeeshop-content {
+            overflow: visible !important;
+          }
+        }
       `}</style>
       <div
-        className="coffee-burn-protect"
+        className="coffee-burn-protect layout-coffeeshop-root"
         style={{
           height: '100%',
           width: '100%',
@@ -94,6 +106,7 @@ export default function LayoutCoffeeShop({
         <GoldLine width="50%" />
         <div style={{ height: 'clamp(1.5rem, 2.5vw, 3rem)' }} />
         <div
+          className="coffeeshop-content"
           style={{
             flex: 1,
             width: '100%',

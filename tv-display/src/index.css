@@ -333,3 +333,21 @@ body {
   stroke-dasharray: 800;
   animation: drawIn 2s ease-out forwards;
 }
+
+/* ── Phone (portrait) foundation ──────────────────────────────
+   TVs are landscape, so these rules never match a TV display.
+   Phones held in portrait unlock vertical scrolling; each layout
+   provides its own portrait adaptation scoped by its root class. */
+@media (orientation: portrait) {
+  html,
+  body {
+    height: auto !important;
+    min-height: 100% !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+  }
+  #root {
+    height: auto !important;
+    min-height: 100vh !important;
+  }
+}

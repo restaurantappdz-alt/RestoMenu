@@ -212,7 +212,7 @@ export default function LayoutPhotoMenu({ categories, allAddons, offline, menu, 
 
   return (
     <div
-      className="h-full w-full relative overflow-hidden"
+      className="layout-photomenu-root h-full w-full relative overflow-hidden"
       style={{
         background: '#0c0b09',
         fontFamily: '"Barlow", system-ui, sans-serif',
@@ -221,6 +221,16 @@ export default function LayoutPhotoMenu({ categories, allAddons, offline, menu, 
       {/* Fonts */}
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=Barlow:wght@300;400;500;600;700&display=swap');
+
+        /* Portrait (phone) adaptation — scoped; TV/landscape untouched */
+        @media (orientation: portrait) {
+          .layout-photomenu-root { height: auto !important; min-height: 100vh; overflow: visible !important; }
+          .layout-photomenu-root header { justify-content: center !important; gap: clamp(1rem, 3vw, 2rem); }
+          .layout-photomenu-root main { grid-template-columns: 1fr !important; height: auto !important; overflow: visible !important; row-gap: clamp(1.5rem, 4vh, 3rem); }
+          .layout-photomenu-root main > section:first-child { justify-content: flex-start !important; overflow: visible !important; border-right: none !important; }
+          .layout-photomenu-root main > section:nth-child(2) { height: min(65vh, 40rem) !important; }
+          .layout-photomenu-root footer > div { flex-wrap: wrap !important; justify-content: center !important; row-gap: 0.25rem; }
+        }
       `}</style>
 
       {offline && (

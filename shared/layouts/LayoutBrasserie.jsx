@@ -74,8 +74,27 @@ export default function LayoutBrasserie({ categories = [], allAddons = [], offli
           pointer-events: none;
           z-index: 0;
         }
+
+        /* Portrait: unlock scrolling, stack to one column (TV/landscape untouched) */
+        @media (orientation: portrait) {
+          .layout-brasserie-root {
+            height: auto !important;
+            min-height: 100vh !important;
+            overflow: visible !important;
+          }
+          .layout-brasserie-root > div {
+            height: auto !important;
+            overflow: visible !important;
+          }
+          .layout-brasserie-root > div > div:nth-child(2) {
+            overflow: visible !important;
+          }
+          .layout-brasserie-root .brasserie-grid {
+            grid-template-columns: 1fr !important;
+          }
+        }
       `}</style>
-      <div className="brasserie-bg" style={{
+      <div className="brasserie-bg layout-brasserie-root" style={{
         height: '100%', width: '100%', overflow: 'hidden',
         background: 'radial-gradient(circle at 20% 80%, #F5EDDF, #FDF8F0)',
         position: 'relative',
@@ -150,7 +169,7 @@ export default function LayoutBrasserie({ categories = [], allAddons = [], offli
                       height: 1, background: 'rgba(201, 168, 76, 0.4)',
                       marginBottom: 'clamp(0.5rem, 0.8vw, 1rem)',
                     }} />
-                    <div style={{
+                    <div className="brasserie-grid" style={{
                       display: 'grid',
                       gridTemplateColumns: cat.items?.length > 3 ? '1fr 1fr' : '1fr',
                       gap: 'clamp(0.4rem, 0.6vw, 0.8rem)',

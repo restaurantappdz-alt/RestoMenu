@@ -98,8 +98,20 @@ export default function LayoutPro({ categories = [], allAddons = [], offline, me
         @keyframes fadeUp { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: translateY(0); } }
         @keyframes goldBreath { 0%, 100% { text-shadow: 0 0 20px rgba(212,175,55,0.15); } 50% { text-shadow: 0 0 40px rgba(212,175,55,0.3); } }
         @keyframes shimmer { 0% { background-position: -200% center; } 100% { background-position: 200% center; } }
+
+        /* Portrait (phone) adaptation — scoped; TV/landscape untouched */
+        @media (orientation: portrait) {
+          .layout-pro-root { height: auto !important; min-height: 100vh; overflow: visible !important; }
+          .layout-pro-content { height: auto !important; overflow: visible !important; padding: 1rem clamp(1rem, 2.5vw, 1.5rem) !important; }
+          .layout-pro-header > div:nth-of-type(1),
+          .layout-pro-header > div:nth-of-type(2),
+          .layout-pro-header > div:nth-of-type(3),
+          .layout-pro-header > div:nth-of-type(5) { height: 0.25rem !important; }
+          .layout-pro-body { flex: none !important; max-width: 100% !important; overflow: visible !important; margin: 1.25rem auto 0 !important; }
+          .layout-pro-grid { grid-template-columns: 1fr !important; }
+        }
       `}</style>
-      <div style={{
+      <div className="layout-pro-root" style={{
         height: '100%', width: '100%', overflow: 'hidden',
         position: 'relative',
         fontFamily: "'Inter', 'Arial', sans-serif",
@@ -142,7 +154,7 @@ export default function LayoutPro({ categories = [], allAddons = [], offline, me
           <path d="M48,0 L42,0 C42,0 48,6 48,0 Z" fill="rgba(212,175,55,0.3)" />
         </svg>
 
-        <div style={{
+        <div className="layout-pro-content" style={{
           height: '100%', width: '100%', overflow: 'hidden',
           padding: 'clamp(1.5rem, 3vw, 3.5rem) clamp(2rem, 4vw, 5rem)',
           display: 'flex', flexDirection: 'column',
@@ -152,7 +164,7 @@ export default function LayoutPro({ categories = [], allAddons = [], offline, me
           transition: 'opacity 0.8s ease',
         }}>
           {/* Header */}
-          <div style={{ flex: 'none', textAlign: 'center' }}>
+          <div className="layout-pro-header" style={{ flex: 'none', textAlign: 'center' }}>
             <div style={{ height: 'clamp(0.5rem, 0.8vw, 1rem)' }} />
             <h1 style={{
               fontFamily: "'Playfair Display', 'Georgia', serif",
@@ -193,7 +205,7 @@ export default function LayoutPro({ categories = [], allAddons = [], offline, me
           </div>
 
           {/* Body */}
-          <div style={{
+          <div className="layout-pro-body" style={{
             flex: 1, width: '100%', overflow: 'hidden',
             maxWidth: 'clamp(520px, 56vw, 820px)',
             margin: 'clamp(0.75rem, 1.2vw, 1.5rem) auto 0',
@@ -226,7 +238,7 @@ export default function LayoutPro({ categories = [], allAddons = [], offline, me
                       </h2>
                       <div style={{ flex: 1, height: 1, background: 'linear-gradient(90deg, rgba(212,175,55,0.3), transparent)' }} />
                     </div>
-                    <div style={{
+                    <div className="layout-pro-grid" style={{
                       display: 'grid',
                       gridTemplateColumns: cat.items?.length > 4 ? '1fr 1fr' : '1fr',
                       gap: 'clamp(0.2rem, 0.3vw, 0.4rem)',

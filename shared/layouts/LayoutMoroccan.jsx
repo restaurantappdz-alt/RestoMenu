@@ -49,15 +49,35 @@ export default function LayoutMoroccan({ categories = [], allAddons = [], offlin
             repeating-linear-gradient(45deg, transparent, transparent 40px, rgba(212,175,55,0.02) 40px, rgba(212,175,55,0.02) 41px),
             repeating-linear-gradient(-45deg, transparent, transparent 40px, rgba(212,175,55,0.02) 40px, rgba(212,175,55,0.02) 41px);
         }
+        /* Portrait (phone) adaptation only — TV/landscape untouched */
+        @media (orientation: portrait) {
+          .layout-moroccan-root {
+            height: auto !important;
+            min-height: 100vh;
+            overflow: visible !important;
+          }
+          .layout-moroccan-root .layout-moroccan-content {
+            height: auto !important;
+            min-height: 100vh;
+            overflow: visible !important;
+          }
+          .layout-moroccan-root .layout-moroccan-items {
+            flex: 0 0 auto !important;
+            overflow: visible !important;
+          }
+          .layout-moroccan-root .layout-moroccan-grid {
+            grid-template-columns: 1fr !important;
+          }
+        }
       `}</style>
-      <div style={{
+      <div className="layout-moroccan-root" style={{
         height: '100%', width: '100%', overflow: 'hidden',
         background: 'radial-gradient(circle at 70% 30%, #1A4A4A, #0D2A2A)',
         position: 'relative',
         fontFamily: "'Inter', 'Arial', sans-serif",
       }}>
         <div className="moroccan-pattern" />
-        <div style={{
+        <div className="layout-moroccan-content" style={{
           height: '100%', width: '100%', overflow: 'hidden',
           padding: 'clamp(1.5rem, 3vw, 3.5rem) clamp(2rem, 4vw, 5rem)',
           display: 'flex', flexDirection: 'column',
@@ -94,7 +114,7 @@ export default function LayoutMoroccan({ categories = [], allAddons = [], offlin
             <GoldDiamondLine />
           </div>
 
-          <div style={{
+          <div className="layout-moroccan-items" style={{
             flex: 1, width: '100%', overflow: 'hidden',
             maxWidth: 'clamp(520px, 58vw, 840px)',
             margin: 'clamp(0.75rem, 1.2vw, 1.5rem) auto 0',
@@ -122,7 +142,7 @@ export default function LayoutMoroccan({ categories = [], allAddons = [], offlin
                     }}>
                       {cat.name}
                     </h2>
-                    <div style={{
+                    <div className="layout-moroccan-grid" style={{
                       display: 'grid',
                       gridTemplateColumns: cat.items?.length > 6 ? '1fr 1fr' : '1fr',
                       gap: 'clamp(0.4rem, 0.5vw, 0.7rem)',

@@ -237,24 +237,65 @@ function BistroItemImage({ url }) {
 
 export default function LayoutBistro({ categories, allAddons, offline, menu, title }) {
   return (
-    <div style={styles.wrapper}>
+    <div className="layout-bistro-root" style={styles.wrapper}>
+      <style>{`
+/* Portrait phone adaptation — scoped to this layout; landscape/TV rules untouched */
+@media (orientation: portrait) {
+  .layout-bistro-root {
+    height: auto !important;
+    min-height: 100vh !important;
+    overflow: visible !important;
+    padding: 1.5rem 1.25rem !important;
+  }
+  .layout-bistro-root .bistro-header {
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    text-align: center !important;
+  }
+  .layout-bistro-root .bistro-title-block {
+    max-width: 100% !important;
+  }
+  .layout-bistro-root .bistro-mascot-wrap {
+    margin-top: 1rem !important;
+  }
+  .layout-bistro-root .bistro-main {
+    flex-direction: column !important;
+    gap: 2rem !important;
+  }
+  .layout-bistro-root .bistro-menu-col {
+    flex: none !important;
+    width: 100% !important;
+    padding-right: 0 !important;
+    border-right: none !important;
+  }
+  .layout-bistro-root .bistro-addon-col {
+    flex: none !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    padding-left: 0 !important;
+    padding-top: 1.5rem !important;
+    border-top: 1px dotted rgba(240, 234, 214, 0.15) !important;
+  }
+}
+`}</style>
       <div style={styles.chalkBorder} />
       <div style={styles.innerBorder} />
-      <div style={styles.content}>
-        <div style={styles.header}>
-          <div style={styles.titleBlock}>
+      <div className="bistro-content" style={styles.content}>
+        <div className="bistro-header" style={styles.header}>
+          <div className="bistro-title-block" style={styles.titleBlock}>
             <h1 style={styles.title}>
               {title || 'Notre Menu'}
             </h1>
             <p style={styles.tagline}>{menu?.tagline || 'Fait maison avec amour'}</p>
           </div>
-          <div style={styles.mascotWrap}>
+          <div className="bistro-mascot-wrap" style={styles.mascotWrap}>
             <img src={(import.meta.env.BASE_URL || '/') + 'mascot.svg'} alt="" style={styles.mascotImg} />
           </div>
         </div>
 
-        <div style={styles.main}>
-          <div style={styles.menuCol}>
+        <div className="bistro-main" style={styles.main}>
+          <div className="bistro-menu-col" style={styles.menuCol}>
             {categories.length === 0 ? (
               <div style={styles.empty}>No items yet</div>
             ) : (
@@ -286,7 +327,7 @@ export default function LayoutBistro({ categories, allAddons, offline, menu, tit
           </div>
 
           {allAddons.length > 0 && (
-            <div style={styles.addonCol}>
+            <div className="bistro-addon-col" style={styles.addonCol}>
               <div style={styles.addonSection}>
                 <div style={{ width: '2rem', height: 1, background: 'rgba(232, 200, 122, 0.3)', marginBottom: '1rem' }} />
                 <h3 style={styles.addonTitle}>

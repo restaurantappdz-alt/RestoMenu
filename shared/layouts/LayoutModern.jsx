@@ -44,8 +44,26 @@ export default function LayoutModern({ categories = [], allAddons = [], offline,
         @keyframes pixelShift { 0%, 99.9% { transform: translate(0,0); } 100% { transform: translate(2px,1px); } }
         @keyframes fadeUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
         @keyframes goldGlow { 0%, 100% { opacity: 0.7; } 50% { opacity: 1; } }
+        /* Portrait phone adaptation — TV/landscape rules untouched. */
+        @media (orientation: portrait) {
+          .layout-modern-root {
+            height: auto !important;
+            min-height: 100vh !important;
+            overflow: visible !important;
+          }
+          .layout-modern-root .lm-inner {
+            height: auto !important;
+            overflow: visible !important;
+            padding: clamp(1.5rem, 4vw, 2.5rem) clamp(1.25rem, 4vw, 2rem) !important;
+          }
+          .layout-modern-root .lm-middle {
+            flex: none !important;
+            max-width: 100% !important;
+            overflow: visible !important;
+          }
+        }
       `}</style>
-      <div style={{
+      <div className="layout-modern-root" style={{
         height: '100%', width: '100%', overflow: 'hidden',
         background: '#FFFFFF',
         boxShadow: '0 20px 60px rgba(0,0,0,0.05)',
@@ -57,7 +75,7 @@ export default function LayoutModern({ categories = [], allAddons = [], offline,
           height: 3,
           background: 'linear-gradient(90deg, transparent, #D4AF37, transparent)',
         }} />
-        <div style={{
+        <div className="lm-inner" style={{
           height: '100%', width: '100%', overflow: 'hidden',
           padding: 'clamp(1.5rem, 3vw, 3.5rem) clamp(2rem, 4vw, 5rem)',
           display: 'flex', flexDirection: 'column',
@@ -94,7 +112,7 @@ export default function LayoutModern({ categories = [], allAddons = [], offline,
             <GoldCircleLine />
           </div>
 
-          <div style={{
+          <div className="lm-middle" style={{
             flex: 1, width: '100%', overflow: 'hidden',
             maxWidth: 'clamp(480px, 50vw, 720px)',
             margin: 'clamp(0.75rem, 1.2vw, 1.5rem) auto 0',

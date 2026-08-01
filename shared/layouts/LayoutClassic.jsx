@@ -86,7 +86,58 @@ function FullScreenWavyFrame() {
 
 export default function LayoutClassic({ categories, allAddons, offline, menu, title }) {
   return (
-    <div className="h-full w-full relative overflow-hidden">
+    <div className="layout-classic-root h-full w-full relative overflow-hidden">
+      <style>{`
+/* Portrait phone adaptation — scoped to this layout; landscape/TV rules untouched */
+@media (orientation: portrait) {
+  .layout-classic-root {
+    height: auto;
+    min-height: 100vh;
+    overflow: visible;
+  }
+  .layout-classic-root .bg-layer,
+  .layout-classic-root .mesh-deep,
+  .layout-classic-root .mesh-overlay,
+  .layout-classic-root .restaurant-pattern,
+  .layout-classic-root .pattern-vignette,
+  .layout-classic-root .full-frame-wave {
+    position: fixed;
+    inset: 0;
+  }
+  .layout-classic-root .content-canvas {
+    position: relative;
+  }
+  .layout-classic-root .header-row {
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 1.25rem;
+    padding: 0 1.5rem;
+    margin-bottom: 1.5rem;
+    text-align: center;
+  }
+  .layout-classic-root .content-inner {
+    padding: 0 1.25rem;
+  }
+  .layout-classic-root .content-inner > div {
+    flex-direction: column;
+    gap: 2rem;
+  }
+  .layout-classic-root .content-inner > div > div {
+    flex: none;
+    width: 100%;
+    max-width: 100% !important;
+  }
+  .layout-classic-root .content-inner .space-y-8 > :not([hidden]) ~ :not([hidden]) {
+    margin-top: 1.5rem;
+    margin-bottom: 0;
+  }
+  .layout-classic-root .item-name {
+    white-space: normal;
+    overflow-wrap: break-word;
+  }
+}
+`}</style>
       <img src={base + 'waves.svg'} alt="" className="bg-layer z-0" />
       <div className="mesh-deep z-[1]" />
       <div className="mesh-overlay z-[2]" />
