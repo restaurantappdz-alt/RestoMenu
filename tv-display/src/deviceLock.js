@@ -10,7 +10,7 @@
 // "first device wins" server-side: a lease can only be written when it does
 // not exist yet, or by the same deviceId that already owns it.
 
-import { ref, set, onValue, serverTimestamp } from 'firebase/database'
+import { ref, set, onValue, serverTimestamp, onDisconnect } from 'firebase/database'
 import { rtdb } from './firebase'
 
 const DEVICE_ID_KEY = 'restomenu-tv-deviceId'
@@ -50,8 +50,9 @@ export function getDeviceId() {
  */
 export async function claimLease(restaurantId) {
   const r = leaseRef(restaurantId)
-  const pending = r.onDisconnect()
-  pending.remove()
+  // Modular SDK: onDisconnect() is a standalone function, NOT a ref method.
+  const pending = onDisconnect(r)
+  await pending.remove()
   try {
     await set(r, { deviceId: getDeviceId(), claimedAt: serverTimestamp() })
   } catch (err) {
