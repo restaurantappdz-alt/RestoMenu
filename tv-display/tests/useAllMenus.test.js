@@ -148,4 +148,44 @@ describe('useAllMenus', () => {
     h.unmount()
     h.restore()
   })
+
+  it('filters menus to the URL menu ids, preserving URL order', () => {
+    const h = renderHookOnce('?r=rest1&phone=1&m=m3,m1')
+    act(() => {
+      snapshots['doc:restaurants/rest1/config/display']({ exists: () => true, data: () => ({ expiresAt: Date.now() + 86400000 }) })
+    })
+    act(() => {
+      snapshots['collection:restaurants/rest1/menus']({
+        docs: [
+          { id: 'm1', data: () => ({ name: 'Breakfast' }) },
+          { id: 'm2', data: () => ({ name: 'Drinks' }) },
+          { id: 'm3', data: () => ({ name: 'Lunch' }) },
+        ],
+      })
+    })
+    // m3 first, then m1 — URL order, not snapshot order
+    expect(h.output.menus.map((m) => m.id)).toEqual(['m3', 'm1'])
+    expect(h.output.menuIds).toEqual(['m3', 'm1'])
+    h.unmount()
+    h.restore()
+  })
+
+  it('shows all menus when no m param is present', () => {
+    const h = renderHookOnce('?r=rest1&phone=1')
+    act(() => {
+      snapshots['doc:restaurants/rest1/config/display']({ exists: () => true, data: () => ({ expiresAt: Date.now() + 86400000 }) })
+    })
+    act(() => {
+      snapshots['collection:restaurants/rest1/menus']({
+        docs: [
+          { id: 'm1', data: () => ({ name: 'Breakfast' }) },
+          { id: 'm2', data: () => ({ name: 'Drinks' }) },
+        ],
+      })
+    })
+    expect(h.output.menus).toHaveLength(2)
+    expect(h.output.menuIds).toEqual([])
+    h.unmount()
+    h.restore()
+  })
 })

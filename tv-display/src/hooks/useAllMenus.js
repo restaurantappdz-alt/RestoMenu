@@ -10,6 +10,9 @@ import { parsePhoneParams, isSubscriptionExpired } from '../menuCombiner'
  * subscriptionGuard — the phone page must never be device-locked.
  */
 export default function useAllMenus() {
+  // Parsed once per render; URL params never change during the hook's life,
+  // and the [] effect captures the first render's values (same as before).
+  const { restaurantId: rid, layout: lyt, menuIds } = parsePhoneParams(window.location.search)
   const [restaurantId, setRestaurantId] = useState(null)
   const [layout, setLayout] = useState('classic')
   const [restaurantName, setRestaurantName] = useState('')
@@ -22,7 +25,6 @@ export default function useAllMenus() {
   const [needsSetup, setNeedsSetup] = useState(false)
 
   useEffect(() => {
-    const { restaurantId: rid, layout: lyt } = parsePhoneParams(window.location.search)
     setRestaurantId(rid)
     // The URL layout is only the first-paint fallback; the live config's
     // phoneMenuLayout (owner's current pick) wins once it arrives, so old
@@ -71,7 +73,16 @@ export default function useAllMenus() {
       collection(db, 'restaurants', rid, 'menus'),
       (snap) => {
         const list = snap.docs.map((d) => ({ id: d.id, ...d.data() }))
-        setMenus(list)
+        // When the QR URL names specific menus, show ONLY those, in URL
+        // order (the admin's selection order). No m param → all menus
+        // (backward compatible with printed QRs from before this feature).
+        const filtered =
+          menuIds.length > 0
+            ? menuIds
+                .map((id) => list.find((m) => m.id === id))
+                .filter(Boolean)
+            : list
+        setMenus(filtered)
         menusReported = true
         maybeDone()
       },
@@ -88,5 +99,5 @@ export default function useAllMenus() {
     }
   }, [])
 
-  return { restaurantId, layout, restaurantName, menus, loading, expired, needsSetup }
+  return { restaurantId, layout, restaurantName, menus, loading, expired, needsSetup, menuIds }
 }
