@@ -32,11 +32,20 @@ describe('PhoneMenuPage', () => {
     }
   })
 
-  it('renders restaurant name, menu section headers, and items', () => {
+  it('renders ALL items from ALL menus inside ONE layout', () => {
+    hookState = {
+      ...hookState,
+      menus: [
+        { id: 'm1', name: 'Breakfast', categories: [{ name: 'Hot', items: [{ name: 'Eggs', price: 5 }] }] },
+        { id: 'm2', name: 'Lunch', categories: [{ name: 'Main', items: [{ name: 'Pizza', price: 9 }] }] },
+      ],
+    }
     render(<PhoneMenuPage />)
     expect(screen.getByText('Le Café')).toBeTruthy()
-    expect(screen.getByText('Breakfast')).toBeTruthy()
     expect(screen.getByText('Eggs')).toBeTruthy()
+    expect(screen.getByText('Pizza')).toBeTruthy()
+    // ONE layout instance total — never one per menu
+    expect(screen.getAllByTestId('layout')).toHaveLength(1)
   })
 
   it('shows the spinner while loading even if expired (fail-closed default)', () => {

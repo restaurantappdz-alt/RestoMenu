@@ -16,6 +16,17 @@ export default function PhoneMenuPage() {
   const LayoutComponent = getLayout(layout)
   const combined = useMemo(() => combineMenus(menus), [menus])
 
+  // Merge every menu's categories into a single list so the page renders
+  // ONE layout containing all items — no duplicated chrome per menu.
+  const allCategories = useMemo(
+    () => combined.flatMap((menu) => menu.categories || []),
+    [combined],
+  )
+  const allAddons = useMemo(
+    () => allCategories.flatMap((c) => c.addons || []),
+    [allCategories],
+  )
+
   if (needsSetup) {
     return (
       <StateScreen>
@@ -68,18 +79,13 @@ export default function PhoneMenuPage() {
       <div className="phone-menu-restaurant">
         <h1>{restaurantName || 'Menu'}</h1>
       </div>
-      {combined.map((menu, i) => (
-        <section key={menu.id || i} className="phone-menu-section">
-          <h2 className="phone-menu-name">{menu.name}</h2>
-          <LayoutComponent
-            categories={menu.categories || []}
-            allAddons={(menu.categories || []).flatMap((c) => c.addons || [])}
-            offline={false}
-            menu={menu}
-            title={menu.name}
-          />
-        </section>
-      ))}
+      <LayoutComponent
+        categories={allCategories}
+        allAddons={allAddons}
+        offline={false}
+        menu={{}}
+        title={restaurantName || 'Menu'}
+      />
     </div>
   )
 }
