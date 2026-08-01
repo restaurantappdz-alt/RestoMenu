@@ -10,9 +10,15 @@
 export function parsePhoneParams(search) {
   const params = new URLSearchParams(search)
   const layout = params.get('layout')
+  const rawMenuIds = params.get('m') || ''
+  const menuIds = rawMenuIds
+    .split(',')
+    .map((s) => s.trim())
+    .filter(Boolean)
   return {
     restaurantId: params.get('r') || null,
     layout: layout && layout.trim() ? layout : 'classic',
+    menuIds,
   }
 }
 

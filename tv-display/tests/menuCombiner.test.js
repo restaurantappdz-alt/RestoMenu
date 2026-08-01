@@ -10,16 +10,30 @@ afterEach(() => {
 describe('parsePhoneParams', () => {
   it('extracts restaurant id and layout', () => {
     expect(parsePhoneParams('?r=abc&phone=1&layout=bistro'))
-      .toEqual({ restaurantId: 'abc', layout: 'bistro' })
+      .toEqual({ restaurantId: 'abc', layout: 'bistro', menuIds: [] })
   })
 
   it('defaults layout to classic when missing', () => {
     expect(parsePhoneParams('?r=abc&phone=1'))
-      .toEqual({ restaurantId: 'abc', layout: 'classic' })
+      .toEqual({ restaurantId: 'abc', layout: 'classic', menuIds: [] })
   })
 
   it('handles empty search', () => {
-    expect(parsePhoneParams('')).toEqual({ restaurantId: null, layout: 'classic' })
+    expect(parsePhoneParams('')).toEqual({ restaurantId: null, layout: 'classic', menuIds: [] })
+  })
+
+  it('parses m into a menu id list', () => {
+    expect(parsePhoneParams('?r=abc&phone=1&m=menu1,menu2'))
+      .toEqual({ restaurantId: 'abc', layout: 'classic', menuIds: ['menu1', 'menu2'] })
+  })
+
+  it('returns empty menuIds when m is absent', () => {
+    expect(parsePhoneParams('?r=abc&phone=1').menuIds).toEqual([])
+  })
+
+  it('cleans whitespace and trailing commas in m', () => {
+    expect(parsePhoneParams('?r=abc&phone=1&m=menu1, ,menu2,').menuIds)
+      .toEqual(['menu1', 'menu2'])
   })
 })
 
