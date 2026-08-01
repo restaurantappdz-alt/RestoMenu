@@ -1,4 +1,5 @@
 import useMenuData from './hooks/useMenuData'
+import useDeviceLock from './hooks/useDeviceLock'
 import { getLayout, getMaxItems } from '@layouts'
 import './index.css'
 
@@ -39,7 +40,7 @@ function NeedsSetupScreen() {
     <StateScreen>
       <div className="text-center animate-pop-in z-10 max-w-lg px-8">
         <div className="w-32 h-32 mx-auto mb-8 rounded-full bg-white/5 border border-brand-orange/20 flex items-center justify-center">
-          <img src="/svgs/cutlery.png" alt="" className="w-16 h-16 object-contain opacity-30" />
+          <img src={`${import.meta.env.BASE_URL}svgs/cutlery.png`} alt="" className="w-16 h-16 object-contain opacity-30" />
         </div>
         <h2 className="font-heading font-bold text-white text-4xl">Not Set Up</h2>
         <p className="text-white/50 text-xl mt-3 leading-relaxed">
@@ -53,8 +54,25 @@ function NeedsSetupScreen() {
   )
 }
 
+function DisplayedElsewhereScreen() {
+  return (
+    <StateScreen>
+      <div className="text-center animate-pop-in z-10 max-w-lg px-8">
+        <div className="w-32 h-32 mx-auto mb-8 rounded-full bg-white/5 border border-brand-orange/20 flex items-center justify-center">
+          <img src={`${import.meta.env.BASE_URL}svgs/cutlery.png`} alt="" className="w-16 h-16 object-contain opacity-30" />
+        </div>
+        <h2 className="font-heading font-bold text-white text-4xl">Displayed on Another Device</h2>
+        <p className="text-white/50 text-xl mt-3 leading-relaxed">
+          This menu is currently shown on another screen. It will appear here automatically when that screen disconnects.
+        </p>
+      </div>
+    </StateScreen>
+  )
+}
+
 export default function App() {
-  const { menu, loading, waiting, offline, needsSetup, subscriptionBlocked, categories, allAddons, selectedLayout } = useMenuData()
+  const { menu, loading, waiting, offline, needsSetup, subscriptionBlocked, restaurantId, categories, allAddons, selectedLayout } = useMenuData()
+  const deviceStatus = useDeviceLock(restaurantId, !offline)
   const LayoutComponent = getLayout(selectedLayout)
 
   const capItemLimit = getMaxItems(selectedLayout, categories?.length || 0)
@@ -70,12 +88,16 @@ export default function App() {
     return <div className="h-full w-full bg-black" />
   }
 
+  if (deviceStatus === 'blocked') {
+    return <DisplayedElsewhereScreen />
+  }
+
   if (waiting) {
     return (
       <StateScreen>
         <div className="text-center animate-pop-in z-10">
           <div className="w-32 h-32 mx-auto mb-8 rounded-full bg-white/5 border border-brand-orange/20 flex items-center justify-center">
-            <img src="/svgs/cutlery.png" alt="" className="w-16 h-16 object-contain opacity-30" />
+            <img src={`${import.meta.env.BASE_URL}svgs/cutlery.png`} alt="" className="w-16 h-16 object-contain opacity-30" />
           </div>
           <h2 className="font-heading font-bold text-white text-4xl">Waiting for Menu</h2>
           <p className="text-white/50 text-xl mt-3">Select a menu from the admin dashboard</p>

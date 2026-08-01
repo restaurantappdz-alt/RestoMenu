@@ -102,28 +102,18 @@ export default function useMenuData() {
   const [needsSetup, setNeedsSetup] = useState(false)
   const [subscriptionBlocked, setSubscriptionBlocked] = useState(() => {
     const result = checkAccess()
-    console.log('🔒 Subscription check (mount):', result)
     return !result.allowed
   })
 
-  console.log('📊 useMenuData init:', { restaurantId, activeMenuId, menu: menu?.id, loading, offline, waiting, needsSetup })
-  if (restaurantId) {
-    const cfgRaw = (() => { try { return localStorage.getItem(`${CONFIG_CACHE_KEY_PREFIX}_${restaurantId}`) } catch { return null } })()
-    const menuRaw = (() => { try { return localStorage.getItem(`${CACHE_KEY_PREFIX}_${restaurantId}`) } catch { return null } })()
-    console.log('📦 Cache check:', { configKey: `${CONFIG_CACHE_KEY_PREFIX}_${restaurantId}`, configExists: !!cfgRaw, configSize: cfgRaw?.length, menuKey: `${CACHE_KEY_PREFIX}_${restaurantId}`, menuExists: !!menuRaw, menuSize: menuRaw?.length })
-  }
-
   useEffect(() => {
     const handleOnline = () => {
-      console.log('📶 back online — reloading for live data')
       setTimeout(() => window.location.reload(), 1000)
     }
-    const handleOffline = () => { console.log('📶 offline event'); setOffline(true) }
+    const handleOffline = () => { setOffline(true) }
     window.addEventListener('online', handleOnline)
     window.addEventListener('offline', handleOffline)
 
     checkConnectivity().then(reachable => {
-      console.log('📶 Connectivity probe:', reachable ? 'online' : 'offline', '| navigator.onLine:', navigator.onLine)
       if (!reachable && navigator.onLine) {
         setOffline(true)
       }
@@ -133,7 +123,6 @@ export default function useMenuData() {
     const subInterval = setInterval(() => {
       const result = checkAccess()
       setSubscriptionBlocked(!result.allowed)
-      if (!result.allowed) console.log('🔒 Subscription blocked (hourly check):', result.reason)
     }, 60 * 60 * 1000)
 
     return () => {
@@ -185,7 +174,6 @@ export default function useMenuData() {
           updateFromServer(fetchSnap.data(), false)
           const result = checkAccess()
           if (result.allowed) {
-            console.log('🔓 Active fetch — subscription unblocked (future expiresAt)')
             setSubscriptionBlocked(false)
           }
         }
@@ -197,7 +185,6 @@ export default function useMenuData() {
     syncServerOffset(id).catch(() => {})
 
     const unsubConfig = onSnapshot(doc(db, 'restaurants', id, 'config', 'display'), (snap) => {
-      console.log('🔥 Config snapshot received:', snap.id, snap.metadata.hasPendingWrites, snap.metadata.fromCache)
       const data = snap.data() || {}
 
       updateFromServer(data, snap.metadata.fromCache)
@@ -208,15 +195,10 @@ export default function useMenuData() {
       }
 
       const access = checkAccess()
-      const wasBlocked = subscriptionBlocked
       setSubscriptionBlocked(!access.allowed)
       if (!access.allowed) {
-        console.log('🔒 Subscription blocked:', access.reason)
         setLoading(false)
         return
-      }
-      if (wasBlocked) {
-        console.log('🔓 Subscription UNBLOCKED — menu should now appear')
       }
 
       saveConfigCache(id, data)
@@ -227,12 +209,10 @@ export default function useMenuData() {
         const cachedRaw = screenId ? cachedCfg?.screens?.[screenId] : cachedCfg?.activeMenuId
         const cachedId = cachedCfg && (cachedRaw && typeof cachedRaw === 'object' ? cachedRaw.menuId : cachedRaw) || null
         if (cachedId) {
-          console.log('⏳ Config has no menu but cache has', cachedId, '— trusting cache')
           return
         }
         const cachedMenu = loadCache(id)
         if (cachedMenu) {
-          console.log('⏳ No menuId in config but menu cache exists — restoring from cache')
           setActiveMenuId(cachedMenu.id)
           setMenu(cachedMenu)
           setWaiting(false)
@@ -240,10 +220,8 @@ export default function useMenuData() {
           return
         }
         if (typeof navigator !== 'undefined' && !navigator.onLine) {
-          console.log('⏳ Offline with no cache — cannot determine state, keeping current')
           return
         }
-        console.log('⏳ No menu assigned → waiting screen')
         setWaiting(true)
         setLoading(false)
         setMenu(null)
@@ -252,20 +230,16 @@ export default function useMenuData() {
       }
       setWaiting(false)
       setActiveMenuId(newId)
-      console.log('✅ Config OK → activeMenuId:', newId)
     }, (error) => {
-      console.log('❌ Config listener error:', error.code, error.message, 'fromCache:', error._metadata?.fromCache)
       setLoading(false)
     })
     return () => unsubConfig()
   }, [])
 
   useEffect(() => {
-    console.log('🍽️ Menu listener effect fired:', { activeMenuId, restaurantId })
     if (!activeMenuId || !restaurantId) return
     setLoading(true)
     const unsubMenu = onSnapshot(doc(db, 'restaurants', restaurantId, 'menus', activeMenuId), (snap) => {
-      console.log('🍽️ Menu snapshot received:', snap.id, 'exists:', snap.exists(), 'pending:', snap.metadata.hasPendingWrites)
       if (snap.exists()) {
         const data = { id: snap.id, ...snap.data() }
         setMenu(data)
@@ -273,14 +247,12 @@ export default function useMenuData() {
       } else {
         const cachedMenu = loadCache(restaurantId)
         if (cachedMenu && cachedMenu.id === activeMenuId) {
-          console.log('🍽️ Menu doc deleted on server, but cache has it — keeping')
           return
         }
         setMenu(null)
       }
       setLoading(false)
     }, (error) => {
-      console.log('❌ Menu listener error:', error.code, error.message)
       setLoading(false)
     })
     return () => unsubMenu()
@@ -297,6 +269,7 @@ export default function useMenuData() {
     waiting,
     needsSetup,
     subscriptionBlocked,
+    restaurantId,
     categories,
     allAddons,
     selectedLayout,

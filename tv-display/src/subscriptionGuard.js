@@ -85,8 +85,19 @@ export function updateFromServer(data, fromCache) {
   if (fromCache) return
 
   try {
-    if (data.expiresAt) {
-      localStorage.setItem(KEYS.EXPIRES_AT, String(data.expiresAt.toMillis()))
+    if (data.expiresAt != null) {
+      // Accept Firestore Timestamp (toMillis), epoch number, or ISO string
+      let ms = data.expiresAt
+      if (typeof data.expiresAt === 'object' && typeof data.expiresAt.toMillis === 'function') {
+        ms = data.expiresAt.toMillis()
+      } else if (typeof data.expiresAt === 'string') {
+        ms = Date.parse(data.expiresAt)
+      } else {
+        ms = Number(data.expiresAt)
+      }
+      if (Number.isFinite(ms)) {
+        localStorage.setItem(KEYS.EXPIRES_AT, String(ms))
+      }
     }
 
     // A live server read proves the device is online right now —

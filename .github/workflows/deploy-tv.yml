@@ -5,7 +5,6 @@ on:
     branches: [main]
     paths:
       - 'tv-display/**'
-      - 'admin-dashboard/**'
       - 'shared/**'
       - '.github/workflows/deploy-tv.yml'
   workflow_dispatch:
@@ -32,9 +31,7 @@ jobs:
         with:
           node-version: 22
           cache: 'npm'
-          cache-dependency-path: |
-            tv-display/package-lock.json
-            admin-dashboard/package-lock.json
+          cache-dependency-path: tv-display/package-lock.json
 
       - name: Build TV display
         run: |
@@ -42,21 +39,9 @@ jobs:
           npm run build
         working-directory: tv-display
 
-      - name: Build Admin dashboard
-        run: |
-          npm ci
-          npm run build
-        working-directory: admin-dashboard
-
-      - name: Combine both apps into one artifact
-        run: |
-          mkdir -p combined/dashboard
-          cp -r tv-display/dist/* combined/
-          cp -r admin-dashboard/dist/* combined/dashboard/
-
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
-          path: combined
+          path: tv-display/dist
       - id: deployment
         uses: actions/deploy-pages@v4

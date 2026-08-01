@@ -51,3 +51,10 @@ ehthumbs.db
 .turbo/
 .eslintcache
 .stylelintcache
+
+# Admin dashboard (will be deleted in final production)
+admin-dashboard/
+
+# Internal planning docs
+.superpowers/
+docs/superpowers/
