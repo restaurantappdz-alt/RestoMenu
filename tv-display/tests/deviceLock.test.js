@@ -22,12 +22,22 @@ vi.mock('firebase/database', () => ({
   remove: handlers.removeFn,
 }))
 
-import { claimLease, watchLease, getDeviceId, renewLease, takeoverLease, isStale, LEASE_TTL_MS } from '../src/deviceLock'
+import { claimLease, watchLease, getDeviceId, renewLease, takeoverLease, releaseLease, isStale, LEASE_TTL_MS } from '../src/deviceLock'
+
+let lastRefPath = null
 
 function mockRef() {
   const r = {}
-  handlers.refFn.mockReturnValue(r)
+  handlers.refFn.mockImplementation((_db, path) => {
+    lastRefPath = path
+    return r
+  })
   return r
+}
+
+function lastScopeCall() {
+  expect(lastRefPath).toBeTruthy()
+  return lastRefPath.match(/tvLease\/rest123\/(.+)$/)[1]
 }
 
 function mockPending() {
@@ -40,6 +50,7 @@ describe('claimLease', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     localStorage.clear()
+    lastRefPath = null
   })
 
   it('registers disconnect cleanup via the modular onDisconnect(ref) function', async () => {
@@ -47,7 +58,7 @@ describe('claimLease', () => {
     const pending = mockPending()
     handlers.setFn.mockResolvedValue()
 
-    await expect(claimLease('rest123')).resolves.toBeUndefined()
+    await expect(claimLease('rest123', 'screenA')).resolves.toBeUndefined()
 
     expect(handlers.onDisconnectFn).toHaveBeenCalledWith(r)
     expect(pending.remove).toHaveBeenCalledTimes(1)
@@ -57,12 +68,25 @@ describe('claimLease', () => {
     )
   })
 
+  it('claims per screen scope so two screens of one restaurant can run together', async () => {
+    mockRef()
+    const pending = mockPending()
+    handlers.setFn.mockResolvedValue()
+
+    await claimLease('rest123', 'screenA')
+    expect(lastScopeCall()).toBe('screenA')
+
+    handlers.setFn.mockClear()
+    await claimLease('rest123', 'screenB')
+    expect(lastScopeCall()).toBe('screenB')
+  })
+
   it('registers the disconnect cleanup BEFORE writing the lease', async () => {
     const r = mockRef()
     const pending = mockPending()
     handlers.setFn.mockResolvedValue()
 
-    await claimLease('rest123')
+    await claimLease('rest123', 'screenA')
 
     const removeCallOrder = pending.remove.mock.invocationCallOrder[0]
     const setCallOrder = handlers.setFn.mock.invocationCallOrder[0]
@@ -74,7 +98,7 @@ describe('claimLease', () => {
     const pending = mockPending()
     handlers.setFn.mockRejectedValue(new Error('permission-denied'))
 
-    await expect(claimLease('rest123')).rejects.toThrow('permission-denied')
+    await expect(claimLease('rest123', 'screenA')).rejects.toThrow('permission-denied')
     expect(pending.cancel).toHaveBeenCalledTimes(1)
   })
 })
@@ -91,9 +115,10 @@ describe('watchLease', () => {
     })
 
     const onLease = vi.fn()
-    const unsub = watchLease('rest123', onLease)
+    const unsub = watchLease('rest123', 'screenA', onLease)
 
     expect(handlers.onValueFn).toHaveBeenCalledWith(r, expect.any(Function))
+    expect(lastScopeCall()).toBe('screenA')
     cb({ val: () => ({ deviceId: 'devA', claimedAt: 123 }) })
     expect(onLease).toHaveBeenCalledWith({ deviceId: 'devA', claimedAt: 123 })
 
@@ -122,8 +147,9 @@ describe('renewLease', () => {
     const r = mockRef()
     handlers.setFn.mockResolvedValue()
 
-    await expect(renewLease('rest123')).resolves.toBeUndefined()
+    await expect(renewLease('rest123', 'screenA')).resolves.toBeUndefined()
 
+    expect(lastScopeCall()).toBe('screenA')
     expect(handlers.setFn).toHaveBeenCalledWith(
       r,
       expect.objectContaining({
@@ -148,13 +174,31 @@ describe('takeoverLease', () => {
     handlers.removeFn.mockResolvedValue()
     handlers.setFn.mockResolvedValue()
 
-    await expect(takeoverLease('rest123')).resolves.toBeUndefined()
+    await expect(takeoverLease('rest123', 'screenA')).resolves.toBeUndefined()
 
+    expect(lastScopeCall()).toBe('screenA')
     expect(handlers.removeFn).toHaveBeenCalledWith(r)
     expect(handlers.onDisconnectFn).toHaveBeenCalledWith(r)
     expect(pending.remove).toHaveBeenCalledTimes(1)
     expect(pending.remove.mock.invocationCallOrder[0])
       .toBeLessThan(handlers.setFn.mock.invocationCallOrder[0])
+  })
+})
+
+describe('releaseLease', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+    localStorage.clear()
+  })
+
+  it('deletes the lease at the screen scope', async () => {
+    const r = mockRef()
+    handlers.removeFn.mockResolvedValue()
+
+    await expect(releaseLease('rest123', 'screenA')).resolves.toBeUndefined()
+
+    expect(lastScopeCall()).toBe('screenA')
+    expect(handlers.removeFn).toHaveBeenCalledWith(r)
   })
 })
 

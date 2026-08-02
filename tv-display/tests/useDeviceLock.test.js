@@ -24,7 +24,7 @@ const listeners = []
 function renderHook(restaurantId, online) {
   let output
   function Probe() {
-    output = useDeviceLock(restaurantId, online)
+    output = useDeviceLock(restaurantId, 'screenA', online)
     return null
   }
   let renderer
@@ -39,7 +39,7 @@ describe('useDeviceLock', () => {
   beforeEach(() => {
     vi.useFakeTimers()
     listeners.splice(0)
-    lock.watchLease.mockImplementation((_restaurantId, cb) => {
+    lock.watchLease.mockImplementation((_restaurantId, _screenId, cb) => {
       listeners.push(cb)
       return () => {}
     })
@@ -62,7 +62,7 @@ describe('useDeviceLock', () => {
   it('claims when no lease exists anywhere', () => {
     const h = renderHook('rest1', true)
     act(() => { listeners[0](null) })
-    expect(lock.claimLease).toHaveBeenCalledWith('rest1')
+    expect(lock.claimLease).toHaveBeenCalledWith('rest1', 'screenA')
     h.unmount()
   })
 
@@ -83,7 +83,7 @@ describe('useDeviceLock', () => {
       listeners[0]({ deviceId: 'devOld', claimedAt: 0, renewedAt: 0 })
     })
     expect(h.output).toBe('blocked')
-    expect(lock.takeoverLease).toHaveBeenCalledWith('rest1')
+    expect(lock.takeoverLease).toHaveBeenCalledWith('rest1', 'screenA')
     act(() => {
       listeners[0]({ deviceId: 'devMine', claimedAt: Date.now(), renewedAt: Date.now() })
     })
@@ -99,7 +99,7 @@ describe('useDeviceLock', () => {
     expect(h.output).toBe('active')
     act(() => { vi.advanceTimersByTime(RENEW_INTERVAL_MS * 2) })
     expect(lock.renewLease).toHaveBeenCalledTimes(2)
-    expect(lock.renewLease).toHaveBeenCalledWith('rest1')
+    expect(lock.renewLease).toHaveBeenCalledWith('rest1', 'screenA')
     h.unmount()
   })
 
@@ -110,7 +110,7 @@ describe('useDeviceLock', () => {
     })
     lock.isStale.mockReturnValue(true)
     act(() => { vi.advanceTimersByTime(STALE_SCAN_MS) })
-    expect(lock.takeoverLease).toHaveBeenCalledWith('rest1')
+    expect(lock.takeoverLease).toHaveBeenCalledWith('rest1', 'screenA')
     h.unmount()
   })
 
