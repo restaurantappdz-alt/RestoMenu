@@ -10,11 +10,13 @@
 // "first device wins" server-side: a lease can only be written when it does
 // not exist yet, or by the same deviceId that already owns it.
 
-import { ref, set, onValue, serverTimestamp, onDisconnect } from 'firebase/database'
+import { ref, set, onValue, serverTimestamp, onDisconnect, remove } from 'firebase/database'
 import { rtdb } from './firebase'
 
 const DEVICE_ID_KEY = 'restomenu-tv-deviceId'
 const LEASE_CACHE_PREFIX = 'restomenu-tv-lease'
+
+export const LEASE_TTL_MS = 60000
 
 function leaseRef(restaurantId) {
   return ref(rtdb, `tvLease/${restaurantId}`)
@@ -50,15 +52,46 @@ export function getDeviceId() {
  */
 export async function claimLease(restaurantId) {
   const r = leaseRef(restaurantId)
-  // Modular SDK: onDisconnect() is a standalone function, NOT a ref method.
   const pending = onDisconnect(r)
   await pending.remove()
   try {
-    await set(r, { deviceId: getDeviceId(), claimedAt: serverTimestamp() })
+    await set(r, { deviceId: getDeviceId(), claimedAt: serverTimestamp(), renewedAt: serverTimestamp() })
   } catch (err) {
     pending.cancel()
     throw err
   }
+}
+
+/**
+ * Refresh this device's own lease so the TTL-based takeover logic never
+ * mistakes a live device for a dead one. Same-device writes are allowed by
+ * the RTDB rules, so a heartbeat cannot be rejected.
+ */
+export async function renewLease(restaurantId) {
+  await set(leaseRef(restaurantId), {
+    deviceId: getDeviceId(),
+    claimedAt: serverTimestamp(),
+    renewedAt: serverTimestamp(),
+  })
+}
+
+/**
+ * Take the lease away from a stale foreign device: delete the dead lease
+ * first (the rules let anyone delete), then claim the now-empty path.
+ */
+export async function takeoverLease(restaurantId) {
+  await remove(leaseRef(restaurantId))
+  await claimLease(restaurantId)
+}
+
+/**
+ * True when a lease stopped being refreshed long enough ago that it must be
+ * considered dead. Legacy leases without renewedAt fall back to claimedAt.
+ */
+export function isStale(lease, now = Date.now(), ttl = LEASE_TTL_MS) {
+  if (!lease) return false
+  const last = typeof lease.renewedAt === 'number' ? lease.renewedAt : lease.claimedAt
+  return typeof last === 'number' && now - last > ttl
 }
 
 /**

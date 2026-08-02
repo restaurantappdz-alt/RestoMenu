@@ -9,6 +9,7 @@ const handlers = vi.hoisted(() => ({
   setFn: vi.fn(),
   onValueFn: vi.fn(),
   onDisconnectFn: vi.fn(),
+  removeFn: vi.fn(),
 }))
 
 vi.mock('firebase/database', () => ({
@@ -18,9 +19,10 @@ vi.mock('firebase/database', () => ({
   onValue: handlers.onValueFn,
   serverTimestamp: () => ({ '.sv': 'timestamp' }),
   onDisconnect: handlers.onDisconnectFn,
+  remove: handlers.removeFn,
 }))
 
-import { claimLease, watchLease, getDeviceId } from '../src/deviceLock'
+import { claimLease, watchLease, getDeviceId, renewLease, takeoverLease, isStale, LEASE_TTL_MS } from '../src/deviceLock'
 
 function mockRef() {
   const r = {}
@@ -107,5 +109,74 @@ describe('getDeviceId', () => {
     const first = getDeviceId()
     expect(first).toBeTruthy()
     expect(getDeviceId()).toBe(first)
+  })
+})
+
+describe('renewLease', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+    localStorage.clear()
+  })
+
+  it('re-writes the same-device lease with a fresh renewedAt timestamp', async () => {
+    const r = mockRef()
+    handlers.setFn.mockResolvedValue()
+
+    await expect(renewLease('rest123')).resolves.toBeUndefined()
+
+    expect(handlers.setFn).toHaveBeenCalledWith(
+      r,
+      expect.objectContaining({
+        deviceId: expect.any(String),
+        claimedAt: { '.sv': 'timestamp' },
+        renewedAt: { '.sv': 'timestamp' },
+      }),
+    )
+    expect(handlers.onDisconnectFn).not.toHaveBeenCalled()
+  })
+})
+
+describe('takeoverLease', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+    localStorage.clear()
+  })
+
+  it('removes the stale foreign lease, then claims it for this device', async () => {
+    const r = mockRef()
+    const pending = mockPending()
+    handlers.removeFn.mockResolvedValue()
+    handlers.setFn.mockResolvedValue()
+
+    await expect(takeoverLease('rest123')).resolves.toBeUndefined()
+
+    expect(handlers.removeFn).toHaveBeenCalledWith(r)
+    expect(handlers.onDisconnectFn).toHaveBeenCalledWith(r)
+    expect(pending.remove).toHaveBeenCalledTimes(1)
+    expect(pending.remove.mock.invocationCallOrder[0])
+      .toBeLessThan(handlers.setFn.mock.invocationCallOrder[0])
+  })
+})
+
+describe('isStale', () => {
+  it('considers a lease with a fresh renewedAt as alive', () => {
+    const now = Date.now()
+    expect(isStale({ deviceId: 'a', claimedAt: now - 5000, renewedAt: now - 5000 }, now)).toBe(false)
+  })
+
+  it('considers a lease with renewedAt older than the TTL as stale', () => {
+    const now = Date.now()
+    expect(isStale({ deviceId: 'a', claimedAt: now, renewedAt: now - LEASE_TTL_MS - 1000 }, now)).toBe(true)
+  })
+
+  it('falls back to claimedAt for legacy leases that have no renewedAt', () => {
+    const now = Date.now()
+    expect(isStale({ deviceId: 'a', claimedAt: now - LEASE_TTL_MS - 1000 }, now)).toBe(true)
+    expect(isStale({ deviceId: 'a', claimedAt: now - 5000 }, now)).toBe(false)
+  })
+
+  it('returns false for null/empty payloads', () => {
+    expect(isStale(null, Date.now())).toBe(false)
+    expect(isStale({}, Date.now())).toBe(false)
   })
 })
