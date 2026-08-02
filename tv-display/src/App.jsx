@@ -80,8 +80,7 @@ export default function App() {
   }
 
   const { menu, loading, waiting, offline, needsSetup, subscriptionBlocked, restaurantId, categories, allAddons, selectedLayout } = useMenuData()
-  const screenId = params.get('s')
-  const deviceStatus = useDeviceLock(restaurantId, screenId, !offline)
+  const deviceStatus = useDeviceLock(restaurantId, !offline)
   const LayoutComponent = getLayout(selectedLayout)
 
   const capItemLimit = getMaxItems(selectedLayout, categories?.length || 0)
