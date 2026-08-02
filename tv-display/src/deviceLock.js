@@ -1,14 +1,19 @@
 // deviceLock.js
 //
-// Single-active-device enforcement for the TV display app.
+// Per-screen single-active-device enforcement for the TV display app.
 // Pure functions, zero React dependencies. All state lives in RTDB + localStorage.
 //
 // Each TV browser generates a persistent deviceId (localStorage). The active
-// device holds a lease at tvLease/{restaurantId} in the Realtime Database.
-// onDisconnect() removes the lease the moment that device loses connection,
-// so another device can take over automatically. RTDB rules enforce
-// "first device wins" server-side: a lease can only be written when it does
-// not exist yet, or by the same deviceId that already owns it.
+// device holds a lease at tvLease/{restaurantId}/{screenId} in the Realtime
+// Database. onDisconnect() removes the lease the moment that device loses
+// connection, so another device can take over automatically. RTDB rules
+// enforce "first device wins" server-side at the screen level: a lease can
+// only be written when it does not exist yet, or by the same deviceId that
+// already owns it.
+//
+// Each screen (TV1, TV2, ...) has its own lease scope so multiple screens of
+// the same restaurant run simultaneously, while one link still binds to a
+// single device at a time. Missing ?s= falls back to scope 'default'.
 
 import { ref, set, onValue, serverTimestamp, onDisconnect, remove } from 'firebase/database'
 import { rtdb } from './firebase'
@@ -18,8 +23,10 @@ const LEASE_CACHE_PREFIX = 'restomenu-tv-lease'
 
 export const LEASE_TTL_MS = 60000
 
-function leaseRef(restaurantId) {
-  return ref(rtdb, `tvLease/${restaurantId}`)
+const DEFAULT_SCOPE = 'default'
+
+function leaseRef(restaurantId, screenId) {
+  return ref(rtdb, `tvLease/${restaurantId}/${screenId || DEFAULT_SCOPE}`)
 }
 
 /**
@@ -41,17 +48,17 @@ export function getDeviceId() {
 }
 
 /**
- * Attempt to claim the lease for this device. The server clears it via
- * onDisconnect() when this device disconnects. Rejects if another device
- * already holds the lease (enforced by RTDB rules).
+ * Attempt to claim the lease for this device on a screen. The server clears
+ * it via onDisconnect() when this device disconnects. Rejects if another
+ * device already holds the lease (enforced by RTDB rules).
  *
  * The disconnect cleanup is registered BEFORE the write (so a connection
  * drop during the claim never leaves a stale lease) and cancelled on
  * failure (so a blocked device never removes the active device's lease
  * when it disconnects).
  */
-export async function claimLease(restaurantId) {
-  const r = leaseRef(restaurantId)
+export async function claimLease(restaurantId, screenId) {
+  const r = leaseRef(restaurantId, screenId)
   const pending = onDisconnect(r)
   await pending.remove()
   try {
@@ -67,8 +74,8 @@ export async function claimLease(restaurantId) {
  * mistakes a live device for a dead one. Same-device writes are allowed by
  * the RTDB rules, so a heartbeat cannot be rejected.
  */
-export async function renewLease(restaurantId) {
-  await set(leaseRef(restaurantId), {
+export async function renewLease(restaurantId, screenId) {
+  await set(leaseRef(restaurantId, screenId), {
     deviceId: getDeviceId(),
     claimedAt: serverTimestamp(),
     renewedAt: serverTimestamp(),
@@ -76,12 +83,21 @@ export async function renewLease(restaurantId) {
 }
 
 /**
- * Take the lease away from a stale foreign device: delete the dead lease
- * first (the rules let anyone delete), then claim the now-empty path.
+ * Delete the lease this device currently holds. Used when the owner sends
+ * a release signal so another device can claim this screen.
  */
-export async function takeoverLease(restaurantId) {
-  await remove(leaseRef(restaurantId))
-  await claimLease(restaurantId)
+export async function releaseLease(restaurantId, screenId) {
+  await remove(leaseRef(restaurantId, screenId))
+}
+
+/**
+ * Take the lease away from a stale foreign device: delete the dead lease
+ * first (the rules accept a delete of an existing lease), then claim the
+ * now-empty path. The new connection always wins over an old/inactive one.
+ */
+export async function takeoverLease(restaurantId, screenId) {
+  await remove(leaseRef(restaurantId, screenId))
+  await claimLease(restaurantId, screenId)
 }
 
 /**
@@ -95,27 +111,27 @@ export function isStale(lease, now = Date.now(), ttl = LEASE_TTL_MS) {
 }
 
 /**
- * Watch the current lease for a restaurant. callback(lease) fires with
- * { deviceId, claimedAt } or null when no device holds the lease.
+ * Watch the current lease for a screen. callback(lease) fires with
+ * { deviceId, claimedAt, renewedAt } or null when no device holds the lease.
  * Returns an unsubscribe function.
  */
-export function watchLease(restaurantId, callback) {
-  return onValue(leaseRef(restaurantId), (snap) => {
+export function watchLease(restaurantId, screenId, callback) {
+  return onValue(leaseRef(restaurantId, screenId), (snap) => {
     callback(snap.val() || null)
   })
 }
 
-function leaseCacheKey(restaurantId) {
-  return `${LEASE_CACHE_PREFIX}_${restaurantId}`
+function leaseCacheKey(restaurantId, screenId) {
+  return `${LEASE_CACHE_PREFIX}_${restaurantId}_${screenId || DEFAULT_SCOPE}`
 }
 
-export function loadCachedLease(restaurantId) {
+export function loadCachedLease(restaurantId, screenId) {
   try {
-    const raw = localStorage.getItem(leaseCacheKey(restaurantId))
+    const raw = localStorage.getItem(leaseCacheKey(restaurantId, screenId))
     return raw ? JSON.parse(raw) : null
   } catch { return null }
 }
 
-export function saveCachedLease(restaurantId, lease) {
-  try { localStorage.setItem(leaseCacheKey(restaurantId), JSON.stringify(lease)) } catch {}
+export function saveCachedLease(restaurantId, screenId, lease) {
+  try { localStorage.setItem(leaseCacheKey(restaurantId, screenId), JSON.stringify(lease)) } catch {}
 }

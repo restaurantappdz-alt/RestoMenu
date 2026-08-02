@@ -9,9 +9,11 @@
     },
     "tvLease": {
       "$restaurantId": {
-        ".read": true,
-        ".write": "!data.exists() || !newData.exists() || data.child('deviceId').val() === newData.child('deviceId').val()",
-        ".validate": "newData.hasChildren(['deviceId', 'claimedAt']) && newData.child('deviceId').isString() && newData.child('claimedAt').isNumber()"
+        "$screenId": {
+          ".read": true,
+          ".write": "!data.exists() || !newData.exists() || data.child('deviceId').val() === newData.child('deviceId').val()",
+          ".validate": "newData.hasChildren(['deviceId', 'claimedAt']) && newData.child('deviceId').isString() && newData.child('claimedAt').isNumber()"
+        }
       }
     }
   }

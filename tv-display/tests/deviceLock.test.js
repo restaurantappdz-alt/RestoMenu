@@ -47,7 +47,7 @@ describe('claimLease', () => {
     const pending = mockPending()
     handlers.setFn.mockResolvedValue()
 
-    await expect(claimLease('rest123')).resolves.toBeUndefined()
+    await expect(claimLease('rest123', 'tv1')).resolves.toBeUndefined()
 
     expect(handlers.onDisconnectFn).toHaveBeenCalledWith(r)
     expect(pending.remove).toHaveBeenCalledTimes(1)
@@ -62,7 +62,7 @@ describe('claimLease', () => {
     const pending = mockPending()
     handlers.setFn.mockResolvedValue()
 
-    await claimLease('rest123')
+    await claimLease('rest123', 'tv1')
 
     const removeCallOrder = pending.remove.mock.invocationCallOrder[0]
     const setCallOrder = handlers.setFn.mock.invocationCallOrder[0]
@@ -74,7 +74,7 @@ describe('claimLease', () => {
     const pending = mockPending()
     handlers.setFn.mockRejectedValue(new Error('permission-denied'))
 
-    await expect(claimLease('rest123')).rejects.toThrow('permission-denied')
+    await expect(claimLease('rest123', 'tv1')).rejects.toThrow('permission-denied')
     expect(pending.cancel).toHaveBeenCalledTimes(1)
   })
 })
@@ -91,7 +91,7 @@ describe('watchLease', () => {
     })
 
     const onLease = vi.fn()
-    const unsub = watchLease('rest123', onLease)
+    const unsub = watchLease('rest123', 'tv1', onLease)
 
     expect(handlers.onValueFn).toHaveBeenCalledWith(r, expect.any(Function))
     cb({ val: () => ({ deviceId: 'devA', claimedAt: 123 }) })
@@ -122,7 +122,7 @@ describe('renewLease', () => {
     const r = mockRef()
     handlers.setFn.mockResolvedValue()
 
-    await expect(renewLease('rest123')).resolves.toBeUndefined()
+    await expect(renewLease('rest123', 'tv1')).resolves.toBeUndefined()
 
     expect(handlers.setFn).toHaveBeenCalledWith(
       r,
@@ -148,7 +148,7 @@ describe('takeoverLease', () => {
     handlers.removeFn.mockResolvedValue()
     handlers.setFn.mockResolvedValue()
 
-    await expect(takeoverLease('rest123')).resolves.toBeUndefined()
+    await expect(takeoverLease('rest123', 'tv1')).resolves.toBeUndefined()
 
     expect(handlers.removeFn).toHaveBeenCalledWith(r)
     expect(handlers.onDisconnectFn).toHaveBeenCalledWith(r)
