@@ -108,11 +108,12 @@ async function main() {
     )
     console.log(`Done. ${allFiles.length}/${layouts.length} screenshots, ${(totalSize / 1024).toFixed(0)} KB total`)
   } finally {
-    server.kill()
-    // Kill full process tree (npm → Vite)
+    // Kill the full process tree first (npm → Vite), THEN the shell — killing
+    // the shell first orphans the vite child, which survives and keeps port 5174.
     try {
       execSync(`taskkill /F /T /PID ${server.pid} 2>nul`, { stdio: 'ignore' })
     } catch {}
+    server.kill()
     console.log('Dev server stopped.')
   }
 }
