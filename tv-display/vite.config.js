@@ -1,6 +1,7 @@
 /// <reference types="vitest" />
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
+import legacy from '@vitejs/plugin-legacy'
 import { VitePWA } from 'vite-plugin-pwa'
 import path from 'path'
 
@@ -15,6 +16,7 @@ export default defineConfig({
   },
   plugins: [
     react(),
+    legacy({ targets: ['chrome >= 44', 'safari >= 10'] }),
     VitePWA({
       registerType: 'autoUpdate',
       manifest: {
@@ -32,6 +34,15 @@ export default defineConfig({
       workbox: {
         navigateFallback: '/RestoMenu/index.html',
         runtimeCaching: [
+          {
+            urlPattern: /\/RestoMenu\/.*\.(png|svg|jpg|jpeg|webp|gif)$/i,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'tv-images',
+              expiration: { maxEntries: 200, maxAgeSeconds: 60 * 60 * 24 * 30 },
+              cacheableResponse: { statuses: [0, 200] }
+            }
+          },
           {
             urlPattern: /^https:\/\/fonts\.(googleapis|gstatic)\.com\/.*/i,
             handler: 'CacheFirst',
