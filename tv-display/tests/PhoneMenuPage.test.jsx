@@ -10,8 +10,8 @@ vi.mock('../src/hooks/useAllMenus', () => ({
 }))
 
 vi.mock('@layouts', () => ({
-  getLayout: () => ({ categories }) => (
-    <div data-testid="layout">
+  getLayout: () => ({ categories, menu }) => (
+    <div data-testid="layout" data-hero={menu?.heroImageUrl || ''}>
       {categories.map((c) => c.items.map((it) => <span key={it.name}>{it.name}</span>))}
     </div>
   ),
@@ -84,5 +84,17 @@ describe('PhoneMenuPage', () => {
     render(<PhoneMenuPage />)
     expect(screen.getByText('No Menu Available')).toBeTruthy()
     expect(screen.queryByText('No Menu Yet')).toBeNull()
+  })
+
+  it('passes the hero photo of the first shown menu to the layout', () => {
+    hookState = {
+      ...hookState,
+      menus: [
+        { id: 'm1', name: 'Breakfast', heroImageUrl: 'https://img.example/hero1.jpg', categories: [{ name: 'Hot', items: [{ name: 'Eggs', price: 5 }] }] },
+        { id: 'm2', name: 'Lunch', heroImageUrl: 'https://img.example/hero2.jpg', categories: [{ name: 'Main', items: [{ name: 'Pizza', price: 9 }] }] },
+      ],
+    }
+    render(<PhoneMenuPage />)
+    expect(screen.getByTestId('layout').getAttribute('data-hero')).toBe('https://img.example/hero1.jpg')
   })
 })

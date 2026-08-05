@@ -1,5 +1,22 @@
-import { describe, it, expect, beforeEach } from 'vitest'
-import { toDayStart, updateFromServer, checkAccess, revokeAccess, syncServerOffset } from '../src/subscriptionGuard'
+import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { toDayStart, updateFromServer, checkAccess, revokeAccess, syncServerOffset, watchServerExpiry } from '../src/subscriptionGuard'
+
+// Mock firebase/database BEFORE importing the module under test (pattern
+// from deviceLock.test.js). The pure-function tests never touch RTDB, so
+// the mock is inert for them; the watchServerExpiry tests drive it.
+const dbHandlers = vi.hoisted(() => ({
+  getDatabaseFn: vi.fn(() => ({})),
+  refFn: vi.fn(() => ({})),
+  setFn: vi.fn(),
+  onValueFn: vi.fn(),
+}))
+
+vi.mock('firebase/database', () => ({
+  getDatabase: dbHandlers.getDatabaseFn,
+  ref: dbHandlers.refFn,
+  set: dbHandlers.setFn,
+  onValue: dbHandlers.onValueFn,
+}))
 
 function setItem(key, value) {
   localStorage.setItem(key, String(value))
@@ -170,6 +187,31 @@ describe('checkAccess', () => {
     const result = checkAccess()
     expect(result.allowed).toBe(false)
   })
+
+  it('blocks immediately when the server has revoked access', () => {
+    // Even with a future local expiry AND a fresh lastSeenTime, the
+    // server-revoked flag (set by watchServerExpiry on permission_denied)
+    // must win — the server clock has passed expiresAt.
+    setItem('restomenu-tv-expiresAt', String(Date.now() + 86400000 * 30))
+    setItem('restomenu-tv-lastSeenTime', String(Date.now()))
+    setItem('restomenu-tv-server-expired', '1')
+
+    const result = checkAccess()
+    expect(result.allowed).toBe(false)
+    expect(result.reason).toBe('expired')
+  })
+
+  it('server-revoked flag survives revokeAccess', () => {
+    setItem('restomenu-tv-restaurant', 'test123')
+    setItem('restomenu-tv-cache_test123', JSON.stringify({ id: 'menu1' }))
+    setItem('restomenu-tv-server-expired', '1')
+
+    revokeAccess()
+
+    // The flag is what keeps the TV blocked until a fresh live value
+    expect(localStorage.getItem('restomenu-tv-server-expired')).toBe('1')
+    expect(localStorage.getItem('restomenu-tv-cache_test123')).toBeNull()
+  })
 })
 
 describe('revokeAccess', () => {
@@ -193,5 +235,93 @@ describe('revokeAccess', () => {
     expect(localStorage.getItem('restomenu-tv-expiresAt')).toBe('123456789')
     expect(localStorage.getItem('restomenu-tv-clockOffset')).toBe('5000')
     expect(localStorage.getItem('restomenu-tv-lastSeenTime')).toBe('123456789')
+  })
+})
+
+describe('updateFromServer — subscription deactivation', () => {
+  beforeEach(() => {
+    localStorage.clear()
+  })
+
+  it('clears the stored expiry on a genuine server read without expiresAt', () => {
+    localStorage.setItem('restomenu-tv-expiresAt', '123456789')
+    updateFromServer({ active: true }, false)
+    expect(localStorage.getItem('restomenu-tv-expiresAt')).toBeNull()
+    expect(localStorage.getItem('restomenu-tv-lastSeenTime')).toBeTruthy()
+  })
+
+  it('does NOT clear the stored expiry on a fromCache read without expiresAt', () => {
+    localStorage.setItem('restomenu-tv-expiresAt', '123456789')
+    updateFromServer({ active: true }, true)
+    expect(localStorage.getItem('restomenu-tv-expiresAt')).toBe('123456789')
+    expect(localStorage.getItem('restomenu-tv-lastSeenTime')).toBeNull()
+  })
+
+  it('still stores a present expiresAt on a genuine read', () => {
+    const now = Date.now()
+    updateFromServer({ expiresAt: ts(now + 86400000) }, false)
+    expect(localStorage.getItem('restomenu-tv-expiresAt')).toBe(String(now + 86400000))
+  })
+})
+
+describe('watchServerExpiry', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+    localStorage.clear()
+  })
+
+  function captureOnValue() {
+    let dataCb = null
+    let errorCb = null
+    dbHandlers.onValueFn.mockImplementation((_ref, cb, errCb) => {
+      dataCb = cb
+      errorCb = errCb || null
+      return () => {}
+    })
+    return {
+      fireValue: (val) => dataCb({ val: () => val }),
+      fireError: (err) => errorCb(err),
+    }
+  }
+
+  it('treats PERMISSION_DENIED as expired: sets SERVER_EXPIRED and calls onExpired', () => {
+    const { fireError } = captureOnValue()
+    const onExpired = vi.fn()
+    watchServerExpiry('rest1', { onExpired })
+    fireError({ code: 'PERMISSION_DENIED' })
+    expect(localStorage.getItem('restomenu-tv-server-expired')).toBe('1')
+    expect(onExpired).toHaveBeenCalled()
+  })
+
+  it('does NOT black-screen on network errors: no SERVER_EXPIRED, calls onError', () => {
+    const { fireError } = captureOnValue()
+    const onError = vi.fn()
+    const onExpired = vi.fn()
+    watchServerExpiry('rest1', { onError, onExpired })
+    fireError({ code: 'NETWORK_ERROR' })
+    expect(localStorage.getItem('restomenu-tv-server-expired')).toBeNull()
+    expect(onError).toHaveBeenCalled()
+    expect(onExpired).not.toHaveBeenCalled()
+  })
+
+  it('clears SERVER_EXPIRED and calls onMissing when the node is removed', () => {
+    const { fireValue } = captureOnValue()
+    const onMissing = vi.fn()
+    localStorage.setItem('restomenu-tv-server-expired', '1')
+    watchServerExpiry('rest1', { onMissing })
+    fireValue(null)
+    expect(localStorage.getItem('restomenu-tv-server-expired')).toBeNull()
+    expect(onMissing).toHaveBeenCalled()
+  })
+
+  it('stores a live expiry and calls onAllowed for a future value', () => {
+    const { fireValue } = captureOnValue()
+    const onAllowed = vi.fn()
+    const future = Date.now() + 86400000
+    watchServerExpiry('rest1', { onAllowed })
+    fireValue(future)
+    expect(localStorage.getItem('restomenu-tv-expiresAt')).toBe(String(future))
+    expect(localStorage.getItem('restomenu-tv-server-expired')).toBeNull()
+    expect(onAllowed).toHaveBeenCalledWith(future)
   })
 })

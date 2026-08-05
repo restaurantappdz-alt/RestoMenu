@@ -93,13 +93,28 @@ describe('watchLease', () => {
     const onLease = vi.fn()
     const unsub = watchLease('rest123', 'tv1', onLease)
 
-    expect(handlers.onValueFn).toHaveBeenCalledWith(r, expect.any(Function))
+    expect(handlers.onValueFn).toHaveBeenCalledWith(r, expect.any(Function), expect.any(Function))
     cb({ val: () => ({ deviceId: 'devA', claimedAt: 123 }) })
     expect(onLease).toHaveBeenCalledWith({ deviceId: 'devA', claimedAt: 123 })
 
     cb({ val: () => null })
     expect(onLease).toHaveBeenCalledWith(null)
     expect(unsub).toBeInstanceOf(Function)
+  })
+
+  it('forwards listener errors to the onError callback', () => {
+    const r = mockRef()
+    let errCb
+    handlers.onValueFn.mockImplementation((_ref, callback, errorCallback) => {
+      errCb = errorCallback
+      return () => {}
+    })
+
+    const onError = vi.fn()
+    watchLease('rest123', 'tv1', () => {}, onError)
+
+    errCb(new Error('network down'))
+    expect(onError).toHaveBeenCalledWith(new Error('network down'))
   })
 })
 
