@@ -31,7 +31,7 @@ function RestaurantPattern() {
   return (
     <div className="restaurant-pattern">
       {items.map((item, i) => (
-        <img key={i} src={item.src} alt="" className={`pattern-icon icon-${item.tier} icon-${item.pos}`} />
+        <img key={i} src={item.src} alt="" className={`pattern-icon icon-${item.tier} icon-${item.pos}`} onError={(e) => { e.currentTarget.style.display = 'none' }} />
       ))}
     </div>
   )
@@ -138,7 +138,7 @@ export default function LayoutClassic({ categories, allAddons, offline, menu, ti
   }
 }
 `}</style>
-      <img src={base + 'waves.svg'} alt="" className="bg-layer z-0" />
+      <img src={base + 'waves.svg'} alt="" className="bg-layer z-0" onError={(e) => { e.currentTarget.style.display = 'none' }} />
       <div className="mesh-deep z-[1]" />
       <div className="mesh-overlay z-[2]" />
       <RestaurantPattern />
@@ -157,7 +157,7 @@ export default function LayoutClassic({ categories, allAddons, offline, menu, ti
           </div>
           <div className="animate-fade-in-right flex-shrink-0" style={{ width: 'clamp(150px, 18vw, 240px)', height: 'clamp(150px, 18vw, 240px)' }}>
             <div className="mascot-wrapper w-full h-full animate-float">
-              <img src={base + 'mascot.svg'} alt="" className="w-full h-full object-contain drop-shadow-2xl" style={{ filter: 'drop-shadow(0 8px 40px rgba(255,81,0,0.1))' }} />
+              <img src={base + 'mascot.svg'} alt="" className="w-full h-full object-contain drop-shadow-2xl" style={{ filter: 'drop-shadow(0 8px 40px rgba(255,81,0,0.1))' }} onError={(e) => { e.currentTarget.style.display = 'none' }} />
             </div>
           </div>
         </div>
@@ -206,7 +206,7 @@ export default function LayoutClassic({ categories, allAddons, offline, menu, ti
                     Barquette<br /><span className="text-brand-honey">de Frites</span>
                   </h3>
                   <div className="my-6 w-20 border-t border-white/10" />
-                  <img src={base + 'fries.svg'} alt="" className="w-28 h-28 xl:w-32 xl:h-32 object-contain drop-shadow-lg mb-6 animate-float" style={{ animationDuration: '5s' }} />
+                  <img src={base + 'fries.svg'} alt="" className="w-28 h-28 xl:w-32 xl:h-32 object-contain drop-shadow-lg mb-6 animate-float" style={{ animationDuration: '5s' }} onError={(e) => { e.currentTarget.style.display = 'none' }} />
                   {allAddons.map((addon, j) => (
                     <p key={j} className="font-heading font-black text-brand-honey text-addon-price animate-cascade-item" style={{ animationDelay: `${(j + 0.5) * 0.1}s` }}>
                       {addon.price}

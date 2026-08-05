@@ -18,7 +18,7 @@ export default function LayoutPreviewPage({ layout = 'classic', params }) {
   const LayoutComponent = getLayout(layout)
   const testData = parseTestData(search.get('data') || '')
   const categories = testData?.categories || sampleMenu.categories
-  const allAddons = testData?.addons || sampleMenu.categories.flatMap((c) => c.addons || [])
+  const allAddons = testData?.addons || sampleMenu.categories.map((c) => c.addons || []).flat()
 
   return (
     <div style={{ width: '100vw', height: '56.25vw', maxHeight: '100vh', overflow: 'hidden', background: '#000' }}>

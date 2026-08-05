@@ -18,6 +18,7 @@ function ItemImage({ url }) {
     <img
       src={url}
       alt=""
+      onError={(e) => { e.currentTarget.style.display = 'none' }}
       style={{
         width: 40,
         height: 40,

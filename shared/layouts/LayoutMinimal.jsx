@@ -144,6 +144,7 @@ function ItemImage({ url }) {
     <img
       src={url}
       alt=""
+      onError={(e) => { e.currentTarget.style.display = 'none' }}
       style={{
         width: 32,
         height: 32,
@@ -197,7 +198,7 @@ export default function LayoutMinimal({ categories, allAddons, offline, menu, ti
           <p style={styles.tagline}>{menu?.tagline || 'Fraîchement préparé chaque jour'}</p>
         </div>
         <div style={styles.mascotWrap}>
-          <img src={(import.meta.env.BASE_URL || '/') + 'mascot.svg'} alt="" style={styles.mascotImg} />
+          <img src={(import.meta.env.BASE_URL || '/') + 'mascot.svg'} alt="" style={styles.mascotImg} onError={(e) => { e.currentTarget.style.display = 'none' }} />
         </div>
       </div>
 
@@ -237,7 +238,7 @@ export default function LayoutMinimal({ categories, allAddons, offline, menu, ti
                 Barquette<br /><span style={{ color: '#2ECC71' }}>de Frites</span>
               </h3>
               <div style={{ margin: '1.25rem 0', width: '3rem', borderTop: '1px solid #ddd' }} />
-              <img src={(import.meta.env.BASE_URL || '/') + 'fries.svg'} alt="" style={{ width: 'clamp(80px, 10vw, 120px)', opacity: 0.4, marginBottom: '1rem' }} />
+              <img src={(import.meta.env.BASE_URL || '/') + 'fries.svg'} alt="" style={{ width: 'clamp(80px, 10vw, 120px)', opacity: 0.4, marginBottom: '1rem' }} onError={(e) => { e.currentTarget.style.display = 'none' }} />
               {allAddons.map((addon, j) => (
                 <p key={j} style={styles.addonPrice}>
                   {addon.price} <span style={{ fontWeight: 500, fontSize: '0.65em', color: '#888' }}>{menu?.currency || 'DA'}</span>

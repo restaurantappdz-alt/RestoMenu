@@ -19,13 +19,18 @@ export default function PhoneMenuPage() {
   // Merge every menu's categories into a single list so the page renders
   // ONE layout containing all items — no duplicated chrome per menu.
   const allCategories = useMemo(
-    () => combined.flatMap((menu) => menu.categories || []),
+    () => combined.map((menu) => menu.categories || []).flat(),
     [combined],
   )
   const allAddons = useMemo(
-    () => allCategories.flatMap((c) => c.addons || []),
+    () => allCategories.map((c) => c.addons || []).flat(),
     [allCategories],
   )
+
+  // Hero data from the first menu actually shown (photo layouts use it for
+  // the big header image; a plain `{}` made the phone QR always render the
+  // layout's fallback instead of the restaurant's photo).
+  const heroMenu = combined[0] || menus[0] || {}
 
   if (needsSetup) {
     return (
@@ -92,7 +97,7 @@ export default function PhoneMenuPage() {
         categories={allCategories}
         allAddons={allAddons}
         offline={false}
-        menu={{}}
+        menu={{ heroImageUrl: heroMenu.heroImageUrl, name: heroMenu.name }}
         title={restaurantName || 'Menu'}
       />
     </div>

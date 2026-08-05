@@ -137,6 +137,7 @@ function HeroPhotoCard({ currency, imageUrl, heroName, heroDescription, heroLabe
         alt={`Featured dish: ${heroName || ''}`}
         className="absolute inset-0 w-full h-full object-cover object-center"
         style={{ pointerEvents: 'none' }}
+        onError={(e) => { e.currentTarget.style.display = 'none' }}
       />
       {/* Cinematic gradient overlay — bottom-heavy */}
       <div

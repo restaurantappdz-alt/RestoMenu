@@ -85,6 +85,7 @@ export default function LayoutNatureBistro({ categories = [], allAddons = [], of
           <img
             src={bottomLeftPot}
             alt=""
+            onError={(e) => { e.currentTarget.style.display = 'none' }}
             style={{
               display: 'block',
               width: 'min(480px, 40vw)',
@@ -101,6 +102,7 @@ export default function LayoutNatureBistro({ categories = [], allAddons = [], of
           <img
             src={bottomRightPot}
             alt=""
+            onError={(e) => { e.currentTarget.style.display = 'none' }}
             style={{
               display: 'block',
               width: 'min(260px, 24vw)',
@@ -118,6 +120,7 @@ export default function LayoutNatureBistro({ categories = [], allAddons = [], of
           <img
             src={topLeftIvy}
             alt=""
+            onError={(e) => { e.currentTarget.style.display = 'none' }}
             className="sway nb-plant-tl"
             style={{
               position: 'absolute',
@@ -136,6 +139,7 @@ export default function LayoutNatureBistro({ categories = [], allAddons = [], of
           <img
             src={topMiddlePlant}
             alt=""
+            onError={(e) => { e.currentTarget.style.display = 'none' }}
             className="sway nb-plant-tm"
             style={{
               position: 'absolute',

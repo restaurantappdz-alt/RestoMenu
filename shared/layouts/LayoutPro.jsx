@@ -79,7 +79,7 @@ function ItemImage({ url }) {
       flexShrink: 0,
       border: '1px solid rgba(212,175,55,0.15)',
     }}>
-      <img src={url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+      <img src={url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} onError={(e) => { e.currentTarget.style.display = 'none' }} />
     </div>
   )
 }
