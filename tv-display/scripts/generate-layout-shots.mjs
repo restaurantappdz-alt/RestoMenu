@@ -2,6 +2,7 @@ import { chromium } from 'playwright'
 import { spawn, execSync } from 'child_process'
 import path from 'path'
 import fs from 'fs'
+import { createHash } from 'crypto'
 import { fileURLToPath } from 'url'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
@@ -22,8 +23,22 @@ const layouts = [
   { id: 'photoMenu',    name: 'Photo Menu' },
 ]
 
-async function waitForServer(url, timeoutMs = 30000) {
-  const start = Date.now()
+/**
+ * Computes a short content hash over every .jpg in the shots dir.
+ * Identical bytes => identical version (caches stay warm); any changed
+ * shot => new version (clients re-download).
+ */
+function contentVersion(dir) {
+  const hash = createHash('sha256')
+  const files = fs.readdirSync(dir).filter((f) => f.endsWith('.jpg')).sort()
+  for (const f of files) {
+    hash.update(f)
+    hash.update(fs.readFileSync(path.join(dir, f)))
+  }
+  return hash.digest('hex').slice(0, 12)
+}
+
+async function waitForServer(url, timeoutMs = 30000) {  const start = Date.now()
   while (Date.now() - start < timeoutMs) {
     try {
       const res = await fetch(url)
@@ -87,12 +102,17 @@ async function main() {
 
     await browser.close()
 
-    // Write index JSON
+    // Write index JSON. `version` is a content hash of the shot files:
+    // the mobile app (and HTTP caches) treat the image URL — which carries
+    // `?v=<version>` — as the cache key, so unchanged shots keep their cached
+    // bytes while regenerated shots are re-downloaded exactly once.
+    const version = contentVersion(outputDir)
     const index = {
+      version,
       layouts: layouts.map((l) => ({
         id: l.id,
         name: l.name,
-        image: `/RestoMenu/layout-shots/${l.id}.jpg`,
+        image: `/RestoMenu/layout-shots/${l.id}.jpg?v=${version}`,
         ...(existing[l.id]?.capabilities ? { capabilities: existing[l.id].capabilities } : {}),
       })),
     }

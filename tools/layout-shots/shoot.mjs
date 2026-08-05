@@ -21,7 +21,8 @@
  * the Playwright-bundled Chromium.
  */
 import { chromium } from 'playwright'
-import { mkdirSync } from 'node:fs'
+import { mkdirSync, readFileSync, writeFileSync, readdirSync, statSync } from 'node:fs'
+import { createHash } from 'node:crypto'
 import { resolve, dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { LAYOUT_CAPABILITIES } from '../../shared/layouts/capabilities.js'
@@ -64,6 +65,30 @@ try {
 
   await browser.close()
 
+  // Rewrite layouts.json so the mobile app's cache-busting version tracks
+  // the freshly generated shots (same bytes => same version => cache hit).
+  const version = contentVersion(outDir)
+  const existing = readIndex(outDir)
+  writeFileSync(
+    resolve(outDir, 'layouts.json'),
+    JSON.stringify(
+      {
+        version,
+        layouts: layoutIds.map((id) => ({
+          id,
+          name: LAYOUT_CAPABILITIES[id].name,
+          image: `/RestoMenu/layout-shots/${id}.jpg?v=${version}`,
+          ...(existing[id]?.capabilities
+            ? { capabilities: existing[id].capabilities }
+            : {}),
+        })),
+      },
+      null,
+      2,
+    ),
+  )
+  console.log(`layouts.json version=${version} (${layoutIds.length} entries)`)
+
   if (failures.length) {
     console.error(`Failed ${failures.length}/${layoutIds.length}: ${failures.join(', ')}`)
     process.exit(1)
@@ -73,4 +98,28 @@ try {
 } catch (err) {
   console.error(`Fatal: ${err.message}`)
   process.exit(1)
+}
+
+/** Content hash of every .jpg in dir — new bytes => new version. */
+function contentVersion(dir) {
+  const hash = createHash('sha256')
+  const files = readdirSync(dir).filter((f) => f.endsWith('.jpg')).sort()
+  for (const f of files) {
+    hash.update(f)
+    hash.update(readFileSync(resolve(dir, f)))
+  }
+  return hash.digest('hex').slice(0, 12)
+}
+
+/** Reads the existing index (preserves capabilities blocks), if any. */
+function readIndex(dir) {
+  try {
+    const parsed = JSON.parse(readFileSync(resolve(dir, 'layouts.json'), 'utf8'))
+    return (parsed.layouts || []).reduce((map, l) => {
+      map[l.id] = l
+      return map
+    }, {})
+  } catch {
+    return {}
+  }
 }
