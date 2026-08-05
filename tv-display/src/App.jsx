@@ -1,6 +1,8 @@
 import useMenuData from './hooks/useMenuData'
 import useDeviceLock from './hooks/useDeviceLock'
 import PhoneMenuPage from './pages/PhoneMenuPage'
+import LayoutPreviewPage from './pages/LayoutPreviewPage'
+import { DEMO_CATEGORIES, DEMO_ADDONS, DEMO_MENU } from './demo/demoData'
 import { getLayout, getMaxItems } from '@layouts'
 import './index.css'
 
@@ -48,7 +50,7 @@ function NeedsSetupScreen() {
           This TV hasn't been linked to a restaurant yet.
         </p>
         <p className="text-white/30 text-lg mt-2">
-          Add <code className="text-brand-orange bg-white/5 px-2 py-0.5 rounded">?r=YOUR_RESTAURANT_ID</code> to the URL, or copy the TV link from your admin dashboard.
+          Add <code className="text-brand-orange bg-white/5 px-2 py-0.5 rounded">?r=YOUR_RESTAURANT_ID</code> to the URL, or copy the TV link from the RestoMenu app.
         </p>
       </div>
     </StateScreen>
@@ -72,11 +74,37 @@ function DisplayedElsewhereScreen() {
 }
 
 export default function App() {
+  const params = new URLSearchParams(window.location.search)
+
+  // Demo mode: renders a layout with fixture data (no Firebase, no device
+  // lock). Used by tools/layout-shots to regenerate the picker thumbnails.
+  if (params.get('demo') === '1') {
+    const demoLayout = params.get('layout') || 'classic'
+    const DemoLayoutComponent = getLayout(demoLayout)
+    const demoLimit = getMaxItems(demoLayout, DEMO_CATEGORIES.length)
+    const demoCategories = truncateCategories(DEMO_CATEGORIES, demoLimit)
+    return (
+      <div className="relative h-full w-full" data-layout={demoLayout}>
+        <DemoLayoutComponent
+          categories={demoCategories}
+          allAddons={DEMO_ADDONS}
+          offline={false}
+          menu={DEMO_MENU}
+          title={DEMO_MENU.name}
+        />
+      </div>
+    )
+  }
+
   // Phone menu mode: no device lock, no TV subscription guard black screen.
   // Must return before any TV hooks run (useMenuData / useDeviceLock).
-  const params = new URLSearchParams(window.location.search)
   if (params.get('phone') === '1') {
     return <PhoneMenuPage />
+  }
+  // Layout preview mode: renders a layout with the generic sample menu
+  // (used by the layout-shots generator). Returns before any Firebase hooks.
+  if (params.get('layout')) {
+    return <LayoutPreviewPage layout={params.get('layout')} />
   }
 
   const { menu, loading, waiting, offline, needsSetup, subscriptionBlocked, restaurantId, categories, allAddons, selectedLayout } = useMenuData()
@@ -109,7 +137,7 @@ export default function App() {
             <img src={`${import.meta.env.BASE_URL}svgs/cutlery.png`} alt="" className="w-16 h-16 object-contain opacity-30" />
           </div>
           <h2 className="font-heading font-bold text-white text-4xl">Waiting for Menu</h2>
-          <p className="text-white/50 text-xl mt-3">Select a menu from the admin dashboard</p>
+          <p className="text-white/50 text-xl mt-3">Select a menu in the RestoMenu app</p>
         </div>
       </StateScreen>
     )
