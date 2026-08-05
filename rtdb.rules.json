@@ -15,6 +15,21 @@
           ".validate": "newData.hasChildren(['deviceId', 'claimedAt']) && newData.child('deviceId').isString() && newData.child('claimedAt').isNumber()"
         }
       }
+    },
+    "subscription": {
+      "$restaurantId": {
+        "expiresAt": {
+          ".read": "!data.exists() || now < data.val()",
+          ".write": "auth != null && auth.token.admin === true"
+        }
+      }
+    },
+    "logs": {
+      "$entryId": {
+        ".read": false,
+        ".write": true,
+        ".validate": "newData.hasChildren(['message', 'ts']) && newData.child('message').isString() && newData.child('ts').isNumber()"
+      }
     }
   }
 }

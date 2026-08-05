@@ -2,52 +2,56 @@
 
 ## What It Is
 
-A registry that defines what every layout can display and how many items fit on screen without overflowing. Lives in two identical copies:
+A registry that defines what every layout can display and how many items fit on screen without overflowing. The **single canonical source** is:
 
-- `admin-dashboard/src/layouts/capabilities.js`
-- `tv-display/src/layouts/capabilities.js`
+- `shared/layouts/capabilities.js` (consumed by the TV app via the `@layouts` Vite alias)
 
-Both are committed and pushed to `main`.
+The Flutter admin app receives the same data (as `capabilities` in the Layout Shots API — `tv-display/public/layout-shots/layouts.json`) so its menu editor shows the right fields and limits per layout.
 
 ---
 
 ## Architecture Overview
 
 ```
-                    capabilities.js
-                    ┌─────────────────────────────────────┐
-                    │  DEFAULT_CAPABILITIES               │
-                    │  LAYOUT_CAPABILITIES {              │
-                    │    classic: {...}                   │
-                    │    bistro: {...}                    │
-                    │    brasserie: {...}                 │
-                    │    coffeeShop: {...}                │
-                    │    minimal: {...}                   │
-                    │    modern: {...}                    │
-                    │    moroccan: {...}                  │
-                    │    natureBistro: {...}              │
-                    │    pro: {...}                       │
-                    │    photoMenu: {...}                 │
-                    │  }                                  │
-                    │  getLayoutCapabilities()            │
-                    │  getLayoutOptionalFields()          │
-                    │  getMaxCategories()                 │
-                    │  getMaxItems(layoutKey, catCount)   │
-                    └──────────┬──────────────────────────┘
-                               │
-              ┌────────────────┼──────────────────┐
-              ▼                ▼                  ▼
-    admin-dashboard/      tv-display/         Any other
-    MenuEditor.jsx        App.jsx             consumer
-    CategorySection.jsx   truncateCategories()
-    api.js (updateMenu)
+        shared/layouts/capabilities.js        (canonical)
+        ┌─────────────────────────────────────┐
+        │  DEFAULT_CAPABILITIES               │
+        │  LAYOUT_CAPABILITIES {              │
+        │    classic: {...}                   │
+        │    bistro: {...}                    │
+        │    brasserie: {...}                 │
+        │    coffeeShop: {...}                │
+        │    minimal: {...}                   │
+        │    modern: {...}                    │
+        │    moroccan: {...}                  │
+        │    natureBistro: {...}              │
+        │    pro: {...}                       │
+        │    photoMenu: {...}                 │
+        │  }                                  │
+        │  getLayoutCapabilities()            │
+        │  getLayoutOptionalFields()          │
+        │  getMaxCategories()                 │
+        │  getMaxItems(layoutKey, catCount)   │
+        └──────────┬──────────────────────────┘
+                   │
+      ┌────────────┼──────────────────┐
+      ▼            ▼                  ▼
+tv-display/    layouts.json       Flutter app
+App.jsx        (Layout Shots      MenuEditor (reads
+truncate       API) → mobile      capabilities from the
+Categories()   layout picker      API to gate fields)
 ```
+
+Consumers:
+
+1. **tv-display/src/App.jsx** — the actual TV rendering app. Truncates items before rendering (`truncateCategories()` + `getMaxItems()`) so menus never overflow the fixed 1920x1080 canvas.
+2. **The Flutter admin app** — fetches `layouts.json` (Layout Shots API), shows layout previews, and reads each layout's `capabilities` to decide which editor fields to show (hero photo, descriptions, tags, max items).
 
 ---
 
 ## File by File Breakdown
 
-### 1. admin-dashboard/src/layouts/capabilities.js
+### 1. shared/layouts/capabilities.js
 
 #### DEFAULT_CAPABILITIES (lines 14-30)
 
@@ -162,8 +166,6 @@ Solve: N × headerPx + (N-1) × gapPx + itemHeightPx <= itemAreaPx
 
 Returns `null` if the layout has no pixel budgets, `1` for photoMenu (hard-coded single category).
 
-Used in `MenuEditor.jsx` at lines 37, 73, 95 to block adding categories beyond what fits.
-
 #### getMaxItems() (current)
 
 THE CORE FUNCTION. Computes how many items fit for a given layout + category count.
@@ -205,173 +207,9 @@ All values are conservative (rounded DOWN) so items never overflow.
 
 ---
 
-### 2. admin-dashboard/src/api.js
+### 2. tv-display/src/App.jsx — TV rendering
 
-#### updateMenu() (lines 70-86) — API-LAYER BUDGET VALIDATION
-
-This is the Firestore write function. It NOW has server-side (client SDK) validation:
-
-```js
-export async function updateMenu(restaurantId, id, data) {
-  // Budget validation — only checked when both categories and selectedLayout are present
-  if (data.categories != null && data.selectedLayout != null) {
-    const catArr = data.categories
-    const budget = getMaxItems(data.selectedLayout, catArr.length)
-    if (budget != null) {
-      const totalItems = catArr.reduce((sum, c) => sum + (c.items || []).length, 0)
-      if (totalItems > budget) {
-        throw new Error(`Item budget exceeded for layout "${data.selectedLayout}": ${totalItems} items, max ${budget}`)
-      }
-    }
-  }
-  await updateDoc(doc(db, 'restaurants', restaurantId, 'menus', id), data)
-}
-```
-
-WHAT THIS DOES:
-1. Checks if `data.categories` AND `data.selectedLayout` are both present in the update
-2. Calls `getMaxItems(selectedLayout, categories.length)` to get the budget
-3. Counts total items across all categories
-4. If total exceeds budget, THROWS an error — the write NEVER happens
-5. If budget is null (unlimited), or only one field is present, skip validation
-
-This is a BACKUP guard. The primary enforcement is in the UI (MenuEditor.jsx) which blocks the user before they can even attempt the save. But if someone bypasses the UI (e.g. Firestore console, API call), this catches it.
-
-**Imported at line 18:**
-```js
-import { getMaxItems } from './layouts/capabilities'
-```
-
-**Other functions in api.js are unrelated to budgets:**
-- `createMenu()` — creates empty menu with classic layout
-- `deleteMenu()` — deletes menu document
-- `onMenusSnapshot()` — real-time listener for menu list
-- `getMenu()` — one-time read of a menu
-- `onMenuSnapshot()` — real-time listener for single menu
-- `setActiveMenu()` — sets which menu is displayed on TV
-- `assignMenuToScreen()` / `clearScreen()` — screen management
-- `addScreen()` / `removeScreen()` — screen CRUD
-- `seedDefaultMenu()` — creates a demo menu with 5 sandwich items
-
----
-
-### 3. admin-dashboard/src/components/MenuEditor.jsx
-
-The admin panel where users edit their menu. Uses pixel budgets in THREE places:
-
-#### Computed values at render (lines 34-37):
-
-```js
-const dynamicMax = getMaxItems(selectedLayout, categories.length)
-const categoryItemsCounts = categories.map((c) => (c.items || []).length)
-const totalItemCount = categoryItemsCounts.reduce((sum, count) => sum + count, 0)
-const maxCategories = getMaxCategories(selectedLayout)
-```
-
-These recalculate on every render — when categories change, the budget updates automatically.
-
-#### Save guard (lines 67-92):
-
-```js
-const save = async (newCategories) => {
-  const cats = newCategories || categories
-  const oldTotal = categories.reduce((sum, c) => sum + (c.items || []).length, 0)
-  const newTotal = cats.reduce((sum, c) => sum + (c.items || []).length, 0)
-
-  // Block category additions beyond budget — allow restructures even when over budget
-  if (maxCategories != null && cats.length > maxCategories && cats.length > categories.length) {
-    toast.error(`Maximum categories reached for this layout (${maxCategories})`)
-    return
-  }
-
-  // Block item additions beyond budget — allow edits/deletes even when over budget
-  if (dynamicMax != null && newTotal > dynamicMax && newTotal > oldTotal) {
-    toast.error(`Maximum items reached for this layout (${dynamicMax})`)
-    return
-  }
-
-  // Proceed with save
-  setSaving(true)
-  try {
-    await updateMenu(restaurantId, menu.id, { name: menuName, categories: cats, selectedLayout })
-  } catch (e) {
-    toast.error('Failed to save: ' + e.message)
-  } finally {
-    setSaving(false)
-  }
-}
-```
-
-KEY DESIGN DECISIONS:
-- Only blocks INCREASES (newTotal > oldTotal) — allows edits/deletes even when over budget
-- This handles pre-existing menus that exceed the budget (created before budgets existed)
-- Blocks both category COUNT increases AND item count increases
-- Shows toast message explaining the limit
-
-#### Add Category button guard (lines 94-104):
-
-```js
-const addCategory = () => {
-  if (maxCategories != null && categories.length >= maxCategories) {
-    toast.error(`Maximum categories reached for this layout (${maxCategories})`)
-    return
-  }
-  // ... create and save new category
-}
-```
-
-#### UI indicator (lines 166-170, 188-191):
-
-Shows `{totalItemCount}/{dynamicMax} items` counter in the display settings section AND in the categories header. Lets the user see how close they are to the limit.
-
-#### Other props passed to CategorySection (lines 214-215):
-
-```js
-categoryItemsCounts={categoryItemsCounts}
-layoutMaxItems={dynamicMax}
-```
-
----
-
-### 4. admin-dashboard/src/components/CategorySection.jsx
-
-Per-category editor card. Uses the budget to block item additions:
-
-#### Budget check (lines 30-31):
-
-```js
-const totalItems = (categoryItemsCounts || []).reduce((s, c) => s + c, 0)
-const atMax = layoutMaxItems != null && totalItems >= layoutMaxItems
-```
-
-#### Add item button (lines 33-48):
-
-```js
-const addItem = () => {
-  if (!newItemName.trim()) return
-  if (atMax) {
-    toast.error(`Maximum items reached for this layout (${layoutMaxItems})`)
-    return
-  }
-  // ... add the item
-}
-```
-
-#### UI indicator (lines 138-141):
-
-Shows `({layoutMaxItems} max)` badge next to "Items" header.
-
-#### Add button disabled state (line 171):
-
-```jsx
-<Button size="sm" variant="ghost" onClick={addItem} disabled={atMax}>
-```
-
----
-
-### 5. tv-display/src/App.jsx
-
-The actual TV rendering app. Uses pixel budgets to truncate items before rendering:
+The TV app uses pixel budgets to truncate items before rendering:
 
 #### Lines 59-62:
 
@@ -418,7 +256,7 @@ HOW IT DISTRIBUTES ITEMS ACROSS CATEGORIES:
 5. Deduct taken items from remaining budget
 6. Distributes fairly — first categories get slightly more (due to `Math.round` + `Math.max(1, ...)`)
 
-This ensures the TV NEVER overflows — even if the admin somehow saves more items than the budget allows, the TV only renders what fits.
+This ensures the TV NEVER overflows — even if a menu somehow has more items than the budget allows, the TV only renders what fits.
 
 #### Layout rendering (lines 105-113):
 
@@ -436,77 +274,61 @@ The truncated `menuCategories` is passed to the layout component. The layout com
 
 ---
 
-### 6. tv-display/src/layouts/capabilities.js
+### 3. tv-display/public/layout-shots/layouts.json — the mobile contract
 
-Identical to the admin-dashboard version. Synced on commit `1ac972e`. Contains:
-- Same `DEFAULT_CAPABILITIES` with pixel budget fields
-- Same `LAYOUT_CAPABILITIES` with exact pixel values
-- Same `getLayoutCapabilities()`, `getLayoutOptionalFields()`
-- Same `getMaxCategories()`, `getMaxItems()`
+Each entry carries the capabilities the Flutter app needs to adapt its editor:
 
----
-
-### 7. tv-display/src/layouts/index.js
-
-Re-exports everything from capabilities.js:
-
-```js
-export {
-  LAYOUT_CAPABILITIES,
-  getLayoutCapabilities,
-  getLayoutOptionalFields,
-  getMaxItems,
-} from './capabilities'
+```json
+{
+  "id": "classic",
+  "name": "Classic Gold",
+  "image": "/RestoMenu/layout-shots/classic.jpg",
+  "capabilities": {
+    "heroPhoto": false,
+    "descriptions": false,
+    "tags": false,
+    "itemImages": false,
+    "allergyNote": false,
+    "pricingNote": false,
+    "maxItems": 8
+  }
+}
 ```
 
-Also exports layout component registry and `getLayout()` resolver.
+Note: the `maxItems` values in `layouts.json` are picker-oriented marketing values and can differ from the runtime pixel-budget math in `capabilities.js` (e.g. photoMenu is hard-coded to 8 in both).
 
 ---
 
 ## Data Flow Summary
 
 ```
-Admin user adds items in MenuEditor.jsx
+Owner edits menu in the Flutter app (MenuEditor)
   │
   ▼
-MenuEditor calls getMaxItems(layoutKey, catCount)
-  → gets the budget number from capabilities.js
-  → if adding would exceed budget, blocks with toast
-  → if within budget, calls save()
+Flutter editor reads capabilities from layouts.json
+  → shows/hides fields (hero photo, descriptions, tags) per layout
+  → enforces item/category limits in the UI
+  │
+  ▼
+Menu saved to Firestore (categories[].items[], selectedLayout)
+  │
+  ▼
+TV display reads from Firestore
+  │
+  ▼
+App.jsx calls getMaxItems(layoutKey, catCount)
+  → calls truncateCategories() with that number
+  → if items exceed budget, slices them proportionally
+  → passes truncated data to layout component
     │
     ▼
-  save() does ANOTHER budget check (defense-in-depth)
-    → if exceeded, blocks with toast
-    → if within budget, calls api.updateMenu()
-      │
-      ▼
-    updateMenu() does THIRD budget check (API-layer guard)
-      → calls getMaxItems() again
-      → if exceeded, throws error → toast shows
-      → if within budget, writes to Firestore
-        │
-        ▼
-      Firestore stores categories[].items[]
-        │
-        ▼
-      TV display reads from Firestore
-        │
-        ▼
-      App.jsx calls getMaxItems(layoutKey, catCount)
-        → gets the budget number
-        → calls truncateCategories() with that number
-        → if items exceed budget, slices them proportionally
-        → passes truncated data to layout component
-          │
-          ▼
-        Layout renders only what fits on screen
+  Layout renders only what fits on screen
 ```
 
-There are FOUR layers of enforcement:
-1. **UI button disabled** — CategorySection disables "Add Item" when at max
-2. **Editor save guard** — MenuEditor blocks save if budget would be exceeded
-3. **API validation** — updateMenu() throws before writing to Firestore
-4. **TV truncation** — App.jsx truncates items before rendering
+There are THREE layers of enforcement:
+1. **Flutter editor UI** — blocks additions beyond the layout's item/category limits
+2. **TV truncation** — App.jsx truncates items before rendering (never overflows)
+3. **Pixel-budget math** — all values conservative (rounded down)
 
 ---
 
@@ -538,9 +360,9 @@ All values rounded DOWN to keep them conservative.
 
 To add a new layout to the system:
 
-1. Create the layout component (JSX with all CSS clamp values)
-2. Add its entry to `LAYOUT_CAPABILITIES` in both admin-dashboard AND tv-display capabilities.js
-3. Trace the pixel budgets at 1920×1080 using the method above
-4. Add the component to both `index.js` layout registries
-5. Add to `LAYOUT_OPTIONS` in MenuEditor.jsx
-6. Add to `availableLayouts` default in api.js `createRestaurant()`
+1. Create the layout component in `shared/layouts/` (JSX with all CSS clamp values, 1920x1080 root, `pixelShift` burn-in animation, portrait adaptation block)
+2. Register it in `shared/layouts/index.js` (the registry auto-generates `layoutOptions` for the picker)
+3. Add its entry to `LAYOUT_CAPABILITIES` in `shared/layouts/capabilities.js`
+4. Trace the pixel budgets at 1920×1080 using the method above
+5. Generate a screenshot and add the entry to `tv-display/public/layout-shots/layouts.json` (the Flutter app picks it up automatically — no mobile code changes needed)
+6. Make it available to restaurants (add to `availableLayouts` in Firestore, or to the defaults in the Flutter app)

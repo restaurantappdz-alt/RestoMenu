@@ -1,0 +1,13 @@
+{
+  "name": "restomenu-layout-shots",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Regenerates the layout thumbnails served to the RestoMenu mobile picker (tv-display/public/layout-shots).",
+  "scripts": {
+    "shoot": "node shoot.mjs"
+  },
+  "dependencies": {
+    "playwright": "^1.49.1"
+  }
+}
