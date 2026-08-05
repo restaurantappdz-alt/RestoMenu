@@ -170,7 +170,7 @@ export default function LayoutModern({ categories = [], allAddons = [], offline,
                               whiteSpace: 'nowrap',
                               marginLeft: 12,
                             }}>
-                              {item.price} <span style={{ fontWeight: 300, fontSize: '0.65em', color: '#AAAAAA' }}>{menu?.currency || 'MAD'}</span>
+                              {item.price} <span style={{ fontWeight: 300, fontSize: '0.65em', color: '#AAAAAA' }}>{menu?.currency || 'DA'}</span>
                             </span>
                           </div>
                         )
@@ -200,7 +200,7 @@ export default function LayoutModern({ categories = [], allAddons = [], offline,
                               color: '#888888',
                               fontStyle: 'italic',
                             }}>
-                              {menu?.currency || 'MAD'}{addon.price}
+                              {menu?.currency || 'DA'}{addon.price}
                             </span>
                           </div>
                         ))}
@@ -235,7 +235,7 @@ export default function LayoutModern({ categories = [], allAddons = [], offline,
                       color: '#888888',
                       fontStyle: 'italic',
                     }}>
-                      {menu?.currency || 'MAD'}{addon.price}
+                      {menu?.currency || 'DA'}{addon.price}
                     </span>
                   </div>
                 ))}

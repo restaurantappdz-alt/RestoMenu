@@ -174,7 +174,7 @@ export default function LayoutMoroccan({ categories = [], allAddons = [], offlin
                             whiteSpace: 'nowrap',
                             marginLeft: 8,
                           }}>
-                            {item.price} <span style={{ fontSize: '0.55em', fontWeight: 300, color: '#A8C4C0' }}>{menu?.currency || 'MAD'}</span>
+                            {item.price} <span style={{ fontSize: '0.55em', fontWeight: 300, color: '#A8C4C0' }}>{menu?.currency || 'DA'}</span>
                           </span>
                         </div>
                       ))}
@@ -191,7 +191,7 @@ export default function LayoutMoroccan({ categories = [], allAddons = [], offlin
                             fontSize: 'clamp(0.75rem, 0.9vw, 1rem)',
                             fontStyle: 'italic',
                           }}>
-                            + {addon.name} – {menu?.currency || 'MAD'}{addon.price}
+                            + {addon.name} – {menu?.currency || 'DA'}{addon.price}
                           </span>
                         ))}
                       </div>
@@ -215,7 +215,7 @@ export default function LayoutMoroccan({ categories = [], allAddons = [], offlin
                     fontSize: 'clamp(0.75rem, 0.9vw, 1rem)',
                     fontStyle: 'italic',
                   }}>
-                    + {addon.name} – {menu?.currency || 'MAD'}{addon.price}
+                    + {addon.name} – {menu?.currency || 'DA'}{addon.price}
                   </span>
                 ))}
               </div>

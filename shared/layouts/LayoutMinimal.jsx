@@ -218,7 +218,7 @@ export default function LayoutMinimal({ categories, allAddons, offline, menu, ti
                           <span style={styles.itemName}>{item.name}</span>
                         </span>
                         <span style={styles.itemPrice}>
-                          {item.price} <span style={{ fontWeight: 500, fontSize: '0.7em', color: '#888' }}>MAD</span>
+                          {item.price} <span style={{ fontWeight: 500, fontSize: '0.7em', color: '#888' }}>{menu?.currency || 'DA'}</span>
                         </span>
                       </div>
                     ))}
@@ -240,7 +240,7 @@ export default function LayoutMinimal({ categories, allAddons, offline, menu, ti
               <img src={(import.meta.env.BASE_URL || '/') + 'fries.svg'} alt="" style={{ width: 'clamp(80px, 10vw, 120px)', opacity: 0.4, marginBottom: '1rem' }} />
               {allAddons.map((addon, j) => (
                 <p key={j} style={styles.addonPrice}>
-                  {addon.price} <span style={{ fontWeight: 500, fontSize: '0.65em', color: '#888' }}>MAD</span>
+                  {addon.price} <span style={{ fontWeight: 500, fontSize: '0.65em', color: '#888' }}>{menu?.currency || 'DA'}</span>
                 </p>
               ))}
               <div style={{ marginTop: '1.5rem', padding: '0.5rem 1.25rem', border: '1px solid #ddd', borderRadius: '999px' }}>

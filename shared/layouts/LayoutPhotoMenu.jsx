@@ -42,7 +42,7 @@ function Dot() {
   return <span className="mx-[0.5vw] opacity-40" style={{ color: '#7a6f56' }}>·</span>
 }
 
-function FallbackHeroCard({ heroName, heroDescription, heroPrice }) {
+function FallbackHeroCard({ currency, heroName, heroDescription, heroPrice }) {
   return (
     <section
       className="relative flex flex-col items-center justify-center overflow-hidden"
@@ -116,7 +116,7 @@ function FallbackHeroCard({ heroName, heroDescription, heroPrice }) {
             className="font-bold tabular-nums leading-none"
             style={{ fontSize: 'clamp(2.5rem, 4vw, 5rem)', color: '#c8902a', marginBottom: '1.5vh' }}
           >
-            ${heroPrice}
+            {currency}{heroPrice}
           </span>
         )}
         <div className="flex items-center gap-[0.3vw]">
@@ -129,7 +129,7 @@ function FallbackHeroCard({ heroName, heroDescription, heroPrice }) {
   )
 }
 
-function HeroPhotoCard({ imageUrl, heroName, heroDescription, heroLabel, heroPrice }) {
+function HeroPhotoCard({ currency, imageUrl, heroName, heroDescription, heroLabel, heroPrice }) {
   return (
     <section className="relative overflow-hidden" style={{ background: '#131109', height: '100%' }}>
       <img
@@ -186,7 +186,7 @@ function HeroPhotoCard({ imageUrl, heroName, heroDescription, heroLabel, heroPri
             className="font-bold tabular-nums leading-none"
             style={{ fontSize: 'clamp(2rem, 3.4vw, 4rem)', color: '#c8902a' }}
           >
-            {heroPrice ? `$${heroPrice}` : ''}
+            {heroPrice ? `${currency}${heroPrice}` : ''}
           </span>
           <div className="flex items-center gap-[0.2vw]">
             {Array.from({ length: 5 }).map((_, i) => (
@@ -204,7 +204,7 @@ export default function LayoutPhotoMenu({ categories, allAddons, offline, menu, 
   const items = categories[0]?.items || []
   const slicedItems = items.slice(0, capabilities.maxItems)
 
-  const currency = menu?.currency || '$'
+  const currency = menu?.currency || 'DA'
   const hours = menu?.businessHours || 'Open Daily'
   const allergyNote = menu?.allergyNote || null
   const pricingNote = menu?.pricingNote || null
@@ -403,6 +403,7 @@ export default function LayoutPhotoMenu({ categories, allAddons, offline, menu, 
         {/* Only show hero price when explicitly configured; never synthesize from first item */}
         {hasHeroImage ? (
           <HeroPhotoCard
+            currency={currency}
             imageUrl={menu.heroImageUrl}
             heroName={menu.heroName || title}
             heroDescription={menu.heroDescription}
@@ -411,6 +412,7 @@ export default function LayoutPhotoMenu({ categories, allAddons, offline, menu, 
           />
         ) : (
           <FallbackHeroCard
+            currency={currency}
             heroName={menu.heroName || title}
             heroDescription={menu.heroDescription}
             heroPrice={menu.heroPrice || null}

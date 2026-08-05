@@ -22,7 +22,7 @@ export default function LayoutCoffeeShop({
 }) {
   const businessHours =
     menu.businessHours || 'MON-FRI: 10AM TO 6PM. SAT-SUN: 12PM TO 8PM.'
-  const currency = menu.currency || '$'
+  const currency = menu.currency || 'DA'
 
   const categoriesWithAddons = categories.map((cat) => ({
     ...cat,

@@ -200,7 +200,7 @@ export default function LayoutBrasserie({ categories = [], allAddons = [], offli
                             whiteSpace: 'nowrap',
                             marginLeft: 4,
                           }}>
-                            {item.price} <span style={{ fontSize: '0.6em', fontWeight: 400, color: '#7A6B5A' }}>{menu?.currency || 'MAD'}</span>
+                            {item.price} <span style={{ fontSize: '0.6em', fontWeight: 400, color: '#7A6B5A' }}>{menu?.currency || 'DA'}</span>
                           </span>
                         </div>
                       ))}
@@ -217,7 +217,7 @@ export default function LayoutBrasserie({ categories = [], allAddons = [], offli
                             fontStyle: 'italic',
                             border: '1px solid rgba(201,168,76,0.15)',
                           }}>
-                            + {addon.name} – {menu?.currency || 'MAD'}{addon.price}
+                            + {addon.name} – {menu?.currency || 'DA'}{addon.price}
                           </span>
                         ))}
                       </div>
@@ -241,7 +241,7 @@ export default function LayoutBrasserie({ categories = [], allAddons = [], offli
                     fontStyle: 'italic',
                     border: '1px solid rgba(201,168,76,0.15)',
                   }}>
-                    + {addon.name} – {menu?.currency || 'MAD'}{addon.price}
+                    + {addon.name} – {menu?.currency || 'DA'}{addon.price}
                   </span>
                 ))}
               </div>

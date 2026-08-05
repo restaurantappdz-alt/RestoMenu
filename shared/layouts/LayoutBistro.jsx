@@ -315,7 +315,7 @@ export default function LayoutBistro({ categories, allAddons, offline, menu, tit
                           </div>
                           <div style={styles.itemConnector} />
                           <span style={styles.itemPrice}>
-                            {item.price}<span style={styles.priceCurrency}>MAD</span>
+                            {item.price}<span style={styles.priceCurrency}>{menu?.currency || 'DA'}</span>
                           </span>
                         </div>
                       ))}
@@ -337,7 +337,7 @@ export default function LayoutBistro({ categories, allAddons, offline, menu, tit
                 <img src={(import.meta.env.BASE_URL || '/') + 'fries.svg'} alt="" style={{ width: 'clamp(70px, 9vw, 110px)', opacity: 0.25, marginBottom: '0.75rem' }} />
                 {allAddons.map((addon, j) => (
                   <p key={j} style={styles.addonPrice}>
-                    {addon.price}<span style={styles.addonCurrency}>MAD</span>
+                    {addon.price}<span style={styles.addonCurrency}>{menu?.currency || 'DA'}</span>
                   </p>
                 ))}
                 <div style={styles.addonBadge}>+ Ajouter à la commande</div>

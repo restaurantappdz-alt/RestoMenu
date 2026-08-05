@@ -276,7 +276,7 @@ export default function LayoutNatureBistro({ categories = [], allAddons = [], of
                           color: '#1A3A2A',
                           whiteSpace: 'nowrap',
                         }}>
-                          {item.price} <span style={{ fontFamily: "'Inter', sans-serif", fontWeight: 500, fontSize: '0.55em', color: '#5A6B5A' }}>{menu?.currency || 'MAD'}</span>
+                          {item.price} <span style={{ fontFamily: "'Inter', sans-serif", fontWeight: 500, fontSize: '0.55em', color: '#5A6B5A' }}>{menu?.currency || 'DA'}</span>
                         </span>
                       </div>
                     ))}
@@ -298,7 +298,7 @@ export default function LayoutNatureBistro({ categories = [], allAddons = [], of
                           fontFamily: "'Inter', sans-serif",
                           fontStyle: 'italic',
                         }}>
-                          + {addon.name} – {menu?.currency || 'MAD'}{addon.price}
+                          + {addon.name} – {menu?.currency || 'DA'}{addon.price}
                         </span>
                       ))}
                     </div>

@@ -269,7 +269,7 @@ export default function LayoutPro({ categories = [], allAddons = [], offline, me
                             whiteSpace: 'nowrap',
                             marginLeft: 8,
                           }}>
-                            {item.price} <span style={{ fontFamily: "'Inter', sans-serif", fontWeight: 300, fontSize: '0.6em', color: 'rgba(212,175,55,0.5)' }}>{menu?.currency || 'MAD'}</span>
+                            {item.price} <span style={{ fontFamily: "'Inter', sans-serif", fontWeight: 300, fontSize: '0.6em', color: 'rgba(212,175,55,0.5)' }}>{menu?.currency || 'DA'}</span>
                           </span>
                         </div>
                       ))}
@@ -290,7 +290,7 @@ export default function LayoutPro({ categories = [], allAddons = [], offline, me
                             fontStyle: 'italic',
                             fontFamily: "'Inter', sans-serif",
                           }}>
-                            + {addon.name} <span style={{ fontWeight: 600 }}>{menu?.currency || 'MAD'}{addon.price}</span>
+                            + {addon.name} <span style={{ fontWeight: 600 }}>{menu?.currency || 'DA'}{addon.price}</span>
                           </span>
                         ))}
                       </div>
@@ -319,7 +319,7 @@ export default function LayoutPro({ categories = [], allAddons = [], offline, me
                     fontStyle: 'italic',
                     fontFamily: "'Inter', sans-serif",
                   }}>
-                    + {addon.name} <span style={{ fontWeight: 600 }}>{menu?.currency || 'MAD'}{addon.price}</span>
+                    + {addon.name} <span style={{ fontWeight: 600 }}>{menu?.currency || 'DA'}{addon.price}</span>
                   </span>
                 ))}
               </div>
