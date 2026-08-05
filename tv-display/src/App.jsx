@@ -2,6 +2,7 @@ import useMenuData from './hooks/useMenuData'
 import useDeviceLock from './hooks/useDeviceLock'
 import PhoneMenuPage from './pages/PhoneMenuPage'
 import LayoutPreviewPage from './pages/LayoutPreviewPage'
+import ErrorBoundary from './ErrorBoundary'
 import { DEMO_CATEGORIES, DEMO_ADDONS, DEMO_MENU } from './demo/demoData'
 import { getLayout, getMaxItems } from '@layouts'
 import './index.css'
@@ -73,6 +74,28 @@ function DisplayedElsewhereScreen() {
   )
 }
 
+function ConnectionLostScreen() {
+  return (
+    <StateScreen>
+      <div className="text-center animate-pop-in z-10 max-w-lg px-8">
+        <div className="w-32 h-32 mx-auto mb-8 rounded-full bg-white/5 border border-brand-orange/20 flex items-center justify-center">
+          <img src={`${import.meta.env.BASE_URL}svgs/cutlery.png`} alt="" className="w-16 h-16 object-contain opacity-30" />
+        </div>
+        <h2 className="font-heading font-bold text-white text-4xl">Connection Lost</h2>
+        <p className="text-white/50 text-xl mt-3 leading-relaxed">
+          We can't reach the menu server right now.
+        </p>
+        <button
+          onClick={() => window.location.reload()}
+          className="mt-8 px-10 py-3 rounded-full bg-brand-orange text-white text-lg font-semibold hover:bg-brand-orange/90 transition-colors cursor-pointer"
+        >
+          Retry
+        </button>
+      </div>
+    </StateScreen>
+  )
+}
+
 export default function App() {
   const params = new URLSearchParams(window.location.search)
 
@@ -83,18 +106,23 @@ export default function App() {
     const DemoLayoutComponent = getLayout(demoLayout)
     const demoLimit = getMaxItems(demoLayout, DEMO_CATEGORIES.length)
     const demoCategories = truncateCategories(DEMO_CATEGORIES, demoLimit)
-    return (
-      <div className="relative h-full w-full" data-layout={demoLayout}>
-        <DemoLayoutComponent
-          categories={demoCategories}
-          allAddons={DEMO_ADDONS}
-          offline={false}
-          menu={DEMO_MENU}
-          title={DEMO_MENU.name}
-        />
-      </div>
-    )
-  }
+  return (
+    <div className="relative h-full w-full">
+      {connectionError && (
+        <div className="absolute top-0 left-0 right-0 z-50 bg-black/60 backdrop-blur-sm text-amber-300 text-center py-2 text-lg font-medium pointer-events-none">
+          Connection lost — showing saved menu
+        </div>
+      )}
+      <LayoutComponent
+        categories={menuCategories}
+        allAddons={allAddons}
+        offline={offline}
+        menu={menu}
+        title={title}
+      />
+    </div>
+  )
+}
 
   // Phone menu mode: no device lock, no TV subscription guard black screen.
   // Must return before any TV hooks run (useMenuData / useDeviceLock).
@@ -107,7 +135,7 @@ export default function App() {
     return <LayoutPreviewPage layout={params.get('layout')} />
   }
 
-  const { menu, loading, waiting, offline, needsSetup, subscriptionBlocked, restaurantId, categories, allAddons, selectedLayout } = useMenuData()
+  const { menu, loading, waiting, offline, needsSetup, subscriptionBlocked, connectionError, restaurantId, categories, allAddons, selectedLayout } = useMenuData()
   const screenId = params.get('s')
   const deviceStatus = useDeviceLock(restaurantId, screenId, !offline)
   const LayoutComponent = getLayout(selectedLayout)
@@ -127,6 +155,13 @@ export default function App() {
 
   if (deviceStatus === 'blocked') {
     return <DisplayedElsewhereScreen />
+  }
+
+  // Transient connection failure with nothing to show → visible retry path,
+  // NOT the misleading "Menu Not Found" (that is reserved for a real
+  // connected snapshot that shows no menu).
+  if (connectionError && !menu && !loading) {
+    return <ConnectionLostScreen />
   }
 
   if (waiting) {
@@ -167,13 +202,15 @@ export default function App() {
 
   return (
     <div className="relative h-full w-full">
-      <LayoutComponent
-        categories={menuCategories}
-        allAddons={allAddons}
-        offline={offline}
-        menu={menu}
-        title={title}
-      />
+      <ErrorBoundary>
+        <LayoutComponent
+          categories={menuCategories}
+          allAddons={allAddons}
+          offline={offline}
+          menu={menu}
+          title={title}
+        />
+      </ErrorBoundary>
     </div>
   )
 }

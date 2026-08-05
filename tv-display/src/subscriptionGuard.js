@@ -15,6 +15,7 @@ const KEYS = {
   EXPIRES_AT: 'restomenu-tv-expiresAt',
   CLOCK_OFFSET: 'restomenu-tv-clockOffset',
   LAST_SEEN_TIME: 'restomenu-tv-lastSeenTime',
+  SERVER_EXPIRED: 'restomenu-tv-server-expired',
 }
 
 const ROLLBACK_TOLERANCE_MS = 5 * 60 * 1000 // 5 minutes
@@ -82,6 +83,8 @@ export async function syncServerOffset(restaurantId) {
  * @param {boolean} fromCache - snapshot.metadata.fromCache
  */
 export function updateFromServer(data, fromCache) {
+  // A cache read is a transient offline blip — never wipe stored values
+  // from it, so a flaky connection cannot destroy the expiry.
   if (fromCache) return
 
   try {
@@ -98,6 +101,12 @@ export function updateFromServer(data, fromCache) {
       if (Number.isFinite(ms)) {
         localStorage.setItem(KEYS.EXPIRES_AT, String(ms))
       }
+    } else {
+      // GENUINE server read with no expiresAt = the subscription was
+      // deactivated (the owner cleared the field). Remove the stored
+      // expiry so checkAccess fails closed (no_expiration) and the TV
+      // stops showing menus immediately instead of on the old expiry day.
+      localStorage.removeItem(KEYS.EXPIRES_AT)
     }
 
     // A live server read proves the device is online right now —
@@ -106,6 +115,76 @@ export function updateFromServer(data, fromCache) {
   } catch (e) {
     // localStorage full or unavailable — skip silently
   }
+}
+
+/**
+ * Watch the server-authoritative subscription expiry for a restaurant.
+ *
+ * The RTDB node subscription/{restaurantId}/expiresAt is written ONLY by the
+ * super-admin app (rule: auth.token.admin === true). Its read rule denies
+ * access once the server clock passes the expiry (now < expiresAt), so a
+ * permission_denied error here means "the server has decided this TV is
+ * expired" — regardless of any tampering with the device clock, the clock
+ * offset, or the Firestore value.
+ *
+ * When the node is absent (admin never set expiry via this path), onValue
+ * delivers null and the TV falls back to the legacy Firestore-based check.
+ *
+ * Returns an unsubscribe function.
+ *
+ * @param {string} restaurantId - The restaurant ID for the RTDB path
+ * @param {object} handlers - { onAllowed(ms), onMissing(), onExpired() }
+ */
+export function watchServerExpiry(restaurantId, handlers = {}) {
+  const db = getDatabase()
+  const expiryRef = ref(db, `subscription/${restaurantId}/expiresAt`)
+
+  return onValue(
+    expiryRef,
+    (snap) => {
+      const ms = snap.val()
+      if (typeof ms === 'number' && Number.isFinite(ms)) {
+        try {
+          localStorage.removeItem(KEYS.SERVER_EXPIRED)
+        } catch (e) {
+          // storage unavailable — skip silently
+        }
+        updateFromServer({ expiresAt: ms }, false)
+        handlers.onAllowed?.(ms)
+      } else {
+        // Node absent: the admin never set expiry via RTDB, or the
+        // subscription was just deactivated (node removed). Clear any
+        // server-expired flag so a deactivated subscription's block can be
+        // lifted; checkAccess then decides from the (possibly missing)
+        // Firestore expiry, and trials (Firestore-only expiry) stay unblocked.
+        try {
+          localStorage.removeItem(KEYS.SERVER_EXPIRED)
+        } catch (e) {
+          // storage unavailable — skip silently
+        }
+        handlers.onMissing?.()
+      }
+    },
+    (error) => {
+      // Only a REAL permission_denied means "the server clock has passed
+      // expiresAt" (the RTDB read rule denies exactly then). Network blips
+      // must NOT black-screen the TV — report them and keep the current
+      // access state untouched.
+      if (error?.code !== 'PERMISSION_DENIED') {
+        handlers.onError?.(error)
+        return
+      }
+      // permission_denied: node exists and now >= expiresAt.
+      // The Firestore value must not override this decision.
+      try {
+        localStorage.setItem(KEYS.SERVER_EXPIRED, '1')
+      } catch (e) {
+        // storage unavailable — skip silently
+      }
+      revokeAccess()
+      handlers.onExpired?.()
+    },
+  )
 }
 
 /**
@@ -120,26 +199,34 @@ export function updateFromServer(data, fromCache) {
  */
 export function checkAccess() {
   try {
-    // 1. Clock rollback guard — 5-minute tolerance for legitimate NTP adjustments
+    // 1. Server-revoked: the RTDB rule denied the subscription read, which
+    //    only happens when the server clock has passed expiresAt. This flag
+    //    outranks every local value and is only cleared by a fresh live
+    //    server value (watchServerExpiry onValue with a future expiry).
+    if (localStorage.getItem(KEYS.SERVER_EXPIRED) === '1') {
+      return { allowed: false, reason: 'expired' }
+    }
+
+    // 2. Clock rollback guard — 5-minute tolerance for legitimate NTP adjustments
     const lastSeen = localStorage.getItem(KEYS.LAST_SEEN_TIME)
     if (lastSeen && Date.now() < Number(lastSeen) - ROLLBACK_TOLERANCE_MS) {
       return { allowed: false, reason: 'clock_rolled_back' }
     }
 
-    // 2. Update lastSeenTime
+    // 3. Update lastSeenTime
     localStorage.setItem(KEYS.LAST_SEEN_TIME, String(Date.now()))
 
-    // 3. No expiration known → fail closed
+    // 4. No expiration known → fail closed
     const expiresAt = localStorage.getItem(KEYS.EXPIRES_AT)
     if (!expiresAt) {
       return { allowed: false, reason: 'no_expiration' }
     }
 
-    // 4. Compute corrected time using stored clock offset
+    // 5. Compute corrected time using stored clock offset
     const offset = Number(localStorage.getItem(KEYS.CLOCK_OFFSET) || 0)
     const correctedNow = Date.now() + offset
 
-    // 5. Compare at day granularity
+    // 6. Compare at day granularity
     //    Normal drift (seconds to minutes) cannot shift which UTC day it is,
     //    making the transition deterministic and predictable.
     const expiresAtDay = toDayStart(Number(expiresAt))

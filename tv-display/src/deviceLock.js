@@ -113,12 +113,20 @@ export function isStale(lease, now = Date.now(), ttl = LEASE_TTL_MS) {
 /**
  * Watch the current lease for a screen. callback(lease) fires with
  * { deviceId, claimedAt, renewedAt } or null when no device holds the lease.
+ * onError(error) fires when the listener itself fails (e.g. network) so the
+ * caller can invalidate a stale cached lease instead of staying frozen.
  * Returns an unsubscribe function.
  */
-export function watchLease(restaurantId, screenId, callback) {
-  return onValue(leaseRef(restaurantId, screenId), (snap) => {
-    callback(snap.val() || null)
-  })
+export function watchLease(restaurantId, screenId, callback, onError) {
+  return onValue(
+    leaseRef(restaurantId, screenId),
+    (snap) => {
+      callback(snap.val() || null)
+    },
+    (error) => {
+      onError?.(error)
+    },
+  )
 }
 
 function leaseCacheKey(restaurantId, screenId) {
@@ -134,4 +142,12 @@ export function loadCachedLease(restaurantId, screenId) {
 
 export function saveCachedLease(restaurantId, screenId, lease) {
   try { localStorage.setItem(leaseCacheKey(restaurantId, screenId), JSON.stringify(lease)) } catch {}
+}
+
+/**
+ * Delete this device's cached view of a lease. Called when the watcher
+ * errors so a stale cached 'blocked' can never persist across reloads.
+ */
+export function clearCachedLease(restaurantId, screenId) {
+  try { localStorage.removeItem(leaseCacheKey(restaurantId, screenId)) } catch {}
 }
