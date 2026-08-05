@@ -79,6 +79,10 @@ export async function syncServerOffset(restaurantId) {
  * Stores expiresAt and stamps lastSeenTime. Clock offset is handled
  * independently by syncServerOffset().
  *
+ * NOTE: this only ever STORES an expiry — it never removes one. Removal
+ * is the job of updateFromRestaurant(), because the restaurant document
+ * (activeUntil) is the source of truth for the subscription state.
+ *
  * @param {object} data - snapshot.data() from config/display doc
  * @param {boolean} fromCache - snapshot.metadata.fromCache
  */
@@ -89,23 +93,66 @@ export function updateFromServer(data, fromCache) {
 
   try {
     if (data.expiresAt != null) {
-      // Accept Firestore Timestamp (toMillis), epoch number, or ISO string
-      let ms = data.expiresAt
-      if (typeof data.expiresAt === 'object' && typeof data.expiresAt.toMillis === 'function') {
-        ms = data.expiresAt.toMillis()
-      } else if (typeof data.expiresAt === 'string') {
-        ms = Date.parse(data.expiresAt)
-      } else {
-        ms = Number(data.expiresAt)
+      const ms = toMillis(data.expiresAt)
+      if (Number.isFinite(ms)) {
+        localStorage.setItem(KEYS.EXPIRES_AT, String(ms))
       }
+    }
+
+    // A live server read proves the device is online right now —
+    // stamp lastSeenTime to clear any prior clock-rollback block
+    localStorage.setItem(KEYS.LAST_SEEN_TIME, String(Date.now()))
+  } catch (e) {
+    // localStorage full or unavailable — skip silently
+  }
+}
+
+/**
+ * Coerce a Firestore Timestamp, epoch number, or ISO string into epoch ms.
+ * @param {*} value
+ * @returns {number}
+ */
+function toMillis(value) {
+  if (typeof value === 'object' && typeof value.toMillis === 'function') {
+    return value.toMillis()
+  }
+  if (typeof value === 'string') {
+    return Date.parse(value)
+  }
+  return Number(value)
+}
+
+/**
+ * Called from the onSnapshot callback with data from the restaurant
+ * document (restaurants/{id}).
+ *
+ * The restaurant doc's activeUntil is the source of truth for the
+ * subscription state because the RestoMenu admin app writes it there
+ * (config/display.expiresAt is admin-only). Only updates stored values on
+ * a genuine server read (fromCache === false).
+ *
+ * activeUntil present  → store it as the expiry.
+ * activeUntil absent   → subscription deactivated → remove the stored
+ *                        expiry so checkAccess fails closed immediately.
+ *
+ * @param {object} data - snapshot.data() from the restaurant doc
+ * @param {boolean} fromCache - snapshot.metadata.fromCache
+ */
+export function updateFromRestaurant(data, fromCache) {
+  // A cache read is a transient offline blip — never wipe stored values
+  // from it, so a flaky connection cannot destroy the expiry.
+  if (fromCache) return
+
+  try {
+    if (data.activeUntil != null) {
+      const ms = toMillis(data.activeUntil)
       if (Number.isFinite(ms)) {
         localStorage.setItem(KEYS.EXPIRES_AT, String(ms))
       }
     } else {
-      // GENUINE server read with no expiresAt = the subscription was
-      // deactivated (the owner cleared the field). Remove the stored
-      // expiry so checkAccess fails closed (no_expiration) and the TV
-      // stops showing menus immediately instead of on the old expiry day.
+      // GENUINE server read with no activeUntil = the subscription was
+      // deactivated. Remove the stored expiry so checkAccess fails closed
+      // (no_expiration) and the TV stops showing immediately.
       localStorage.removeItem(KEYS.EXPIRES_AT)
     }
 

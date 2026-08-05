@@ -1,0 +1,84 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Shared helper: checks if the requester owns the restaurant
+    function isOwner(restaurantId) {
+      return request.auth != null
+        && get(/databases/$(database)/documents/restaurants/$(restaurantId)).data.ownerUid == request.auth.uid;
+    }
+
+    // Shared helper: checks if the requester is an admin.
+    // Admin identity comes from the admins/{uid} document (source of truth)
+    // or the app's super-admin email whitelist (Flutter admin app).
+    function isAdmin() {
+      return request.auth != null
+        && (exists(/databases/$(database)/documents/admins/$(request.auth.uid))
+            || request.auth.token.email == 'restaurantapp.dz@gmail.com'
+            || request.auth.token.email == 'superuser@restomenu.com');
+    }
+
+    // --- Username mapping ---
+    match /usernames/{name} {
+      allow get: if true;
+      allow list: if false;
+      // Any authenticated user may claim an unclaimed name. The previous
+      // strict email==token.email check was removed because Firebase Auth
+      // lowercases the token email while the app writes the typed email
+      // verbatim, so every sign-up was denied on case mismatch.
+      allow create: if request.auth != null && name != 'admin';
+      allow update, delete: if false;
+    }
+
+    // --- Restaurant documents ---
+    match /restaurants/{restaurantId} {
+      // Public read: required by the TV display website (unauthenticated)
+      // so it can verify the subscription expiry (activeUntil) and by the
+      // QR-code menu page.
+      allow read: if true;
+      allow create: if request.auth != null
+        && request.resource.data.ownerUid == request.auth.uid;
+      allow update: if isOwner(restaurantId) || isAdmin();
+      allow delete: if isOwner(restaurantId);
+
+      // --- Menus subcollection (public read, owner CRUD) ---
+      // Public read is required by the TV display website and QR-code
+      // menu page, both of which access Firestore without authentication.
+      match /menus/{menuId} {
+        allow read: if true;
+        allow create, update, delete: if isOwner(restaurantId);
+      }
+
+      // --- TV config/display (public read, locked write) ---
+      match /config/display {
+        allow read: if true;
+
+        // Admins: full write access (can set expiresAt, heartbeatAt, everything)
+        allow create, update: if request.auth != null
+                               && isAdmin();
+
+        // Owners: can create/update but NEVER touch expiresAt or heartbeatAt
+        allow create: if isOwner(restaurantId)
+                       && request.resource.data.get('expiresAt', null) == null
+                       && request.resource.data.get('heartbeatAt', null) == null;
+        allow update: if isOwner(restaurantId)
+          && request.resource.data.get('expiresAt', null) == resource.data.get('expiresAt', null)
+          && request.resource.data.get('heartbeatAt', null) == resource.data.get('heartbeatAt', null);
+
+        allow delete: if false;
+      }
+    }
+
+    // --- Admin collection ---
+    match /admins/{adminId} {
+      allow read: if request.auth != null && isAdmin();
+      allow create, update, delete: if false;
+    }
+
+    // --- Global config (default layouts for new restaurants) ---
+    match /config/layoutDefaults {
+      allow read: if true;                                   // owner's createRestaurant reads defaults
+      allow write: if request.auth != null && isAdmin();     // only super-admins change defaults
+    }
+  }
+}

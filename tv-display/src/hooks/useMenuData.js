@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { onSnapshot, doc, getDoc } from 'firebase/firestore'
 import { db } from '../firebase'
-import { updateFromServer, checkAccess, syncServerOffset, watchServerExpiry } from '../subscriptionGuard'
+import { updateFromServer, updateFromRestaurant, checkAccess, syncServerOffset, watchServerExpiry } from '../subscriptionGuard'
 
 async function checkConnectivity() {
   const controller = new AbortController()
@@ -241,6 +241,27 @@ export default function useMenuData() {
     }
     attachExpiryWatcher()
 
+    const unsubRestaurant = onSnapshot(doc(db, 'restaurants', id), (snap) => {
+      // The restaurant doc (activeUntil) is the subscription source of
+      // truth for the RestoMenu admin app. Handle it before the config
+      // snapshot so the activeUntil-based expiry is never masked by an
+      // absent config.expiresAt.
+      const data = snap.data() || {}
+      updateFromRestaurant(data, snap.metadata.fromCache)
+      setConnectionError(false)
+      setSnapshotTick((t) => t + 1)
+
+      const access = checkAccess()
+      setSubscriptionBlocked(!access.allowed)
+      if (!access.allowed) {
+        setLoading(false)
+      }
+    }, (error) => {
+      // Restaurant doc read may be denied for unauthenticated legacy paths —
+      // fall back to the config/display source without blocking the TV.
+      setConnectionError(true)
+    })
+
     const unsubConfig = onSnapshot(doc(db, 'restaurants', id, 'config', 'display'), (snap) => {
       const data = snap.data() || {}
 
@@ -295,6 +316,7 @@ export default function useMenuData() {
     })
     return () => {
       unsubConfig()
+      unsubRestaurant()
       if (expiryUnsub) expiryUnsub()
       if (expiryRetryTimer) clearTimeout(expiryRetryTimer)
     }
