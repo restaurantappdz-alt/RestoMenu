@@ -15,7 +15,7 @@
 // the same restaurant run simultaneously, while one link still binds to a
 // single device at a time. Missing ?s= falls back to scope 'default'.
 
-import { ref, set, onValue, serverTimestamp, onDisconnect, remove } from 'firebase/database'
+import { ref, set, onValue, serverTimestamp, onDisconnect, remove, push } from 'firebase/database'
 import { rtdb } from './firebase'
 
 const DEVICE_ID_KEY = 'restomenu-tv-deviceId'
@@ -150,4 +150,32 @@ export function saveCachedLease(restaurantId, screenId, lease) {
  */
 export function clearCachedLease(restaurantId, screenId) {
   try { localStorage.removeItem(leaseCacheKey(restaurantId, screenId)) } catch {}
+}
+
+/**
+ * Append an audit event to tvEvents/{restaurantId} so the super-admin app
+ * can see every device that used a screen link (and when). Event types:
+ *  - 'claim':    this device started displaying a screen
+ *  - 'blocked':  this device attempted a screen already held by another
+ *  - 'takeover': this device reclaimed a stale foreign lease
+ *
+ * The RTDB rules tie claim/takeover events to the live lease (the event
+ * deviceId must equal the current lease holder) and make the log
+ * append-only, so this is evidence the super admin can act on.
+ *
+ * Fire-and-forget by design: reporting must never affect the display, so
+ * any failure is swallowed silently.
+ */
+export function reportEvent(restaurantId, screenId, type) {
+  try {
+    const r = ref(rtdb, `tvEvents/${restaurantId}`)
+    return push(r, {
+      type,
+      deviceId: getDeviceId(),
+      screenId: screenId || DEFAULT_SCOPE,
+      at: serverTimestamp(),
+    }).catch(() => {})
+  } catch {
+    return Promise.resolve()
+  }
 }

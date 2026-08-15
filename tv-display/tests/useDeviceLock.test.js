@@ -10,6 +10,7 @@ const lock = vi.hoisted(() => ({
   saveCachedLease: vi.fn(),
   clearCachedLease: vi.fn(),
   isStale: vi.fn(() => false),
+  reportEvent: vi.fn(() => Promise.resolve()),
 }))
 
 vi.mock('../src/deviceLock', () => lock)
@@ -68,13 +69,41 @@ describe('useDeviceLock', () => {
     const h = renderHook('rest1', 'tv1', false)
     expect(h.output).toBe('active')
     expect(lock.watchLease).not.toHaveBeenCalled()
+    expect(lock.reportEvent).not.toHaveBeenCalled()
     h.unmount()
   })
 
-  it('claims when no lease exists anywhere for the screen', () => {
+  it('claims when no lease exists anywhere for the screen', async () => {
     const h = renderHook('rest1', 'tv1', true)
-    act(() => { watchFor('rest1', 'tv1').cb(null) })
+    await act(async () => { watchFor('rest1', 'tv1').cb(null) })
     expect(lock.claimLease).toHaveBeenCalledWith('rest1', 'tv1')
+    expect(lock.reportEvent).toHaveBeenCalledWith('rest1', 'tv1', 'claim')
+    h.unmount()
+  })
+
+  it('reports a blocked event exactly once while another device holds the lease', () => {
+    const h = renderHook('rest1', 'tv1', true)
+    act(() => {
+      watchFor('rest1', 'tv1').cb({ deviceId: 'devOther', claimedAt: Date.now(), renewedAt: Date.now() })
+    })
+    expect(lock.reportEvent).toHaveBeenCalledTimes(1)
+    expect(lock.reportEvent).toHaveBeenCalledWith('rest1', 'tv1', 'blocked')
+    // The watcher re-fires on every foreign heartbeat — no spam.
+    act(() => {
+      watchFor('rest1', 'tv1').cb({ deviceId: 'devOther', claimedAt: Date.now(), renewedAt: Date.now() })
+    })
+    expect(lock.reportEvent).toHaveBeenCalledTimes(1)
+    h.unmount()
+  })
+
+  it('reports a takeover event when it reclaims a stale foreign lease', async () => {
+    lock.isStale.mockReturnValue(true)
+    const h = renderHook('rest1', 'tv1', true)
+    await act(async () => {
+      watchFor('rest1', 'tv1').cb({ deviceId: 'devOld', claimedAt: 0, renewedAt: 0 })
+    })
+    expect(lock.takeoverLease).toHaveBeenCalledWith('rest1', 'tv1')
+    expect(lock.reportEvent).toHaveBeenCalledWith('rest1', 'tv1', 'takeover')
     h.unmount()
   })
 

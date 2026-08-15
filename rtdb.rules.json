@@ -16,6 +16,16 @@
         }
       }
     },
+    "tvEvents": {
+      "$restaurantId": {
+        ".indexOn": ["at"],
+        ".read": "auth != null && auth.token.admin === true",
+        "$eventId": {
+          ".write": "!data.exists() || (auth != null && auth.token.admin === true)",
+          ".validate": "newData.hasChildren(['type', 'deviceId', 'screenId', 'at']) && newData.child('at').val() === now && newData.child('deviceId').isString() && newData.child('screenId').isString() && (newData.child('type').val() === 'claim' || newData.child('type').val() === 'blocked' || newData.child('type').val() === 'takeover') && (newData.child('type').val() === 'blocked' || newData.child('deviceId').val() === root.child('tvLease').child($restaurantId).child(newData.child('screenId').val()).child('deviceId').val())"
+        }
+      }
+    },
     "subscription": {
       "$restaurantId": {
         "expiresAt": {

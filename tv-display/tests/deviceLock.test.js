@@ -10,6 +10,7 @@ const handlers = vi.hoisted(() => ({
   onValueFn: vi.fn(),
   onDisconnectFn: vi.fn(),
   removeFn: vi.fn(),
+  pushFn: vi.fn(),
 }))
 
 vi.mock('firebase/database', () => ({
@@ -20,9 +21,10 @@ vi.mock('firebase/database', () => ({
   serverTimestamp: () => ({ '.sv': 'timestamp' }),
   onDisconnect: handlers.onDisconnectFn,
   remove: handlers.removeFn,
+  push: handlers.pushFn,
 }))
 
-import { claimLease, watchLease, getDeviceId, renewLease, takeoverLease, isStale, LEASE_TTL_MS } from '../src/deviceLock'
+import { claimLease, watchLease, getDeviceId, renewLease, takeoverLease, isStale, LEASE_TTL_MS, reportEvent } from '../src/deviceLock'
 
 function mockRef() {
   const r = {}
@@ -170,6 +172,46 @@ describe('takeoverLease', () => {
     expect(pending.remove).toHaveBeenCalledTimes(1)
     expect(pending.remove.mock.invocationCallOrder[0])
       .toBeLessThan(handlers.setFn.mock.invocationCallOrder[0])
+  })
+})
+
+describe('reportEvent', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+    localStorage.clear()
+  })
+
+  it('pushes an audit event to tvEvents/{restaurantId} with a server timestamp', async () => {
+    const eventRef = { key: null }
+    handlers.refFn.mockReturnValueOnce(eventRef)
+    handlers.pushFn.mockResolvedValue()
+
+    await reportEvent('rest123', 'tv1', 'claim')
+
+    expect(handlers.refFn).toHaveBeenCalledWith(expect.anything(), 'tvEvents/rest123')
+    expect(handlers.pushFn).toHaveBeenCalledWith(
+      eventRef,
+      expect.objectContaining({
+        type: 'claim',
+        deviceId: expect.any(String),
+        screenId: 'tv1',
+        at: { '.sv': 'timestamp' },
+      }),
+    )
+  })
+
+  it('uses the default scope as screenId when none is given', async () => {
+    handlers.pushFn.mockResolvedValue()
+    await reportEvent('rest123', null, 'blocked')
+    expect(handlers.pushFn).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.objectContaining({ screenId: 'default' }),
+    )
+  })
+
+  it('swallows push failures so reporting never breaks the display', async () => {
+    handlers.pushFn.mockRejectedValue(new Error('network down'))
+    await expect(reportEvent('rest123', 'tv1', 'blocked')).resolves.toBeUndefined()
   })
 })
 

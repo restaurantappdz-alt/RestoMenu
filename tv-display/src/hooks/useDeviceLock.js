@@ -9,6 +9,7 @@ import {
   saveCachedLease,
   clearCachedLease,
   isStale,
+  reportEvent,
 } from '../deviceLock'
 
 export const RENEW_INTERVAL_MS = 15000
@@ -69,6 +70,9 @@ export default function useDeviceLock(restaurantId, screenId, online) {
     let retryTimer = null
     let retryPending = false
     let retryAttempt = 0
+    // Only one 'blocked' audit event per blocked session — the watcher
+    // re-fires on every foreign heartbeat, which must not spam the log.
+    let reportedBlocked = false
 
     const stopTimers = () => {
       if (heartbeatTimer !== null) { clearInterval(heartbeatTimer); heartbeatTimer = null }
@@ -114,8 +118,13 @@ export default function useDeviceLock(restaurantId, screenId, online) {
         stopTimers()
         if (snap === null) {
           currentLease = null
+          reportedBlocked = false
           setLease(null)
-          retrySchedule(() => claimLease(restaurantId, screenId))
+          retrySchedule(() =>
+            claimLease(restaurantId, screenId).then(() =>
+              reportEvent(restaurantId, screenId, 'claim'),
+            ),
+          )
           return
         }
         currentLease = snap
@@ -123,6 +132,7 @@ export default function useDeviceLock(restaurantId, screenId, online) {
         setLease(snap)
 
         if (snap.deviceId === getDeviceId()) {
+          reportedBlocked = false
           setFailOpen(false)
           heartbeatTimer = setInterval(() => {
             renewLease(restaurantId, screenId).catch(() => {
@@ -130,9 +140,20 @@ export default function useDeviceLock(restaurantId, screenId, online) {
             })
           }, RENEW_INTERVAL_MS)
         } else {
+          // A second device is holding this screen: report the blocked
+          // attempt exactly once per session, then keep scanning for a
+          // stale takeover.
+          if (!reportedBlocked) {
+            reportedBlocked = true
+            reportEvent(restaurantId, screenId, 'blocked')
+          }
           const maybeTakeover = () => {
             if (isStale(currentLease, serverNow())) {
-              retrySchedule(() => takeoverLease(restaurantId, screenId))
+              retrySchedule(() =>
+                takeoverLease(restaurantId, screenId).then(() =>
+                  reportEvent(restaurantId, screenId, 'takeover'),
+                ),
+              )
             }
           }
           maybeTakeover()
@@ -147,8 +168,13 @@ export default function useDeviceLock(restaurantId, screenId, online) {
         clearCachedLease(restaurantId, screenId)
         setLease(null)
         currentLease = null
+        reportedBlocked = false
         stopTimers()
-        retrySchedule(() => claimLease(restaurantId, screenId))
+        retrySchedule(() =>
+          claimLease(restaurantId, screenId).then(() =>
+            reportEvent(restaurantId, screenId, 'claim'),
+          ),
+        )
       },
     )
 
