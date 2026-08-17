@@ -105,7 +105,7 @@ Menus and display config are **publicly readable** (the unauthenticated TV/QR pa
 Static endpoint served from the TV app's `public/layout-shots/` folder:
 
 ```
-GET https://restaurantappdz-alt.github.io/RestoMenu/layout-shots/layouts.json
+GET https://screen.andalussmart.com/layout-shots/layouts.json
 ```
 
 Returns all 10 layouts with `{ id, name, image, capabilities }`. The Flutter app fetches this to show users what each layout looks like before selecting it, and reads `capabilities` to adapt its editor fields. The shots ship with the TV app on every deploy, so the endpoint is always available.
@@ -140,7 +140,7 @@ Pushes to `main` touching `tv-display/**`, `shared/**`, or `.github/workflows/de
 git push origin main
 ```
 
-Live: https://restaurantappdz-alt.github.io/RestoMenu/
+Live: https://screen.andalussmart.com/
 
 ### RTDB Rules
 
