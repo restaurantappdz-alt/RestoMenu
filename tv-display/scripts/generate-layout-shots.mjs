@@ -112,7 +112,7 @@ async function main() {
       layouts: layouts.map((l) => ({
         id: l.id,
         name: l.name,
-        image: `/RestoMenu/layout-shots/${l.id}.jpg?v=${version}`,
+        image: `/layout-shots/${l.id}.jpg?v=${version}`,
         ...(existing[l.id]?.capabilities ? { capabilities: existing[l.id].capabilities } : {}),
       })),
     }

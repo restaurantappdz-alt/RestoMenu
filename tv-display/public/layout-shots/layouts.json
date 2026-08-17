@@ -4,7 +4,7 @@
     {
       "id": "classic",
       "name": "Classic Gold",
-      "image": "/RestoMenu/layout-shots/classic.jpg?v=b318f4dc0bd0",
+      "image": "/layout-shots/classic.jpg?v=b318f4dc0bd0",
       "capabilities": {
         "heroPhoto": false,
         "descriptions": false,
@@ -18,7 +18,7 @@
     {
       "id": "bistro",
       "name": "Bistro Chalkboard",
-      "image": "/RestoMenu/layout-shots/bistro.jpg?v=b318f4dc0bd0",
+      "image": "/layout-shots/bistro.jpg?v=b318f4dc0bd0",
       "capabilities": {
         "heroPhoto": false,
         "descriptions": false,
@@ -32,7 +32,7 @@
     {
       "id": "brasserie",
       "name": "Brasserie",
-      "image": "/RestoMenu/layout-shots/brasserie.jpg?v=b318f4dc0bd0",
+      "image": "/layout-shots/brasserie.jpg?v=b318f4dc0bd0",
       "capabilities": {
         "heroPhoto": false,
         "descriptions": false,
@@ -46,7 +46,7 @@
     {
       "id": "coffeeShop",
       "name": "Coffee Shop",
-      "image": "/RestoMenu/layout-shots/coffeeShop.jpg?v=b318f4dc0bd0",
+      "image": "/layout-shots/coffeeShop.jpg?v=b318f4dc0bd0",
       "capabilities": {
         "heroPhoto": false,
         "descriptions": false,
@@ -60,7 +60,7 @@
     {
       "id": "minimal",
       "name": "Minimal",
-      "image": "/RestoMenu/layout-shots/minimal.jpg?v=b318f4dc0bd0",
+      "image": "/layout-shots/minimal.jpg?v=b318f4dc0bd0",
       "capabilities": {
         "heroPhoto": false,
         "descriptions": false,
@@ -74,7 +74,7 @@
     {
       "id": "modern",
       "name": "Modern",
-      "image": "/RestoMenu/layout-shots/modern.jpg?v=b318f4dc0bd0",
+      "image": "/layout-shots/modern.jpg?v=b318f4dc0bd0",
       "capabilities": {
         "heroPhoto": false,
         "descriptions": false,
@@ -88,7 +88,7 @@
     {
       "id": "moroccan",
       "name": "Moroccan",
-      "image": "/RestoMenu/layout-shots/moroccan.jpg?v=b318f4dc0bd0",
+      "image": "/layout-shots/moroccan.jpg?v=b318f4dc0bd0",
       "capabilities": {
         "heroPhoto": false,
         "descriptions": false,
@@ -102,7 +102,7 @@
     {
       "id": "natureBistro",
       "name": "Nature Bistro",
-      "image": "/RestoMenu/layout-shots/natureBistro.jpg?v=b318f4dc0bd0",
+      "image": "/layout-shots/natureBistro.jpg?v=b318f4dc0bd0",
       "capabilities": {
         "heroPhoto": false,
         "descriptions": false,
@@ -116,7 +116,7 @@
     {
       "id": "pro",
       "name": "Pro Premium",
-      "image": "/RestoMenu/layout-shots/pro.jpg?v=b318f4dc0bd0",
+      "image": "/layout-shots/pro.jpg?v=b318f4dc0bd0",
       "capabilities": {
         "heroPhoto": false,
         "descriptions": false,
@@ -130,7 +130,7 @@
     {
       "id": "photoMenu",
       "name": "Photo Menu",
-      "image": "/RestoMenu/layout-shots/photoMenu.jpg?v=b318f4dc0bd0",
+      "image": "/layout-shots/photoMenu.jpg?v=b318f4dc0bd0",
       "capabilities": {
         "heroPhoto": true,
         "descriptions": true,

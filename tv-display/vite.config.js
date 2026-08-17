@@ -6,7 +6,7 @@ import { VitePWA } from 'vite-plugin-pwa'
 import path from 'path'
 
 export default defineConfig({
-  base: '/RestoMenu/',
+  base: '/',
   resolve: {
     alias: {
       '@layouts': path.resolve(__dirname, '../shared/layouts'),
@@ -32,10 +32,10 @@ export default defineConfig({
         ]
       },
       workbox: {
-        navigateFallback: '/RestoMenu/index.html',
+        navigateFallback: '/index.html',
         runtimeCaching: [
           {
-            urlPattern: /\/RestoMenu\/.*\.(png|svg|jpg|jpeg|webp|gif)$/i,
+            urlPattern: /\.(png|svg|jpg|jpeg|webp|gif)$/i,
             handler: 'CacheFirst',
             options: {
               cacheName: 'tv-images',

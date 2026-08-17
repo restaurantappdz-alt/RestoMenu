@@ -29,7 +29,7 @@ Static endpoint that serves 1280x720 preview images of each empty layout templat
 ### Endpoint
 
 ```
-GET https://restaurantappdz-alt.github.io/RestoMenu/layout-shots/layouts.json
+GET https://screen.andalussmart.com/layout-shots/layouts.json
 ```
 
 Returns all 10 layouts with name + image URL + capabilities:
@@ -51,7 +51,7 @@ Returns all 10 layouts with name + image URL + capabilities:
 }
 ```
 
-**Mobile app usage:** fetch JSON, display `name` + load image from `https://restaurantappdz-alt.github.io/RestoMenu` + `image` field. When user selects a layout, send the `id` as `selectedLayout` to your menu creation/update API.
+**Mobile app usage:** fetch JSON, display `name` + load image from `https://screen.andalussmart.com` + `image` field. When user selects a layout, send the `id` as `selectedLayout` to your menu creation/update API.
 
 The shots are served from `tv-display/public/layout-shots/` — they ship with the TV display app on every deploy, so the endpoint is always available at the base URL.
 
@@ -60,9 +60,9 @@ The shots are served from `tv-display/public/layout-shots/` — they ship with t
 With the dev server running (`cd tv-display && npm run dev`), the demo mode renders any layout with fixture data (no Firebase):
 
 ```
-http://localhost:5174/RestoMenu/?demo=1&layout=classic
-http://localhost:5174/RestoMenu/?demo=1&layout=bistro
-http://localhost:5174/RestoMenu/?demo=1&layout=moroccan
+http://localhost:5174/?demo=1&layout=classic
+http://localhost:5174/?demo=1&layout=bistro
+http://localhost:5174/?demo=1&layout=moroccan
 ```
 
 ### Regenerating layout shots
