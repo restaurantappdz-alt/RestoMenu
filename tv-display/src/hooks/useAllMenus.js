@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { onSnapshot, collection, doc } from 'firebase/firestore'
 import { db } from '../firebase'
 import { parsePhoneParams, isSubscriptionExpired } from '../menuCombiner'
+import { watchServerExpiry } from '../subscriptionGuard'
 
 /**
  * Data hook for the phone menu page.
@@ -92,10 +93,43 @@ export default function useAllMenus() {
       },
     )
 
+    // Server-anchored expiry: the RTDB subscription node is written only by
+    // the super-admin app, and its read rule denies access once the server
+    // clock passes expiresAt. A permission_denied here overrides the soft
+    // device-clock gate, so a phone can't bypass an expired subscription by
+    // rolling its clock back. Read-only: no writes, no rule changes.
+    let expiryUnsub = null
+    let expiryRetryTimer = null
+    let expiryRetryPending = false
+    const attachExpiryWatcher = () => {
+      if (expiryUnsub) expiryUnsub()
+      try {
+        expiryUnsub = watchServerExpiry(rid, {
+          onExpired: () => {
+            setExpired(true)
+            if (!expiryRetryPending) {
+              expiryRetryPending = true
+              expiryRetryTimer = setTimeout(() => {
+                expiryRetryPending = false
+                attachExpiryWatcher()
+              }, 60000)
+            }
+          },
+          // onAllowed / onMissing: the config snapshot already decides via
+          // isSubscriptionExpired — the server watch only ever hard-blocks.
+        })
+      } catch {
+        // RTDB unavailable: fall back to the soft gate. Never break loading.
+      }
+    }
+    attachExpiryWatcher()
+
     return () => {
       unsubConfig()
       unsubRestaurant()
       unsubMenus()
+      if (expiryUnsub) expiryUnsub()
+      if (expiryRetryTimer) clearTimeout(expiryRetryTimer)
     }
   }, [])
 

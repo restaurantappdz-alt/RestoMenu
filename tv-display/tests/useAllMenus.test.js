@@ -22,6 +22,16 @@ vi.mock('firebase/firestore', () => ({
   doc: vi.fn((db, ...path) => ({ _path: `doc:${path.join('/')}` })),
 }))
 
+// Mock firebase/database (used by the server-anchored expiry watch added to
+// the phone hook). The watcher attaches but never fires unless a test
+// triggers it, so the soft-gate behavior of existing tests is unchanged.
+vi.mock('firebase/database', () => ({
+  getDatabase: vi.fn(() => ({ mock: true })),
+  ref: vi.fn((db, path) => ({ _path: path })),
+  set: vi.fn(() => Promise.resolve()),
+  onValue: vi.fn(() => vi.fn()),
+}))
+
 import useAllMenus from '../src/hooks/useAllMenus'
 
 // Bare `act(...)` in the test bodies resolves to React's act (module scope).
