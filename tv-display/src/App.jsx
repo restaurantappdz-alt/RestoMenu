@@ -3,6 +3,8 @@ import useDeviceLock from './hooks/useDeviceLock'
 import PhoneMenuPage from './pages/PhoneMenuPage'
 import LayoutPreviewPage from './pages/LayoutPreviewPage'
 import ErrorBoundary from './ErrorBoundary'
+import { isTvClassDevice } from './tvGate'
+import { Smartphone } from 'lucide-react'
 import { DEMO_CATEGORIES, DEMO_ADDONS, DEMO_MENU } from './demo/demoData'
 import { getLayout, getMaxItems } from '@layouts'
 import './index.css'
@@ -74,6 +76,22 @@ function DisplayedElsewhereScreen() {
   )
 }
 
+function ScanWithPhoneScreen() {
+  return (
+    <StateScreen>
+      <div className="text-center animate-pop-in z-10 max-w-lg px-8">
+        <div className="w-32 h-32 mx-auto mb-8 rounded-full bg-white/5 border border-brand-orange/20 flex items-center justify-center">
+          <Smartphone className="w-16 h-16 text-brand-orange/40" />
+        </div>
+        <h2 className="font-heading font-bold text-white text-4xl">Scan with Your Phone</h2>
+        <p className="text-white/50 text-xl mt-3 leading-relaxed">
+          This menu is designed for phones. Open the QR code with your mobile device.
+        </p>
+      </div>
+    </StateScreen>
+  )
+}
+
 function ConnectionLostScreen() {
   return (
     <StateScreen>
@@ -126,7 +144,12 @@ export default function App() {
 
   // Phone menu mode: no device lock, no TV subscription guard black screen.
   // Must return before any TV hooks run (useMenuData / useDeviceLock).
+  // TV-class devices (TV browsers, large landscape screens) get the
+  // "Scan with your phone" gate instead — the QR menu is phone-only.
   if (params.get('phone') === '1') {
+    if (isTvClassDevice()) {
+      return <ScanWithPhoneScreen />
+    }
     return <PhoneMenuPage />
   }
   // Layout preview mode: renders a layout with the generic sample menu
