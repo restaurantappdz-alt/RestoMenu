@@ -1,5 +1,7 @@
 import useMenuData from './hooks/useMenuData'
 import useDeviceLock from './hooks/useDeviceLock'
+import useDeliveryNotifications from './hooks/useDeliveryNotifications'
+import DeliveryOverlay from './components/DeliveryOverlay'
 import PhoneMenuPage from './pages/PhoneMenuPage'
 import LayoutPreviewPage from './pages/LayoutPreviewPage'
 import ErrorBoundary from './ErrorBoundary'
@@ -161,6 +163,7 @@ export default function App() {
   const { menu, loading, waiting, offline, needsSetup, subscriptionBlocked, connectionError, restaurantId, categories, allAddons, selectedLayout } = useMenuData()
   const screenId = params.get('s')
   const deviceStatus = useDeviceLock(restaurantId, screenId, !offline)
+  const { current: deliveryNotification, popNotification } = useDeliveryNotifications(restaurantId, !offline && !subscriptionBlocked)
   const LayoutComponent = getLayout(selectedLayout)
 
   const capItemLimit = getMaxItems(selectedLayout, categories?.length || 0)
@@ -234,6 +237,7 @@ export default function App() {
           title={title}
         />
       </ErrorBoundary>
+      <DeliveryOverlay notification={deliveryNotification} onDismiss={popNotification} />
     </div>
   )
 }
