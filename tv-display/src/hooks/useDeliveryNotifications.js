@@ -37,12 +37,8 @@ export default function useDeliveryNotifications(restaurantId, enabled = true) {
       if (doc.id === lastDocId.current) return
       lastDocId.current = doc.id
 
-      // Only queue recent notifications (within last 30s)
-      const now = new Date()
-      const deliveredAt = data.deliveredAt?.toDate?.() || new Date()
-      if (now - deliveredAt < 30000) {
-        setQueue((prev) => [...prev, data])
-      }
+      // Queue the notification directly since it arrived dynamically after the initial load.
+      setQueue((prev) => [...prev, data])
     })
 
     return () => unsub()
