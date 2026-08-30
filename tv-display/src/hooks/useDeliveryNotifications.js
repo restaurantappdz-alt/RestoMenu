@@ -5,7 +5,6 @@ import { db } from '../firebase'
 export default function useDeliveryNotifications(restaurantId, enabled = true) {
   const [queue, setQueue] = useState([])
   const isFirstLoad = useRef(true)
-  const lastDocId = useRef(null)
 
   useEffect(() => {
     if (!restaurantId || !enabled) {
@@ -13,32 +12,29 @@ export default function useDeliveryNotifications(restaurantId, enabled = true) {
       return
     }
 
+    isFirstLoad.current = true
+
     const q = query(
       collection(db, 'restaurants', restaurantId, 'delivery_notifications'),
       orderBy('deliveredAt', 'desc'),
-      limit(1)
+      limit(5)
     )
 
     const unsub = onSnapshot(q, (snap) => {
-      if (snap.empty) {
-        isFirstLoad.current = false
-        return
-      }
-
-      const doc = snap.docs[0]
-      const data = { id: doc.id, ...doc.data() }
-
+      // On first load, just record existing docs — don't show them as new
       if (isFirstLoad.current) {
-        lastDocId.current = doc.id
         isFirstLoad.current = false
         return
       }
 
-      if (doc.id === lastDocId.current) return
-      lastDocId.current = doc.id
+      // Only look at docs that were newly added since we started listening
+      const added = snap.docChanges().filter((c) => c.type === 'added')
+      if (added.length === 0) return
 
-      // Queue the notification directly since it arrived dynamically after the initial load.
-      setQueue((prev) => [...prev, data])
+      const newNotifs = added.map((c) => ({ id: c.doc.id, ...c.doc.data() }))
+      setQueue((prev) => [...prev, ...newNotifs])
+    }, (error) => {
+      console.error('[DeliveryNotifications] Firestore error:', error)
     })
 
     return () => unsub()
