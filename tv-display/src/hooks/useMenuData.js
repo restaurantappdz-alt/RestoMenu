@@ -72,6 +72,69 @@ function saveConfigCache(restaurantId, data) {
   try { localStorage.setItem(`${CONFIG_CACHE_KEY_PREFIX}_${restaurantId}`, JSON.stringify(data)) } catch {}
 }
 
+// ─── Menu resolution from screen config ──────────────────────────
+// Handles both legacy { menuId: "abc" } (singular string) and the
+// current { menuIds: ["a","b"], schedules: { a: {...}, b: null } }
+// format.  Implements the same getActiveMenuId() logic from the Dart
+// menu_schedule.dart so the TV picks the right menu based on day/time.
+
+const DAY_LABELS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
+
+function timeToMinutes(t) {
+  if (!t) return 0
+  const [h, m] = t.split(':').map(Number)
+  return (h || 0) * 60 + (m || 0)
+}
+
+function isScheduleActiveAt(sched, now) {
+  if (!sched) return false
+  const day = DAY_LABELS[now.getDay()]
+  if (!sched.daysOfWeek?.includes(day)) return false
+  const mins = now.getHours() * 60 + now.getMinutes()
+  const start = timeToMinutes(sched.startTime)
+  const end = timeToMinutes(sched.endTime)
+  if (start <= end) {
+    return mins >= start && mins < end
+  }
+  // Overnight window (e.g. 22:00–06:00)
+  return mins >= start || mins < end
+}
+
+function resolveMenuId(screenEntry) {
+  if (!screenEntry) return null
+
+  // Legacy format: { menuId: "abc" } — single string
+  if (screenEntry.menuId && typeof screenEntry.menuId === 'string') {
+    return screenEntry.menuId
+  }
+
+  // Current format: { menuIds: ["a","b"], schedules: { a: {...} } }
+  const ids = screenEntry.menuIds
+  if (!Array.isArray(ids) || ids.length === 0) return null
+
+  const schedules = screenEntry.schedules || {}
+  const now = new Date()
+
+  // Pass 1: first menu with an ACTIVE schedule wins
+  for (const id of ids) {
+    const sched = schedules[id]
+    const isScheduled = sched && sched.daysOfWeek?.length > 0 && sched.startTime && sched.endTime
+    if (isScheduled && isScheduleActiveAt(sched, now)) {
+      return id
+    }
+  }
+
+  // Pass 2: first unscheduled (always-on) menu
+  for (const id of ids) {
+    const sched = schedules[id]
+    const isScheduled = sched && sched.daysOfWeek?.length > 0 && sched.startTime && sched.endTime
+    if (!isScheduled) return id
+  }
+
+  // Pass 3: fallback — first menu in list
+  return ids[0] || null
+}
+
 export default function useMenuData() {
   const [restaurantId, setRestaurantId] = useState(getRestaurantId)
   const [activeMenuId, setActiveMenuId] = useState(() => {
@@ -80,8 +143,8 @@ export default function useMenuData() {
     const cached = loadConfigCache(rid)
     if (!cached) return null
     const sid = getScreenId()
-    const raw = sid ? cached.screens?.[sid] : cached.activeMenuId
-    return (raw && typeof raw === 'object' ? raw.menuId : raw) || null
+    const raw = sid ? cached.screens?.[sid] : null
+    return sid ? resolveMenuId(raw) : (cached.activeMenuId || null)
   })
   const [menu, setMenu] = useState(() => {
     const rid = getRestaurantId()
@@ -91,8 +154,8 @@ export default function useMenuData() {
     const cachedCfg = loadConfigCache(rid)
     if (!cachedCfg) return cachedMenu
     const sid = getScreenId()
-    const raw = sid ? cachedCfg.screens?.[sid] : cachedCfg.activeMenuId
-    const expectedId = (raw && typeof raw === 'object' ? raw.menuId : raw) || null
+    const raw = sid ? cachedCfg.screens?.[sid] : null
+    const expectedId = sid ? resolveMenuId(raw) : (cachedCfg.activeMenuId || null)
     return expectedId ? (cachedMenu.id === expectedId ? cachedMenu : null) : cachedMenu
   })
   const [loading, setLoading] = useState(() => {
@@ -103,8 +166,8 @@ export default function useMenuData() {
     const cachedCfg = loadConfigCache(rid)
     if (!cachedCfg) return false
     const sid = getScreenId()
-    const raw = sid ? cachedCfg.screens?.[sid] : cachedCfg.activeMenuId
-    const expectedId = (raw && typeof raw === 'object' ? raw.menuId : raw) || null
+    const raw = sid ? cachedCfg.screens?.[sid] : null
+    const expectedId = sid ? resolveMenuId(raw) : (cachedCfg.activeMenuId || null)
     if (!expectedId) return false
     return cachedMenu.id !== expectedId
   })
@@ -167,8 +230,8 @@ export default function useMenuData() {
     if (mountedOffline) {
       const cachedCfg = loadConfigCache(id)
       if (cachedCfg) {
-        const raw = screenId ? cachedCfg.screens?.[screenId] : cachedCfg.activeMenuId
-        const cachedMenuId = (raw && typeof raw === 'object' ? raw.menuId : raw) || null
+        const raw = screenId ? cachedCfg.screens?.[screenId] : null
+        const cachedMenuId = screenId ? resolveMenuId(raw) : (cachedCfg.activeMenuId || null)
         if (cachedMenuId) {
           setActiveMenuId(cachedMenuId)
           setWaiting(false)
@@ -282,23 +345,12 @@ export default function useMenuData() {
       }
 
       saveConfigCache(id, data)
-      const raw = screenId ? data.screens?.[screenId] : data.activeMenuId
-      const newId = (raw && typeof raw === 'object' ? raw.menuId : raw) || null
+      const raw = screenId ? data.screens?.[screenId] : null
+      const newId = screenId ? resolveMenuId(raw) : (data.activeMenuId || null)
       if (!newId) {
-        const cachedCfg = loadConfigCache(id)
-        const cachedRaw = screenId ? cachedCfg?.screens?.[screenId] : cachedCfg?.activeMenuId
-        const cachedId = cachedCfg && (cachedRaw && typeof cachedRaw === 'object' ? cachedRaw.menuId : cachedRaw) || null
-        if (cachedId) {
-          return
-        }
-        const cachedMenu = loadCache(id)
-        if (cachedMenu) {
-          setActiveMenuId(cachedMenu.id)
-          setMenu(cachedMenu)
-          setWaiting(false)
-          setLoading(false)
-          return
-        }
+        // No menu assigned to this screen — show waiting state.
+        // Do NOT fall back to stale cached menu; the admin will push
+        // a new config snapshot once a menu is assigned.
         if (typeof navigator !== 'undefined' && !navigator.onLine) {
           return
         }
@@ -321,6 +373,26 @@ export default function useMenuData() {
       if (expiryRetryTimer) clearTimeout(expiryRetryTimer)
     }
   }, [])
+
+  // Periodic schedule re-evaluation: every 60 seconds, re-resolve the
+  // active menu from the cached config so scheduled menus switch
+  // automatically when their time window starts/ends.
+  useEffect(() => {
+    const sid = getScreenId()
+    if (!sid) return // Only needed for screen-based URLs
+    const interval = setInterval(() => {
+      const rid = getRestaurantId()
+      if (!rid) return
+      const cached = loadConfigCache(rid)
+      if (!cached) return
+      const raw = cached.screens?.[sid]
+      const newId = resolveMenuId(raw)
+      if (newId && newId !== activeMenuId) {
+        setActiveMenuId(newId)
+      }
+    }, 60000)
+    return () => clearInterval(interval)
+  }, [activeMenuId])
 
   useEffect(() => {
     if (!activeMenuId || !restaurantId) return
