@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { toDayStart, updateFromServer, checkAccess, revokeAccess, syncServerOffset, watchServerExpiry } from '../src/subscriptionGuard'
+import { toDayStart, updateFromServer, updateFromRestaurant, checkAccess, revokeAccess, syncServerOffset, watchServerExpiry } from '../src/subscriptionGuard'
 
 // Mock firebase/database BEFORE importing the module under test (pattern
 // from deviceLock.test.js). The pure-function tests never touch RTDB, so
@@ -238,28 +238,28 @@ describe('revokeAccess', () => {
   })
 })
 
-describe('updateFromServer — subscription deactivation', () => {
+describe('updateFromRestaurant — subscription deactivation', () => {
   beforeEach(() => {
     localStorage.clear()
   })
 
-  it('clears the stored expiry on a genuine server read without expiresAt', () => {
+  it('clears the stored expiry on a genuine server read without activeUntil', () => {
     localStorage.setItem('restomenu-tv-expiresAt', '123456789')
-    updateFromServer({ active: true }, false)
+    updateFromRestaurant({ active: true }, false)
     expect(localStorage.getItem('restomenu-tv-expiresAt')).toBeNull()
     expect(localStorage.getItem('restomenu-tv-lastSeenTime')).toBeTruthy()
   })
 
-  it('does NOT clear the stored expiry on a fromCache read without expiresAt', () => {
+  it('does NOT clear the stored expiry on a fromCache read without activeUntil', () => {
     localStorage.setItem('restomenu-tv-expiresAt', '123456789')
-    updateFromServer({ active: true }, true)
+    updateFromRestaurant({ active: true }, true)
     expect(localStorage.getItem('restomenu-tv-expiresAt')).toBe('123456789')
     expect(localStorage.getItem('restomenu-tv-lastSeenTime')).toBeNull()
   })
 
-  it('still stores a present expiresAt on a genuine read', () => {
+  it('still stores a present activeUntil on a genuine read', () => {
     const now = Date.now()
-    updateFromServer({ expiresAt: ts(now + 86400000) }, false)
+    updateFromRestaurant({ activeUntil: ts(now + 86400000) }, false)
     expect(localStorage.getItem('restomenu-tv-expiresAt')).toBe(String(now + 86400000))
   })
 })

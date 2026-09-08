@@ -10,6 +10,7 @@ import LayoutPro from './LayoutPro'
 import LayoutPhotoMenu from './LayoutPhotoMenu'
 import LayoutPhotoGrid from './LayoutPhotoGrid'
 import LayoutParchment from './LayoutParchment'
+import LayoutDigitalBoard from './LayoutDigitalBoard'
 
 export const layouts = {
   classic:      { name: 'Classic Gold', component: LayoutClassic },
@@ -24,6 +25,7 @@ export const layouts = {
   photoMenu:    { name: 'Photo Menu', component: LayoutPhotoMenu },
   photoGrid:    { name: 'Photo Grid', component: LayoutPhotoGrid },
   parchment:    { name: 'Parchment Tradition', component: LayoutParchment },
+  digitalBoard: { name: 'Digital Board Grid', component: LayoutDigitalBoard },
 }
 
 export const layoutOptions = Object.entries(layouts).map(([value, { name }]) => ({
