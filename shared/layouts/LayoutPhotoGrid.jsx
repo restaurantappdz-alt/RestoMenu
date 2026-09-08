@@ -40,6 +40,89 @@ function formatPrice(price, currency = 'DA') {
   return `${price} ${curr}`
 }
 
+function getGridConfig(count) {
+  if (count <= 1) {
+    return {
+      containerStyle: {
+        gridTemplateColumns: 'repeat(1, 1fr)',
+        gridTemplateRows: 'repeat(1, 1fr)',
+      },
+      getItemSpan: () => 'span 1',
+      bottomRowStartIndex: 0,
+    }
+  }
+  if (count === 2) {
+    return {
+      containerStyle: {
+        gridTemplateColumns: 'repeat(2, 1fr)',
+        gridTemplateRows: 'repeat(1, 1fr)',
+      },
+      getItemSpan: () => 'span 1',
+      bottomRowStartIndex: 0,
+    }
+  }
+  if (count === 3) {
+    return {
+      containerStyle: {
+        gridTemplateColumns: 'repeat(3, 1fr)',
+        gridTemplateRows: 'repeat(1, 1fr)',
+      },
+      getItemSpan: () => 'span 1',
+      bottomRowStartIndex: 0,
+    }
+  }
+  if (count === 4) {
+    return {
+      containerStyle: {
+        gridTemplateColumns: 'repeat(2, 1fr)',
+        gridTemplateRows: 'repeat(2, 1fr)',
+      },
+      getItemSpan: () => 'span 1',
+      bottomRowStartIndex: 2,
+    }
+  }
+  if (count === 5) {
+    return {
+      containerStyle: {
+        gridTemplateColumns: 'repeat(6, 1fr)',
+        gridTemplateRows: 'repeat(2, 1fr)',
+      },
+      // Top 3 items span 2 (3 * 2 = 6), bottom 2 items span 3 (2 * 3 = 6)
+      getItemSpan: (index) => (index < 3 ? 'span 2' : 'span 3'),
+      bottomRowStartIndex: 3,
+    }
+  }
+  if (count === 6) {
+    return {
+      containerStyle: {
+        gridTemplateColumns: 'repeat(3, 1fr)',
+        gridTemplateRows: 'repeat(2, 1fr)',
+      },
+      getItemSpan: () => 'span 1',
+      bottomRowStartIndex: 3,
+    }
+  }
+  if (count === 7) {
+    return {
+      containerStyle: {
+        gridTemplateColumns: 'repeat(12, 1fr)',
+        gridTemplateRows: 'repeat(2, 1fr)',
+      },
+      // Top 4 items span 3 (4 * 3 = 12), bottom 3 items span 4 (3 * 4 = 12)
+      getItemSpan: (index) => (index < 4 ? 'span 3' : 'span 4'),
+      bottomRowStartIndex: 4,
+    }
+  }
+  return {
+    containerStyle: {
+      gridTemplateColumns: 'repeat(4, 1fr)',
+      gridTemplateRows: 'repeat(2, 1fr)',
+    },
+    getItemSpan: () => 'span 1',
+    bottomRowStartIndex: 4,
+  }
+}
+
 export default function LayoutPhotoGrid({ categories = [], allAddons = [], offline, menu, title }) {
   const currency = menu?.currency || 'DA'
 
@@ -56,6 +139,8 @@ export default function LayoutPhotoGrid({ categories = [], allAddons = [], offli
     }
     if (allItems.length >= capabilities.maxItems) break
   }
+
+  const gridConfig = getGridConfig(allItems.length)
 
   return (
     <div
@@ -103,12 +188,15 @@ export default function LayoutPhotoGrid({ categories = [], allAddons = [], offli
             padding: 10px !important;
           }
           .photogrid-grid {
-            grid-template-columns: repeat(1, 1fr) !important;
-            grid-template-rows: auto !important;
+            display: flex !important;
+            flex-direction: column !important;
             gap: 16px !important;
           }
           .photogrid-card {
             height: 380px !important;
+            min-height: 380px !important;
+            width: 100% !important;
+            grid-column: auto !important;
           }
         }
       `}</style>
@@ -140,23 +228,25 @@ export default function LayoutPhotoGrid({ categories = [], allAddons = [], offli
               <p className="text-zinc-500 mt-2">Aucun article à afficher pour le moment.</p>
             </div>
           ) : (
-            /* 4×2 Grid of Menu Items */
+            /* Dynamically balanced Grid of Menu Items */
             <div
-              className="photogrid-grid w-full h-full grid grid-cols-4 grid-rows-2 gap-[clamp(6px,0.9vw,16px)] box-border"
+              className="photogrid-grid w-full h-full grid gap-[clamp(6px,0.9vw,16px)] box-border"
+              style={{
+                ...gridConfig.containerStyle,
+              }}
             >
               {allItems.map((item, idx) => {
                 const itemImg = item.imageUrl || FALLBACK_IMAGES[idx % FALLBACK_IMAGES.length]
 
                 // Determine variations / addons to display on this card:
                 // 1) Explicit item.variations or item.addons
-                // 2) If absent, category addons if available (for cards on the bottom row, or if item has category addons)
+                // 2) If absent, category addons if available (for cards starting from bottomRowStartIndex)
                 let variations = []
                 if (Array.isArray(item.variations) && item.variations.length > 0) {
                   variations = item.variations
                 } else if (Array.isArray(item.addons) && item.addons.length > 0) {
                   variations = item.addons
-                } else if (idx >= 4 && Array.isArray(item.categoryAddons) && item.categoryAddons.length > 0) {
-                  // For bottom row items in grid, show up to 2-3 category addons as variations
+                } else if (idx >= gridConfig.bottomRowStartIndex && Array.isArray(item.categoryAddons) && item.categoryAddons.length > 0) {
                   variations = item.categoryAddons.slice(0, 2)
                 }
 
@@ -164,6 +254,9 @@ export default function LayoutPhotoGrid({ categories = [], allAddons = [], offli
                   <div
                     key={item.id || `${item.name}-${idx}`}
                     className="photogrid-card flex flex-col h-full w-full overflow-hidden bg-white shadow-[0_1px_3px_rgba(0,0,0,0.05)] relative"
+                    style={{
+                      gridColumn: gridConfig.getItemSpan(idx),
+                    }}
                   >
                     {/* Food Photo Area (Dominant top section) */}
                     <div className="flex-1 min-h-0 w-full relative overflow-hidden bg-zinc-100">
