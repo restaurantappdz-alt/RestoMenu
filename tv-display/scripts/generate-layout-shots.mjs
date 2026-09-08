@@ -21,6 +21,7 @@ const layouts = [
   { id: 'natureBistro', name: 'Nature Bistro' },
   { id: 'pro',          name: 'Pro Premium' },
   { id: 'photoMenu',    name: 'Photo Menu' },
+  { id: 'digitalBoard', name: 'Digital Board Grid' },
 ]
 
 /**
