@@ -31,6 +31,10 @@ export const DEMO_MENU = {
     {
       id: 'mains',
       name: 'Main Courses',
+      addons: [
+        { id: 'm_a1', name: 'Extra Sauce & Bread', price: 1.5 },
+        { id: 'm_a2', name: 'Double Meat / Side', price: 4.0 },
+      ],
       items: [
         { id: 'm1', name: 'Grilled Salmon Bowl', price: 14.9, description: 'Salmon, quinoa, avocado, citrus dressing.', tag: "Chef's Choice" },
         { id: 'm2', name: 'Steak Frites', price: 16.5, description: 'Sirloin steak, hand-cut fries, peppercorn sauce.' },

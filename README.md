@@ -46,7 +46,8 @@ Returns all 10 layouts with name + image URL + capabilities:
     { "id": "moroccan", "name": "Moroccan",           "image": "/RestoMenu/layout-shots/moroccan.jpg" },
     { "id": "natureBistro","name": "Nature Bistro",   "image": "/RestoMenu/layout-shots/natureBistro.jpg" },
     { "id": "pro",      "name": "Pro Premium",        "image": "/RestoMenu/layout-shots/pro.jpg" },
-    { "id": "photoMenu","name": "Photo Menu",         "image": "/RestoMenu/layout-shots/photoMenu.jpg" }
+    { "id": "photoMenu","name": "Photo Menu",         "image": "/RestoMenu/layout-shots/photoMenu.jpg" },
+    { "id": "photoGrid","name": "Photo Grid",         "image": "/RestoMenu/layout-shots/photoGrid.jpg" }
   ]
 }
 ```
@@ -147,6 +148,8 @@ To add more, edit the `availableLayouts` field directly in Firestore for existin
 | `moroccan` | Moroccan | Teal/emerald gradient, diamond/gold ornaments, Cormorant Garamond serif, item cards |
 | `natureBistro` | Nature Bistro | Cream/beige, plant overlays, glassmorphism card, leaf separators, green accents |
 | `pro` | Pro Premium | Dark leather, gold dot grid, corner ornaments, Playfair Display serif, gold shimmer |
+| `photoMenu` | Photo Menu | Dark theme, hero dish photo section, single category showcase, tag badges |
+| `photoGrid` | Photo Grid | 4×2 grid of landscape food photos, dark green frame border, soft beige banners, stacked teal variation bars |
 
 ---
 

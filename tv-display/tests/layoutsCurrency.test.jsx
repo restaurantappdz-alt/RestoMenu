@@ -11,6 +11,7 @@ import LayoutMoroccan from '../../shared/layouts/LayoutMoroccan'
 import LayoutNatureBistro from '../../shared/layouts/LayoutNatureBistro'
 import LayoutPro from '../../shared/layouts/LayoutPro'
 import LayoutPhotoMenu from '../../shared/layouts/LayoutPhotoMenu'
+import LayoutPhotoGrid from '../../shared/layouts/LayoutPhotoGrid'
 
 // One item + one addon so price/currency lines actually render.
 const categories = [
@@ -30,12 +31,13 @@ const ALL = [
   ['natureBistro', LayoutNatureBistro],
   ['pro', LayoutPro],
   ['photoMenu', LayoutPhotoMenu],
+  ['photoGrid', LayoutPhotoGrid],
 ]
 
 // Layouts known to render a currency suffix/prefix next to prices.
 const CURRENCY_RENDERING = new Set([
   'classic', 'brasserie', 'coffeeShop', 'modern',
-  'moroccan', 'natureBistro', 'pro', 'photoMenu',
+  'moroccan', 'natureBistro', 'pro', 'photoMenu', 'photoGrid',
 ])
 
 describe.each(ALL)('currency %s', (key, Layout) => {

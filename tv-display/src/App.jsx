@@ -126,23 +126,18 @@ export default function App() {
     const DemoLayoutComponent = getLayout(demoLayout)
     const demoLimit = getMaxItems(demoLayout, DEMO_CATEGORIES.length)
     const demoCategories = truncateCategories(DEMO_CATEGORIES, demoLimit)
-  return (
-    <div className="relative h-full w-full">
-      {connectionError && (
-        <div className="absolute top-0 left-0 right-0 z-50 bg-black/60 backdrop-blur-sm text-amber-300 text-center py-2 text-lg font-medium pointer-events-none">
-          Connection lost — showing saved menu
-        </div>
-      )}
-      <LayoutComponent
-        categories={menuCategories}
-        allAddons={allAddons}
-        offline={offline}
-        menu={menu}
-        title={title}
-      />
-    </div>
-  )
-}
+    return (
+      <div className="relative h-full w-full" data-layout={demoLayout}>
+        <DemoLayoutComponent
+          categories={demoCategories}
+          allAddons={DEMO_ADDONS}
+          offline={false}
+          menu={DEMO_MENU}
+          title={DEMO_MENU.name}
+        />
+      </div>
+    )
+  }
 
   // Phone menu mode: no device lock, no TV subscription guard black screen.
   // Must return before any TV hooks run (useMenuData / useDeviceLock).

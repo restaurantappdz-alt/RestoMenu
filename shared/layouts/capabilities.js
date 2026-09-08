@@ -135,6 +135,19 @@ export const LAYOUT_CAPABILITIES = {
     displayMode: 'single-category',
     hasFooter: true,
   },
+  photoGrid: {
+    ...DEFAULT_CAPABILITIES,
+    name: 'Photo Grid',
+    maxItems: 8,
+    supportsDescriptions: true,
+    supportsTags: true,
+    supportsItemImages: true,
+    supportsAddons: 'footer',
+    columns: 4,
+    displayMode: 'full-menu',
+    hasHeader: false,
+    hasFooter: false,
+  },
 }
 
 /**
