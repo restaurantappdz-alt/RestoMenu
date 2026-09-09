@@ -78,7 +78,7 @@ export const DEMO_MENU = {
       {
         title: 'بطاطا مقلية مقرمشة',
         subtitle: 'Frites & Sauces Maison',
-        imageUrl: 'https://images.unsplash.com/photo-1576107232684-1279f3908594?w=800&auto=format&fit=crop&q=80',
+        imageUrl: 'https://images.unsplash.com/photo-1573080496219-bb080dd4f877?w=800&auto=format&fit=crop&q=80',
         priceType: 'multiple',
         priceRows: [
           { label: 'حجم متوسط', price: '150' },

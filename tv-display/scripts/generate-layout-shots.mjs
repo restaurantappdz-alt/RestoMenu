@@ -96,7 +96,20 @@ async function main() {
         } catch {
           await page.waitForTimeout(2000)
         }
-        await page.waitForTimeout(1500)
+        await page.evaluate(async () => {
+          const selectors = Array.from(document.images)
+          await Promise.all(
+            selectors.map((img) => {
+              if (img.complete) return Promise.resolve()
+              return new Promise((resolve) => {
+                img.addEventListener('load', resolve)
+                img.addEventListener('error', resolve)
+                setTimeout(resolve, 3000)
+              })
+            })
+          )
+        })
+        await page.waitForTimeout(800)
         const filePath = path.join(outputDir, `${layout.id}.jpg`)
         await page.screenshot({ path: filePath, type: 'jpeg', quality: 80 })
         const stats = fs.statSync(filePath)

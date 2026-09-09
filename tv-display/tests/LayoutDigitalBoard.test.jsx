@@ -62,15 +62,13 @@ describe('LayoutDigitalBoard', () => {
     expect(screen.getByText('500 DA')).toBeTruthy()
   })
 
-  it('falls back dynamically to categories items when boardConfig.slots has fewer than 8 slots', () => {
+  it('renders only configured slots when boardConfig is present, without showing empty boxes', () => {
     const categories = [
       {
         name: 'Plats',
         items: [
           { name: 'Couscous Poulet', price: '800', description: 'Plat traditionnel', imageUrl: 'https://example.com/couscous.jpg' },
           { name: 'Tajine Agneau', price: '1200', description: 'Mijoté aux pruneaux' },
-          { name: 'Rechta', price: '750', description: 'Pâtes traditionnelles' },
-          { name: 'Chorba Frik', price: '350', description: 'Soupe au blé vert' },
         ],
       },
     ]
@@ -86,20 +84,35 @@ describe('LayoutDigitalBoard', () => {
 
     render(<LayoutDigitalBoard categories={categories} menu={menu} />)
 
-    // First slot from boardConfig
+    // First slot from boardConfig is rendered
     expect(screen.getByText('شاورما')).toBeTruthy()
     expect(screen.getByText('500 D.A')).toBeTruthy()
 
-    // Remaining slots populated from category items
+    // Unconfigured slots are NOT injected when boardConfig has data
+    expect(screen.queryByText('Couscous Poulet')).toBeNull()
+    expect(screen.queryByText('Tajine Agneau')).toBeNull()
+  })
+
+  it('falls back to category items only when boardConfig has no filled slots', () => {
+    const categories = [
+      {
+        name: 'Plats',
+        items: [
+          { name: 'Couscous Poulet', price: '800', description: 'Plat traditionnel', imageUrl: 'https://example.com/couscous.jpg' },
+          { name: 'Tajine Agneau', price: '1200', description: 'Mijoté aux pruneaux' },
+        ],
+      },
+    ]
+
+    const menu = {
+      currency: 'D.A',
+      boardConfig: { slots: [] },
+    }
+
+    render(<LayoutDigitalBoard categories={categories} menu={menu} />)
+
     expect(screen.getByText('Couscous Poulet')).toBeTruthy()
-    expect(screen.getByText('Plat traditionnel')).toBeTruthy()
-    expect(screen.getByText('800 D.A')).toBeTruthy()
     expect(screen.getByText('Tajine Agneau')).toBeTruthy()
-    expect(screen.getByText('1200 D.A')).toBeTruthy()
-    expect(screen.getByText('Rechta')).toBeTruthy()
-    expect(screen.getByText('750 D.A')).toBeTruthy()
-    expect(screen.getByText('Chorba Frik')).toBeTruthy()
-    expect(screen.getByText('350 D.A')).toBeTruthy()
   })
 
   it('shows offline overlay when offline is true', () => {
