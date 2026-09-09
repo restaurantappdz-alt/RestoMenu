@@ -70,13 +70,13 @@ function DigitalBoardCard({ slot, currency, isWide }) {
         <CardPhoto src={slot.imageUrl} alt={slot.title} />
 
         {/* Price panel: flex-shrink-0 with compact proportional height */}
-        <div className="flex-shrink-0 flex flex-col justify-between overflow-hidden bg-white">
+        <div className="flex-shrink-0 flex flex-col justify-between overflow-hidden bg-white border-t border-[#084c3c]/20">
           {/* Header title banner under photo */}
-          <div className="bg-[#fcf6ed] px-3.5 py-2 border-b-[1.5px] border-[#084c3c]/20 flex items-center justify-between gap-2 flex-shrink-0">
+          <div className="bg-[#fcf6ed] h-10 px-4 flex items-center justify-between gap-2 flex-shrink-0 border-b border-[#084c3c]/20">
             <div className="min-w-0 flex-1 flex items-baseline gap-2">
               <span
                 className={`text-[#084c3c] font-bold line-clamp-1 leading-tight ${
-                  isWide ? 'text-base lg:text-lg' : 'text-sm lg:text-base'
+                  isWide ? 'text-lg lg:text-xl' : 'text-sm lg:text-base'
                 }`}
                 dir="auto"
               >
@@ -84,9 +84,7 @@ function DigitalBoardCard({ slot, currency, isWide }) {
               </span>
               {slot.subtitle && (
                 <span
-                  className={`text-[#084c3c]/70 line-clamp-1 leading-tight ${
-                    isWide ? 'text-xs lg:text-sm' : 'text-xs'
-                  }`}
+                  className={`text-[#084c3c]/70 text-xs lg:text-sm line-clamp-1 leading-tight`}
                 >
                   {slot.subtitle}
                 </span>
@@ -105,7 +103,7 @@ function DigitalBoardCard({ slot, currency, isWide }) {
               return (
                 <div
                   key={idx}
-                  className={`flex items-center justify-between px-3.5 py-1.5 lg:py-2 ${
+                  className={`h-9 lg:h-10 flex items-center justify-between px-4 ${
                     isEven
                       ? 'bg-[#084c3c] text-white'
                       : 'bg-white text-[#084c3c] border-t border-[#084c3c]/20'
@@ -140,16 +138,18 @@ function DigitalBoardCard({ slot, currency, isWide }) {
       {/* Photo: flex-1 to fill all remaining height */}
       <CardPhoto src={slot.imageUrl} alt={slot.title} />
 
-      {/* Banner: compact, sleek flex-shrink-0 banner */}
+      {/* Banner: compact fixed height (max 80px), never oversized */}
       <div
-        className={`bg-[#fcf6ed] flex items-center justify-between gap-3 overflow-hidden flex-shrink-0 ${
-          isWide ? 'px-5 py-3' : 'px-3.5 py-2.5'
+        className={`bg-[#fcf6ed] flex items-center justify-between gap-4 overflow-hidden flex-shrink-0 border-t-[2px] border-[#084c3c]/20 ${
+          isWide
+            ? 'h-20 sm:h-24 max-h-24 px-6'
+            : 'h-16 sm:h-20 max-h-20 px-4'
         }`}
       >
         <div className="min-w-0 flex-1 flex flex-col justify-center">
           <span
-            className={`text-[#084c3c] font-bold line-clamp-1 leading-tight ${
-              isWide ? 'text-lg lg:text-xl' : 'text-base lg:text-lg'
+            className={`text-[#084c3c] font-extrabold line-clamp-1 leading-tight ${
+              isWide ? 'text-2xl sm:text-3xl lg:text-4xl' : 'text-base lg:text-lg'
             }`}
             dir="auto"
           >
@@ -158,7 +158,7 @@ function DigitalBoardCard({ slot, currency, isWide }) {
           {slot.subtitle && (
             <span
               className={`text-[#084c3c]/75 line-clamp-1 leading-snug mt-0.5 ${
-                isWide ? 'text-xs lg:text-sm' : 'text-xs'
+                isWide ? 'text-sm sm:text-base' : 'text-xs'
               }`}
             >
               {slot.subtitle}
@@ -169,7 +169,7 @@ function DigitalBoardCard({ slot, currency, isWide }) {
           <div className="flex-shrink-0 text-right pl-2">
             <span
               className={`text-[#084c3c] font-black tabular-nums whitespace-nowrap ${
-                isWide ? 'text-xl lg:text-2xl' : 'text-lg lg:text-xl'
+                isWide ? 'text-3xl sm:text-4xl lg:text-5xl' : 'text-xl lg:text-2xl'
               }`}
             >
               {formattedPrice}
