@@ -14,16 +14,16 @@ export const capabilities = {
   hasFooter: false,
 }
 
-// Curated high-resolution fallback dish photos
+// Curated high-resolution fallback Algerian Salon de thé (قاعة شاي) photos
 const FALLBACK_IMAGES = [
-  'https://images.unsplash.com/photo-1544025162-d76694265947?w=1200&q=80', // Kebab / Grilled meat platter
-  'https://images.unsplash.com/photo-1540420773420-3366772f4999?w=1200&q=80', // Fresh salad / starter bowl
-  'https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=1200&q=80', // Artisan pizza / flatbread
-  'https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=1200&q=80', // BBQ grill / skewers
-  'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=1200&q=80', // Salmon / healthy bowl
-  'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=1200&q=80', // Gourmet burger & sides
-  'https://images.unsplash.com/photo-1551183053-bf91a1d81141?w=1200&q=80', // Pasta / sauced dish
-  'https://images.unsplash.com/photo-1579954115545-a95591f28bfc?w=1200&q=80', // Dessert / pastry
+  'https://images.unsplash.com/photo-1597481499750-3e6b22637e12?w=1200&q=80', // 1. Thé à la Menthe Traditionnel
+  'https://images.unsplash.com/photo-1534778101976-62847782c213?w=1200&q=80', // 2. Café Crème / Cappuccino
+  'https://images.unsplash.com/photo-1584776296944-ab6fb57b0bdd?w=1200&q=80', // 3. Crêpe Nutella Banane
+  'https://images.unsplash.com/photo-1562376552-0d160a2f238d?w=1200&q=80', // 4. Gaufre Liégeoise Gourmande
+  'https://images.unsplash.com/photo-1565299585323-38d6b0865b47?w=1200&q=80', // 5. Msemen Miel & Beurre
+  'https://images.unsplash.com/photo-1519869325930-281384150729?w=1200&q=80', // 6. Assortiment Baklawa & Gâteaux
+  'https://images.unsplash.com/photo-1553530666-ba11a7da3888?w=1200&q=80', // 7. Milkshake Fraise Gourmand
+  'https://images.unsplash.com/photo-1551024709-8f23befc6f87?w=1200&q=80', // 8. Mojito Frais Fruits Rouges
 ]
 
 function formatPrice(price, currency = 'DA') {
