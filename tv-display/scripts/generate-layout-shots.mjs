@@ -21,6 +21,8 @@ const layouts = [
   { id: 'natureBistro', name: 'Nature Bistro' },
   { id: 'pro',          name: 'Pro Premium' },
   { id: 'photoMenu',    name: 'Photo Menu' },
+  { id: 'photoGrid',    name: 'Photo Grid' },
+  { id: 'parchment',    name: 'Parchment Tradition' },
   { id: 'digitalBoard', name: 'Digital Board Grid' },
 ]
 
@@ -89,8 +91,12 @@ async function main() {
       const url = `${devUrl}/?layout=${layout.id}`
       process.stdout.write(`  [${layout.id}] ${layout.name}... `)
       try {
-        await page.goto(url, { waitUntil: 'load', timeout: 15000 })
-        await page.waitForTimeout(3000)
+        try {
+          await page.goto(url, { waitUntil: 'networkidle', timeout: 15000 })
+        } catch {
+          await page.waitForTimeout(2000)
+        }
+        await page.waitForTimeout(1500)
         const filePath = path.join(outputDir, `${layout.id}.jpg`)
         await page.screenshot({ path: filePath, type: 'jpeg', quality: 80 })
         const stats = fs.statSync(filePath)

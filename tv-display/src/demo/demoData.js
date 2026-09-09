@@ -12,6 +12,82 @@ export const DEMO_MENU = {
   heroDescription: 'Thé vert royal infusé à la menthe fraîche et pignons.',
   heroLabel: 'Spécialité Maison',
   heroPrice: 150,
+  boardConfig: {
+    slots: [
+      {
+        title: 'برجر كلاسيك فاخر',
+        subtitle: 'Classic Burger Gourmet',
+        price: '650',
+        imageUrl: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=800&auto=format&fit=crop&q=80',
+        priceType: 'single',
+      },
+      {
+        title: 'بيتزا مارغريتا إيطالية',
+        subtitle: 'Pizza Margherita',
+        price: '750',
+        imageUrl: 'https://images.unsplash.com/photo-1604382355076-af4b0eb60143?w=800&auto=format&fit=crop&q=80',
+        priceType: 'single',
+      },
+      {
+        title: 'سندويش بانيني دجاج',
+        subtitle: 'Panini Poulet Grillé',
+        price: '450',
+        imageUrl: 'https://images.unsplash.com/photo-1528735602780-2552fd46c7af?w=800&auto=format&fit=crop&q=80',
+        priceType: 'single',
+      },
+      {
+        title: 'تاكوس فرنسي الأصيل',
+        subtitle: 'French Tacos Spécial',
+        price: '550',
+        imageUrl: 'https://images.unsplash.com/photo-1565299585323-38d6b0865b47?w=800&auto=format&fit=crop&q=80',
+        priceType: 'single',
+      },
+      {
+        title: 'مشاوي مشكلة فاخرة',
+        subtitle: 'Brochettes Mixtes Grillées',
+        imageUrl: 'https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=800&auto=format&fit=crop&q=80',
+        priceType: 'multiple',
+        priceRows: [
+          { label: 'سياخ لحم غنم', price: '900' },
+          { label: 'سياخ دجاج متبل', price: '700' },
+          { label: 'طبق عائلي مشكل', price: '1600' },
+        ],
+      },
+      {
+        title: 'دجاج محمر مع بطاطا',
+        subtitle: 'Poulet Rôti & Frites',
+        imageUrl: 'https://images.unsplash.com/photo-1598103442097-8b74394b95c6?w=800&auto=format&fit=crop&q=80',
+        priceType: 'multiple',
+        priceRows: [
+          { label: 'ربع دجاجة محمرة', price: '350' },
+          { label: 'نصف دجاجة محمرة', price: '650' },
+          { label: 'دجاجة كاملة عائلية', price: '1200' },
+        ],
+      },
+      {
+        title: 'شاورما عربي سبيسيال',
+        subtitle: 'Shawarma Royale',
+        imageUrl: 'https://images.unsplash.com/photo-1633321702518-7feccafb94d5?w=800&auto=format&fit=crop&q=80',
+        priceType: 'multiple',
+        priceRows: [
+          { label: 'سندويش عادي', price: '300' },
+          { label: 'سندويش دوبل جبن', price: '400' },
+          { label: 'صحن عربي مع مقبلات', price: '750' },
+        ],
+      },
+      {
+        title: 'بطاطا مقلية مقرمشة',
+        subtitle: 'Frites & Sauces Maison',
+        imageUrl: 'https://images.unsplash.com/photo-1576107232684-1279f3908594?w=800&auto=format&fit=crop&q=80',
+        priceType: 'multiple',
+        priceRows: [
+          { label: 'حجم متوسط', price: '150' },
+          { label: 'حجم كبير مع جبن', price: '250' },
+          { label: 'بوكس عائلي سبيسيال', price: '450' },
+        ],
+      },
+    ],
+  },
   categories: [
     {
       id: 'chaud',

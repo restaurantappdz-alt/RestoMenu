@@ -1,10 +1,10 @@
 {
-  "version": "c429e5df1ce1",
+  "version": "0895201fe20b",
   "layouts": [
     {
       "id": "classic",
       "name": "Classic Gold",
-      "image": "/layout-shots/classic.jpg?v=b318f4dc0bd0",
+      "image": "/layout-shots/classic.jpg?v=0895201fe20b",
       "capabilities": {
         "heroPhoto": false,
         "descriptions": false,
@@ -18,7 +18,7 @@
     {
       "id": "bistro",
       "name": "Bistro Chalkboard",
-      "image": "/layout-shots/bistro.jpg?v=b318f4dc0bd0",
+      "image": "/layout-shots/bistro.jpg?v=0895201fe20b",
       "capabilities": {
         "heroPhoto": false,
         "descriptions": false,
@@ -32,7 +32,7 @@
     {
       "id": "brasserie",
       "name": "Brasserie",
-      "image": "/layout-shots/brasserie.jpg?v=b318f4dc0bd0",
+      "image": "/layout-shots/brasserie.jpg?v=0895201fe20b",
       "capabilities": {
         "heroPhoto": false,
         "descriptions": false,
@@ -46,7 +46,7 @@
     {
       "id": "coffeeShop",
       "name": "Coffee Shop",
-      "image": "/layout-shots/coffeeShop.jpg?v=b318f4dc0bd0",
+      "image": "/layout-shots/coffeeShop.jpg?v=0895201fe20b",
       "capabilities": {
         "heroPhoto": false,
         "descriptions": false,
@@ -60,7 +60,7 @@
     {
       "id": "minimal",
       "name": "Minimal",
-      "image": "/layout-shots/minimal.jpg?v=b318f4dc0bd0",
+      "image": "/layout-shots/minimal.jpg?v=0895201fe20b",
       "capabilities": {
         "heroPhoto": false,
         "descriptions": false,
@@ -74,7 +74,7 @@
     {
       "id": "modern",
       "name": "Modern",
-      "image": "/layout-shots/modern.jpg?v=b318f4dc0bd0",
+      "image": "/layout-shots/modern.jpg?v=0895201fe20b",
       "capabilities": {
         "heroPhoto": false,
         "descriptions": false,
@@ -88,7 +88,7 @@
     {
       "id": "moroccan",
       "name": "Moroccan",
-      "image": "/layout-shots/moroccan.jpg?v=b318f4dc0bd0",
+      "image": "/layout-shots/moroccan.jpg?v=0895201fe20b",
       "capabilities": {
         "heroPhoto": false,
         "descriptions": false,
@@ -102,7 +102,7 @@
     {
       "id": "natureBistro",
       "name": "Nature Bistro",
-      "image": "/layout-shots/natureBistro.jpg?v=b318f4dc0bd0",
+      "image": "/layout-shots/natureBistro.jpg?v=0895201fe20b",
       "capabilities": {
         "heroPhoto": false,
         "descriptions": false,
@@ -116,7 +116,7 @@
     {
       "id": "pro",
       "name": "Pro Premium",
-      "image": "/layout-shots/pro.jpg?v=b318f4dc0bd0",
+      "image": "/layout-shots/pro.jpg?v=0895201fe20b",
       "capabilities": {
         "heroPhoto": false,
         "descriptions": false,
@@ -130,7 +130,7 @@
     {
       "id": "photoMenu",
       "name": "Photo Menu",
-      "image": "/layout-shots/photoMenu.jpg?v=b318f4dc0bd0",
+      "image": "/layout-shots/photoMenu.jpg?v=0895201fe20b",
       "capabilities": {
         "heroPhoto": true,
         "descriptions": true,
@@ -144,21 +144,7 @@
     {
       "id": "photoGrid",
       "name": "Photo Grid",
-      "image": "/layout-shots/photoGrid.jpg?v=b318f4dc0bd0",
-      "capabilities": {
-        "heroPhoto": false,
-        "descriptions": true,
-        "tags": true,
-        "itemImages": true,
-        "allergyNote": false,
-        "pricingNote": false,
-        "maxItems": 8
-      }
-    },
-    {
-      "id": "digitalBoard",
-      "name": "Digital Board Grid",
-      "image": "/layout-shots/digitalBoard.jpg?v=c429e5df1ce1",
+      "image": "/layout-shots/photoGrid.jpg?v=0895201fe20b",
       "capabilities": {
         "heroPhoto": false,
         "descriptions": true,
@@ -172,7 +158,7 @@
     {
       "id": "parchment",
       "name": "Parchment Tradition",
-      "image": "/layout-shots/parchment.jpg?v=b318f4dc0bd0",
+      "image": "/layout-shots/parchment.jpg?v=0895201fe20b",
       "capabilities": {
         "heroPhoto": false,
         "descriptions": true,
@@ -181,6 +167,20 @@
         "allergyNote": false,
         "pricingNote": false,
         "maxItems": 10
+      }
+    },
+    {
+      "id": "digitalBoard",
+      "name": "Digital Board Grid",
+      "image": "/layout-shots/digitalBoard.jpg?v=0895201fe20b",
+      "capabilities": {
+        "heroPhoto": false,
+        "descriptions": true,
+        "tags": true,
+        "itemImages": true,
+        "allergyNote": false,
+        "pricingNote": false,
+        "maxItems": 8
       }
     }
   ]
