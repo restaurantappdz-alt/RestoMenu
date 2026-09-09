@@ -34,11 +34,10 @@ function FallbackDishIcon({ className = 'w-10 h-10 text-[#084c3c]/30' }) {
   )
 }
 
-function CardPhoto({ src, alt, heightPercent }) {
+function CardPhoto({ src, alt, className = '' }) {
   return (
     <div
-      className="relative w-full overflow-hidden bg-[#fbfbf9] flex items-center justify-center border-b-[2px] border-[#084c3c]/25 flex-shrink-0"
-      style={{ height: heightPercent }}
+      className={`relative w-full flex-1 min-h-0 overflow-hidden bg-[#fbfbf9] flex items-center justify-center border-b-[2px] border-[#084c3c]/25 ${className}`}
     >
       <div className="absolute inset-0 flex items-center justify-center bg-[#f7f7f5] pointer-events-none">
         <FallbackDishIcon />
@@ -67,19 +66,28 @@ function DigitalBoardCard({ slot, currency, isWide }) {
   if (isMultiple) {
     return (
       <div className="layout-digital-board-card flex flex-col h-full rounded-xl overflow-hidden border-[2px] border-[#084c3c] bg-white shadow-sm transition-shadow">
-        {/* Photo: 54% of card height */}
-        <CardPhoto src={slot.imageUrl} alt={slot.title} heightPercent="54%" />
+        {/* Photo: flex-1 to fill all remaining height */}
+        <CardPhoto src={slot.imageUrl} alt={slot.title} />
 
-        {/* Price panel: 46% of card height */}
-        <div className="flex-1 flex flex-col justify-between overflow-hidden" style={{ height: '46%' }}>
+        {/* Price panel: flex-shrink-0 with compact proportional height */}
+        <div className="flex-shrink-0 flex flex-col justify-between overflow-hidden bg-white">
           {/* Header title banner under photo */}
-          <div className="bg-[#fcf6ed] px-3 py-1.5 border-b-[1.5px] border-[#084c3c]/20 flex items-center justify-between gap-2 flex-shrink-0">
+          <div className="bg-[#fcf6ed] px-3.5 py-2 border-b-[1.5px] border-[#084c3c]/20 flex items-center justify-between gap-2 flex-shrink-0">
             <div className="min-w-0 flex-1 flex items-baseline gap-2">
-              <span className="text-[#084c3c] font-bold text-sm lg:text-base line-clamp-1 leading-tight" dir="auto">
+              <span
+                className={`text-[#084c3c] font-bold line-clamp-1 leading-tight ${
+                  isWide ? 'text-base lg:text-lg' : 'text-sm lg:text-base'
+                }`}
+                dir="auto"
+              >
                 {slot.title}
               </span>
               {slot.subtitle && (
-                <span className="text-[#084c3c]/70 text-xs line-clamp-1 leading-tight">
+                <span
+                  className={`text-[#084c3c]/70 line-clamp-1 leading-tight ${
+                    isWide ? 'text-xs lg:text-sm' : 'text-xs'
+                  }`}
+                >
                   {slot.subtitle}
                 </span>
               )}
@@ -87,7 +95,7 @@ function DigitalBoardCard({ slot, currency, isWide }) {
           </div>
 
           {/* Alternating deep emerald and crisp white strips */}
-          <div className="flex-1 flex flex-col justify-evenly overflow-hidden">
+          <div className="flex flex-col flex-shrink-0">
             {slot.priceRows.map((row, idx) => {
               const isEven = idx % 2 === 0
               const rowPrice =
@@ -97,16 +105,24 @@ function DigitalBoardCard({ slot, currency, isWide }) {
               return (
                 <div
                   key={idx}
-                  className={`flex-1 flex items-center justify-between px-3.5 py-1 ${
+                  className={`flex items-center justify-between px-3.5 py-1.5 lg:py-2 ${
                     isEven
                       ? 'bg-[#084c3c] text-white'
                       : 'bg-white text-[#084c3c] border-t border-[#084c3c]/20'
                   }`}
                 >
-                  <span className={`font-semibold text-xs lg:text-sm line-clamp-1 ${isEven ? 'text-white' : 'text-[#084c3c]'}`}>
+                  <span
+                    className={`font-semibold text-xs lg:text-sm line-clamp-1 ${
+                      isEven ? 'text-white' : 'text-[#084c3c]'
+                    }`}
+                  >
                     {row.label || row.name || ''}
                   </span>
-                  <span className={`font-extrabold tabular-nums text-xs lg:text-sm whitespace-nowrap ml-2 ${isEven ? 'text-emerald-100' : 'text-[#084c3c]'}`}>
+                  <span
+                    className={`font-extrabold tabular-nums text-xs lg:text-sm whitespace-nowrap ml-2 ${
+                      isEven ? 'text-emerald-100' : 'text-[#084c3c]'
+                    }`}
+                  >
                     {rowPrice}
                   </span>
                 </div>
@@ -121,13 +137,14 @@ function DigitalBoardCard({ slot, currency, isWide }) {
   // Single price card
   return (
     <div className="layout-digital-board-card flex flex-col h-full rounded-xl overflow-hidden border-[2px] border-[#084c3c] bg-white shadow-sm transition-shadow">
-      {/* Photo: 66% of card height */}
-      <CardPhoto src={slot.imageUrl} alt={slot.title} heightPercent="66%" />
+      {/* Photo: flex-1 to fill all remaining height */}
+      <CardPhoto src={slot.imageUrl} alt={slot.title} />
 
-      {/* Banner: 34% of card height in warm luxury almond ivory */}
+      {/* Banner: compact, sleek flex-shrink-0 banner */}
       <div
-        className="bg-[#fcf6ed] px-3.5 py-2 flex items-center justify-between gap-3 overflow-hidden"
-        style={{ height: '34%' }}
+        className={`bg-[#fcf6ed] flex items-center justify-between gap-3 overflow-hidden flex-shrink-0 ${
+          isWide ? 'px-5 py-3' : 'px-3.5 py-2.5'
+        }`}
       >
         <div className="min-w-0 flex-1 flex flex-col justify-center">
           <span
@@ -152,7 +169,7 @@ function DigitalBoardCard({ slot, currency, isWide }) {
           <div className="flex-shrink-0 text-right pl-2">
             <span
               className={`text-[#084c3c] font-black tabular-nums whitespace-nowrap ${
-                isWide ? 'text-2xl lg:text-3xl' : 'text-xl lg:text-2xl'
+                isWide ? 'text-xl lg:text-2xl' : 'text-lg lg:text-xl'
               }`}
             >
               {formattedPrice}
