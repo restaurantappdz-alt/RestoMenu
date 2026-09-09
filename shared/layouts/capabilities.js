@@ -148,6 +148,19 @@ export const LAYOUT_CAPABILITIES = {
     hasHeader: false,
     hasFooter: false,
   },
+  parchment: {
+    ...DEFAULT_CAPABILITIES,
+    name: 'Parchment Tradition',
+    maxItems: 10,
+    supportsDescriptions: true,
+    supportsTags: true,
+    supportsItemImages: true,
+    supportsAddons: 'footer',
+    columns: 1,
+    displayMode: 'full-menu',
+    hasHeader: true,
+    hasFooter: false,
+  },
 }
 
 /**

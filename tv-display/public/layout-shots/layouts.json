@@ -154,6 +154,20 @@
         "pricingNote": false,
         "maxItems": 8
       }
+    },
+    {
+      "id": "parchment",
+      "name": "Parchment Tradition",
+      "image": "/layout-shots/parchment.jpg?v=b318f4dc0bd0",
+      "capabilities": {
+        "heroPhoto": false,
+        "descriptions": true,
+        "tags": true,
+        "itemImages": true,
+        "allergyNote": false,
+        "pricingNote": false,
+        "maxItems": 10
+      }
     }
   ]
 }
