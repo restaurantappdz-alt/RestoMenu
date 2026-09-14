@@ -1,7 +1,7 @@
 import { useMemo } from 'react'
 import useAllMenus from '../hooks/useAllMenus'
 import { getLayout } from '@layouts'
-import { combineMenus } from '../menuCombiner'
+import { combineMenus, mergeCategories } from '../menuCombiner'
 
 function StateScreen({ children }) {
   return (
@@ -19,7 +19,7 @@ export default function PhoneMenuPage() {
   // Merge every menu's categories into a single list so the page renders
   // ONE layout containing all items — no duplicated chrome per menu.
   const allCategories = useMemo(
-    () => combined.map((menu) => menu.categories || []).flat(),
+    () => mergeCategories(combined.flatMap((menu) => menu.categories || [])),
     [combined],
   )
   const allAddons = useMemo(
@@ -88,6 +88,17 @@ export default function PhoneMenuPage() {
     )
   }
 
+  if (allCategories.length === 0) {
+    return (
+      <StateScreen>
+        <div className="text-center max-w-lg px-8">
+          <h2 className="font-heading font-bold text-white text-4xl">Menu updating soon...</h2>
+          <p className="text-white/50 text-xl mt-3">Please check back soon.</p>
+        </div>
+      </StateScreen>
+    )
+  }
+
   return (
     <div className="phone-menu-page">
       <div className="phone-menu-restaurant">
@@ -99,6 +110,7 @@ export default function PhoneMenuPage() {
         offline={false}
         menu={{ heroImageUrl: heroMenu.heroImageUrl, name: heroMenu.name }}
         title={restaurantName || 'Menu'}
+        isPhone={true}
       />
     </div>
   )

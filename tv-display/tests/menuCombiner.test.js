@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, afterEach } from 'vitest'
-import { parsePhoneParams, combineMenus, isSubscriptionExpired } from '../src/menuCombiner'
+import { parsePhoneParams, combineMenus, mergeCategories, isSubscriptionExpired } from '../src/menuCombiner'
 
 // Guard: day-granularity tests use vi.setSystemTime — restore real timers
 // even if an assertion fails, so fake timers can't leak into other tests.
@@ -38,18 +38,89 @@ describe('parsePhoneParams', () => {
 })
 
 describe('combineMenus', () => {
-  it('keeps menus that have at least one item, drops empty ones, preserves order', () => {
+  it('preserves all menus including those with empty categories and filters out null/undefined', () => {
     const menus = [
       { id: 'a', name: 'Breakfast', categories: [{ name: 'Hot', items: [{ name: 'Eggs', price: 5 }] }] },
+      null,
       { id: 'b', name: 'Drinks', categories: [{ name: 'Cold', items: [] }] },
+      undefined,
       { id: 'c', name: 'Desserts', categories: [] },
     ]
-    expect(combineMenus(menus)).toEqual([menus[0]])
+    expect(combineMenus(menus)).toEqual([menus[0], menus[2], menus[4]])
   })
 
   it('returns empty array for null/undefined input', () => {
     expect(combineMenus(null)).toEqual([])
     expect(combineMenus(undefined)).toEqual([])
+  })
+})
+
+describe('mergeCategories', () => {
+  it('merges categories with case-insensitive and trimmed name matching', () => {
+    const categories = [
+      { name: 'Desserts', items: [{ name: 'Cake', price: 6 }] },
+      { name: '  desserts  ', items: [{ name: 'Ice Cream', price: 4 }] },
+      { name: 'DESSERTS', items: [{ name: 'Pie', price: 5 }] },
+    ]
+    const merged = mergeCategories(categories)
+    expect(merged).toHaveLength(1)
+    expect(merged[0].name).toBe('Desserts')
+    expect(merged[0].items.map((i) => i.name)).toEqual(['Cake', 'Ice Cream', 'Pie'])
+  })
+
+  it('preserves the original casing and order of the first encountered category', () => {
+    const categories = [
+      { name: 'Starters & Salads', items: [{ name: 'Caesar Salad', price: 8 }] },
+      { name: 'Main Dishes', items: [{ name: 'Steak', price: 20 }] },
+      { name: 'starters & salads', items: [{ name: 'Soup', price: 6 }] },
+    ]
+    const merged = mergeCategories(categories)
+    expect(merged.map((c) => c.name)).toEqual(['Starters & Salads', 'Main Dishes'])
+    expect(merged[0].items.map((i) => i.name)).toEqual(['Caesar Salad', 'Soup'])
+    expect(merged[1].items.map((i) => i.name)).toEqual(['Steak'])
+  })
+
+  it('concatenates category items and addons', () => {
+    const categories = [
+      {
+        name: 'Burgers',
+        items: [{ name: 'Classic Burger', price: 10 }],
+        addons: [{ name: 'Cheese', price: 1 }],
+      },
+      {
+        name: 'burgers',
+        items: [{ name: 'Bacon Burger', price: 12 }],
+        addons: [{ name: 'Extra Patty', price: 3 }],
+      },
+    ]
+    const merged = mergeCategories(categories)
+    expect(merged).toHaveLength(1)
+    expect(merged[0].items).toEqual([
+      { name: 'Classic Burger', price: 10 },
+      { name: 'Bacon Burger', price: 12 },
+    ])
+    expect(merged[0].addons).toEqual([
+      { name: 'Cheese', price: 1 },
+      { name: 'Extra Patty', price: 3 },
+    ])
+  })
+
+  it('filters out categories that have 0 items', () => {
+    const categories = [
+      { name: 'Empty Category', items: [] },
+      { name: 'Another Empty', items: null },
+      { name: 'Valid Category', items: [{ name: 'Coffee', price: 3 }] },
+    ]
+    const merged = mergeCategories(categories)
+    expect(merged).toHaveLength(1)
+    expect(merged[0].name).toBe('Valid Category')
+  })
+
+  it('handles null, undefined, empty lists and malformed items safely', () => {
+    expect(mergeCategories(null)).toEqual([])
+    expect(mergeCategories(undefined)).toEqual([])
+    expect(mergeCategories([])).toEqual([])
+    expect(mergeCategories([null, undefined, {}])).toEqual([])
   })
 })
 

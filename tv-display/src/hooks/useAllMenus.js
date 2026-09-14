@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { onSnapshot, collection, doc } from 'firebase/firestore'
 import { db } from '../firebase'
 import { parsePhoneParams, isSubscriptionExpired } from '../menuCombiner'
@@ -17,13 +17,23 @@ export default function useAllMenus() {
   const [restaurantId, setRestaurantId] = useState(null)
   const [layout, setLayout] = useState('classic')
   const [restaurantName, setRestaurantName] = useState('')
-  const [menus, setMenus] = useState([])
+  const [rawMenus, setRawMenus] = useState([])
+  const [targetMenuIds, setTargetMenuIds] = useState(menuIds)
   const [loading, setLoading] = useState(true)
   // Fail closed: until the config snapshot actually reports, treat the
   // subscription as expired (matches isSubscriptionExpired's fail-closed
   // behavior, so a failed/never-firing config listener cannot open the gate).
   const [expired, setExpired] = useState(true)
   const [needsSetup, setNeedsSetup] = useState(false)
+
+  const menus = useMemo(() => {
+    if (targetMenuIds && targetMenuIds.length > 0) {
+      return targetMenuIds
+        .map((id) => rawMenus.find((m) => m.id === id))
+        .filter(Boolean)
+    }
+    return rawMenus
+  }, [rawMenus, targetMenuIds])
 
   useEffect(() => {
     setRestaurantId(rid)
@@ -55,6 +65,11 @@ export default function useAllMenus() {
         if (data && typeof data.phoneMenuLayout === 'string') {
           setLayout(data.phoneMenuLayout)
         }
+        if (data && Array.isArray(data.phoneMenuIds) && data.phoneMenuIds.length > 0) {
+          setTargetMenuIds(data.phoneMenuIds)
+        } else {
+          setTargetMenuIds(menuIds)
+        }
         configReported = true
         maybeDone()
       },
@@ -74,16 +89,7 @@ export default function useAllMenus() {
       collection(db, 'restaurants', rid, 'menus'),
       (snap) => {
         const list = snap.docs.map((d) => ({ id: d.id, ...d.data() }))
-        // When the QR URL names specific menus, show ONLY those, in URL
-        // order (the admin's selection order). No m param → all menus
-        // (backward compatible with printed QRs from before this feature).
-        const filtered =
-          menuIds.length > 0
-            ? menuIds
-                .map((id) => list.find((m) => m.id === id))
-                .filter(Boolean)
-            : list
-        setMenus(filtered)
+        setRawMenus(list)
         menusReported = true
         maybeDone()
       },

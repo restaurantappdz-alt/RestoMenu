@@ -15,18 +15,6 @@ export const capabilities = {
   hasFooter: false,
 }
 
-// Curated authentic dish photos matching the traditional rustic style of the reference
-const FALLBACK_LEFT_PHOTOS = [
-  'https://images.unsplash.com/photo-1541518763669-27fef04b14ea?w=1000&q=80', // Couscous Royale with vegetables & meat
-  'https://images.unsplash.com/photo-1544025162-d76694265947?w=1000&q=80', // Traditional stew / tagine plate
-  'https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=1000&q=80', // Clay dish grilled skewers & sauce
-]
-
-const FALLBACK_RIGHT_PHOTOS = [
-  'https://images.unsplash.com/photo-1589302168068-964664d93dc0?w=1000&q=80', // Berber Couscous platter with lemons & sides
-  'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=1000&q=80', // Terracotta bowl with seasoned rice/couscous & garnish
-]
-
 function formatPrice(price, currency = 'DA') {
   if (price == null || price === '') return ''
   const str = String(price).trim()
@@ -93,10 +81,10 @@ function FiligreeDivider() {
   )
 }
 
-export default function LayoutParchment({ categories = [], allAddons = [], offline, menu = {}, title }) {
+export default function LayoutParchment({ categories = [], allAddons = [], offline, menu = {}, title, isPhone = false }) {
   const currency = menu?.currency || 'DA'
 
-  // Flatten items from all categories up to 10 max
+  // Flatten items from all categories up to 10 max on TV; collect all on phone
   const allItems = []
   const itemsWithPhotos = []
 
@@ -109,22 +97,14 @@ export default function LayoutParchment({ categories = [], allAddons = [], offli
       if (item.imageUrl && item.imageUrl.trim() !== '') {
         itemsWithPhotos.push(item.imageUrl)
       }
-      if (allItems.length >= capabilities.maxItems) break
+      if (!isPhone && allItems.length >= capabilities.maxItems) break
     }
-    if (allItems.length >= capabilities.maxItems) break
+    if (!isPhone && allItems.length >= capabilities.maxItems) break
   }
 
-  // Populate side photos: use uploaded photos first, then curated fallbacks
-  const leftPhotos = [
-    itemsWithPhotos[0] || FALLBACK_LEFT_PHOTOS[0],
-    itemsWithPhotos[1] || FALLBACK_LEFT_PHOTOS[1],
-    itemsWithPhotos[2] || FALLBACK_LEFT_PHOTOS[2],
-  ]
-
-  const rightPhotos = [
-    itemsWithPhotos[3] || FALLBACK_RIGHT_PHOTOS[0],
-    itemsWithPhotos[4] || FALLBACK_RIGHT_PHOTOS[1],
-  ]
+  // Populate side photos: use uploaded photos only, no fake stock photos
+  const leftPhotos = itemsWithPhotos.slice(0, 3)
+  const rightPhotos = itemsWithPhotos.slice(3, 5)
 
   return (
     <div
@@ -196,6 +176,14 @@ export default function LayoutParchment({ categories = [], allAddons = [], offli
             min-height: auto !important;
             padding: 16px 12px !important;
           }
+          .parchment-card-inner {
+            height: auto !important;
+          }
+          .parchment-items-body {
+            height: auto !important;
+            justify-content: flex-start !important;
+            gap: 12px !important;
+          }
         }
       `}</style>
 
@@ -230,25 +218,28 @@ export default function LayoutParchment({ categories = [], allAddons = [], offli
       {/* 3-Column Main Stage Container */}
       <div className="parchment-screen-container parchment-shift-target relative z-20 w-full h-full p-[clamp(8px,1vw,18px)] box-border flex items-stretch gap-[clamp(8px,1.1vw,20px)]">
         
-        {/* ─── LEFT COLUMN: 3 Stacked Food Photos (28-30% width) ─── */}
-        <div className="parchment-side-gallery w-[28.5%] h-full flex flex-col gap-[clamp(6px,0.7vh,14px)]">
-          {leftPhotos.map((src, i) => (
-            <div
-              key={`left-img-${i}`}
-              className="parchment-photo-tile flex-1 min-h-0 w-full relative overflow-hidden rounded-[2px] shadow-[0_4px_16px_rgba(0,0,0,0.5)] border border-[#4a3424]"
-            >
-              <img
-                src={src}
-                alt=""
-                loading="lazy"
-                className="w-full h-full object-cover transform hover:scale-105 transition-transform duration-700"
-              />
-              <div className="absolute inset-0 pointer-events-none bg-gradient-to-t from-black/25 to-transparent" />
-            </div>
-          ))}
-        </div>
+        {/* ─── LEFT COLUMN: Stacked Food Photos (if uploaded photos exist) ─── */}
+        {leftPhotos.length > 0 && (
+          <div className="parchment-side-gallery w-[28.5%] h-full flex flex-col gap-[clamp(6px,0.7vh,14px)]">
+            {leftPhotos.map((src, i) => (
+              <div
+                key={`left-img-${i}`}
+                className="parchment-photo-tile flex-1 min-h-0 w-full relative overflow-hidden rounded-[2px] shadow-[0_4px_16px_rgba(0,0,0,0.5)] border border-[#4a3424]"
+              >
+                <img
+                  src={src}
+                  alt=""
+                  loading="lazy"
+                  onError={(e) => { e.currentTarget.style.display = 'none' }}
+                  className="w-full h-full object-cover transform hover:scale-105 transition-transform duration-700"
+                />
+                <div className="absolute inset-0 pointer-events-none bg-gradient-to-t from-black/25 to-transparent" />
+              </div>
+            ))}
+          </div>
+        )}
 
-        {/* ─── CENTER COLUMN: Elegant Ivory Parchment Menu Card (43% width) ─── */}
+        {/* ─── CENTER COLUMN: Elegant Ivory Parchment Menu Card ─── */}
         <div className="parchment-card-container flex-1 h-full relative rounded-[3px] shadow-[0_12px_40px_rgba(0,0,0,0.65),0_2px_8px_rgba(0,0,0,0.35)] flex flex-col overflow-hidden box-border p-[clamp(6px,0.7vw,14px)] bg-[#faf6ed]">
           
           {/* Subtle Paper Texture & Edge Aging */}
@@ -262,7 +253,7 @@ export default function LayoutParchment({ categories = [], allAddons = [], offli
 
           {/* Ornate Double-Line Framing with Filigree Corners */}
           <div
-            className="relative z-10 w-full h-full flex flex-col box-border p-[clamp(10px,1.1vw,22px)]"
+            className="parchment-card-inner relative z-10 w-full h-full flex flex-col box-border p-[clamp(10px,1.1vw,22px)]"
             style={{
               border: '1.5px solid #7c6044',
               outline: '1px solid #c2ad94',
@@ -291,8 +282,62 @@ export default function LayoutParchment({ categories = [], allAddons = [], offli
               <div className="flex-1 flex flex-col items-center justify-center text-[#7c6044]">
                 <p className="italic text-base">Aucun article dans cette catégorie pour le moment.</p>
               </div>
+            ) : isPhone ? (
+              <div className="parchment-items-body flex-1 min-h-0 flex flex-col justify-start py-[clamp(2px,0.5vh,8px)] gap-4">
+                {categories
+                  .filter((cat) => (cat.items || []).length > 0)
+                  .map((cat, catIdx) => (
+                    <div key={cat.id || `${cat.name}-${catIdx}`} className="w-full flex flex-col gap-2">
+                      <div className="border-b border-[#7c6044]/40 pb-1 pt-2">
+                        <h2
+                          className="parchment-arabic font-bold text-[#382013] text-lg sm:text-xl uppercase tracking-wider"
+                        >
+                          {cat.name}
+                        </h2>
+                      </div>
+                      {(cat.items || []).map((item, idx) => (
+                        <div
+                          key={item.id || `${item.name}-${idx}`}
+                          className="w-full flex flex-col justify-center py-[clamp(1px,0.25vh,4px)]"
+                        >
+                          {/* Top Row: Name + Dotted Line + Price */}
+                          <div className="w-full flex items-baseline justify-between overflow-hidden leading-snug">
+                            {/* Dish Name */}
+                            <div
+                              className="parchment-arabic font-bold text-[#2e190e] truncate flex-shrink-0 max-w-[65%]"
+                              style={{ fontSize: 'clamp(0.85rem, 1.15vw, 1.45rem)' }}
+                            >
+                              {item.name}
+                            </div>
+
+                            {/* Classic Dotted Leader Line */}
+                            <div className="parchment-leader-dots" />
+
+                            {/* Price */}
+                            <div
+                              className="font-extrabold text-[#2e190e] text-right tabular-nums whitespace-nowrap flex-shrink-0"
+                              style={{ fontSize: 'clamp(0.88rem, 1.25vw, 1.5rem)' }}
+                            >
+                              {formatPrice(item.price, currency)}
+                            </div>
+                          </div>
+
+                          {/* Bottom Row: Ingredients / Description */}
+                          {(item.description || item.tag) && (
+                            <div
+                              className="text-[#6d5543] italic truncate font-normal leading-tight pl-[1px] mt-[-1px]"
+                              style={{ fontSize: 'clamp(0.62rem, 0.8vw, 0.98rem)' }}
+                            >
+                              {item.description || item.tag}
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  ))}
+              </div>
             ) : (
-              <div className="flex-1 min-h-0 flex flex-col justify-evenly py-[clamp(2px,0.5vh,8px)]">
+              <div className="parchment-items-body flex-1 min-h-0 flex flex-col justify-evenly py-[clamp(2px,0.5vh,8px)]">
                 {allItems.map((item, idx) => {
                   return (
                     <div
@@ -338,23 +383,26 @@ export default function LayoutParchment({ categories = [], allAddons = [], offli
           </div>
         </div>
 
-        {/* ─── RIGHT COLUMN: 2 Stacked Food Photos (28-30% width) ─── */}
-        <div className="parchment-side-gallery w-[28.5%] h-full flex flex-col gap-[clamp(6px,0.7vh,14px)]">
-          {rightPhotos.map((src, i) => (
-            <div
-              key={`right-img-${i}`}
-              className="parchment-photo-tile flex-1 min-h-0 w-full relative overflow-hidden rounded-[2px] shadow-[0_4px_16px_rgba(0,0,0,0.5)] border border-[#4a3424]"
-            >
-              <img
-                src={src}
-                alt=""
-                loading="lazy"
-                className="w-full h-full object-cover transform hover:scale-105 transition-transform duration-700"
-              />
-              <div className="absolute inset-0 pointer-events-none bg-gradient-to-t from-black/25 to-transparent" />
-            </div>
-          ))}
-        </div>
+        {/* ─── RIGHT COLUMN: Stacked Food Photos (if uploaded photos exist) ─── */}
+        {rightPhotos.length > 0 && (
+          <div className="parchment-side-gallery w-[28.5%] h-full flex flex-col gap-[clamp(6px,0.7vh,14px)]">
+            {rightPhotos.map((src, i) => (
+              <div
+                key={`right-img-${i}`}
+                className="parchment-photo-tile flex-1 min-h-0 w-full relative overflow-hidden rounded-[2px] shadow-[0_4px_16px_rgba(0,0,0,0.5)] border border-[#4a3424]"
+              >
+                <img
+                  src={src}
+                  alt=""
+                  loading="lazy"
+                  onError={(e) => { e.currentTarget.style.display = 'none' }}
+                  className="w-full h-full object-cover transform hover:scale-105 transition-transform duration-700"
+                />
+                <div className="absolute inset-0 pointer-events-none bg-gradient-to-t from-black/25 to-transparent" />
+              </div>
+            ))}
+          </div>
+        )}
 
       </div>
     </div>

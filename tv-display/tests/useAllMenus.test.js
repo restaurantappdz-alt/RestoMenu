@@ -198,4 +198,30 @@ describe('useAllMenus', () => {
     h.unmount()
     h.restore()
   })
+
+  it('uses live phoneMenuIds from config over the URL fallback', () => {
+    const h = renderHookOnce('?r=rest1&phone=1&m=m1')
+    act(() => {
+      snapshots['doc:restaurants/rest1/config/display']({
+        exists: () => true,
+        data: () => ({
+          expiresAt: Date.now() + 86400000,
+          phoneMenuIds: ['m2'],
+        }),
+      })
+    })
+    act(() => {
+      snapshots['collection:restaurants/rest1/menus']({
+        docs: [
+          { id: 'm1', data: () => ({ name: 'Breakfast' }) },
+          { id: 'm2', data: () => ({ name: 'Drinks' }) },
+        ],
+      })
+    })
+    expect(h.output.menus.map((m) => m.id)).toEqual(['m2'])
+    h.unmount()
+    h.restore()
+  })
 })
+
+

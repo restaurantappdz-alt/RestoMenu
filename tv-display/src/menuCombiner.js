@@ -23,15 +23,48 @@ export function parsePhoneParams(search) {
 }
 
 /**
- * Keep only menus that actually have items. No truncation — the phone page
- * shows everything, preserving menu order.
+ * Return menus, filtering out any null or falsy entries.
+ * Menus are not dropped just because their categories have no items yet.
  * @param {Array<object>|null|undefined} menus - raw menu docs
  * @returns {Array<object>}
  */
 export function combineMenus(menus) {
-  return (menus || []).filter((menu) =>
-    (menu.categories || []).some((c) => (c.items || []).length > 0)
-  )
+  return (menus || []).filter(Boolean)
+}
+
+/**
+ * Merge categories from all menus into a unified category list.
+ * - Case-insensitive, trimmed category name matching: (cat.name || '').trim().toLowerCase()
+ * - Combine items: [...existing.items, ...incoming.items]
+ * - Combine category addons: [...(existing.addons || []), ...(incoming.addons || [])]
+ * - Preserve the original casing and title of the first encountered category
+ * - Filter out categories that have 0 items (filter(c => (c.items || []).length > 0))
+ * @param {Array<object>|null|undefined} categories - list of categories across menus
+ * @returns {Array<object>}
+ */
+export function mergeCategories(categories) {
+  const map = new Map()
+
+  for (const cat of categories || []) {
+    if (!cat) continue
+    const key = (cat.name || '').trim().toLowerCase()
+    const incomingItems = Array.isArray(cat.items) ? cat.items : []
+    const incomingAddons = Array.isArray(cat.addons) ? cat.addons : []
+
+    if (map.has(key)) {
+      const existing = map.get(key)
+      existing.items = [...existing.items, ...incomingItems]
+      existing.addons = [...(existing.addons || []), ...incomingAddons]
+    } else {
+      map.set(key, {
+        ...cat,
+        items: [...incomingItems],
+        addons: [...incomingAddons],
+      })
+    }
+  }
+
+  return Array.from(map.values()).filter((c) => (c.items || []).length > 0)
 }
 
 /**

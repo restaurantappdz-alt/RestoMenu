@@ -1,7 +1,5 @@
 import React, { useEffect, useState } from 'react'
 
-const EMOJIS = ['🥐', '☕', '🥗', '🍳', '🥂', '🍝', '🥩', '🐟', '🧀', '🍰', '🥑', '🍓', '🫐', '🥖', '🍷']
-
 function GoldCircleLine() {
   return (
     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, margin: '0 auto', width: '30%' }}>
@@ -36,7 +34,6 @@ export default function LayoutModern({ categories = [], allAddons = [], offline,
   useEffect(() => { setMounted(true) }, [])
 
   const businessHours = menu?.businessHours || 'MON–FRI 10AM–6PM • SAT–SUN 12PM–8PM'
-  let emojiIndex = 0
 
   return (
     <>
@@ -142,27 +139,25 @@ export default function LayoutModern({ categories = [], allAddons = [], offline,
                       {cat.name}
                     </h2>
                     <div>
-                      {(cat.items || []).map((item, j) => {
-                        const emoji = !item.imageUrl ? (EMOJIS[(emojiIndex++) % EMOJIS.length] + ' ') : ''
-                        return (
-                          <div key={j} style={{
-                            display: 'flex', alignItems: 'center',
-                            justifyContent: 'space-between',
-                            padding: 'clamp(0.4rem, 0.5vw, 0.6rem) 0',
-                            borderBottom: '1px solid #F0F0F0',
-                          }}>
-                            <div style={{ display: 'flex', alignItems: 'center', minWidth: 0, flex: 1 }}>
-                              <ItemImage url={item.imageUrl} />
-                              <span style={{
-                                fontFamily: "'Inter', sans-serif",
-                                fontWeight: 300,
-                                fontSize: 'clamp(0.9rem, 1.2vw, 1.4rem)',
-                                color: '#1A1A1A',
-                                lineHeight: 1.3,
-                              }}>
-                                {emoji}{item.name}
-                              </span>
-                            </div>
+                      {(cat.items || []).map((item, j) => (
+                        <div key={j} style={{
+                          display: 'flex', alignItems: 'center',
+                          justifyContent: 'space-between',
+                          padding: 'clamp(0.4rem, 0.5vw, 0.6rem) 0',
+                          borderBottom: '1px solid #F0F0F0',
+                        }}>
+                          <div style={{ display: 'flex', alignItems: 'center', minWidth: 0, flex: 1 }}>
+                            <ItemImage url={item.imageUrl} />
+                            <span style={{
+                              fontFamily: "'Inter', sans-serif",
+                              fontWeight: 300,
+                              fontSize: 'clamp(0.9rem, 1.2vw, 1.4rem)',
+                              color: '#1A1A1A',
+                              lineHeight: 1.3,
+                            }}>
+                              {item.name}
+                            </span>
+                          </div>
                             <span style={{
                               fontFamily: "'Inter', sans-serif",
                               fontWeight: 700,
@@ -174,8 +169,8 @@ export default function LayoutModern({ categories = [], allAddons = [], offline,
                               {item.price} <span style={{ fontWeight: 300, fontSize: '0.65em', color: '#AAAAAA' }}>{menu?.currency || 'DA'}</span>
                             </span>
                           </div>
-                        )
-                      })}
+                        ))
+                      }
                     </div>
                     {cat.addons && cat.addons.length > 0 && (
                       <div style={{ marginTop: 'clamp(0.2rem, 0.3vw, 0.4rem)' }}>

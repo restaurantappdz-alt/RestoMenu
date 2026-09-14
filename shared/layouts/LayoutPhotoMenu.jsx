@@ -200,7 +200,7 @@ function HeroPhotoCard({ currency, imageUrl, heroName, heroDescription, heroLabe
   )
 }
 
-export default function LayoutPhotoMenu({ categories, allAddons, offline, menu, title }) {
+export default function LayoutPhotoMenu({ categories = [], allAddons, offline, menu, title, isPhone = false }) {
   // Single-category display: only show items from the first category
   const items = categories[0]?.items || []
   const slicedItems = items.slice(0, capabilities.maxItems)
@@ -228,8 +228,8 @@ export default function LayoutPhotoMenu({ categories, allAddons, offline, menu, 
           .layout-photomenu-root { height: auto !important; min-height: 100vh; overflow: visible !important; }
           .layout-photomenu-root header { justify-content: center !important; gap: clamp(1rem, 3vw, 2rem); }
           .layout-photomenu-root main { grid-template-columns: 1fr !important; height: auto !important; overflow: visible !important; row-gap: clamp(1.5rem, 4vh, 3rem); }
-          .layout-photomenu-root main > section:first-child { justify-content: flex-start !important; overflow: visible !important; border-right: none !important; }
-          .layout-photomenu-root main > section:nth-child(2) { height: min(65vh, 40rem) !important; }
+          .layout-photomenu-root main > section:first-child { order: 2 !important; justify-content: flex-start !important; overflow: visible !important; border-right: none !important; }
+          .layout-photomenu-root main > section:nth-child(2) { order: 1 !important; height: min(45vh, 30rem) !important; }
           .layout-photomenu-root footer > div { flex-wrap: wrap !important; justify-content: center !important; row-gap: 0.25rem; }
         }
       `}</style>
@@ -286,8 +286,8 @@ export default function LayoutPhotoMenu({ categories, allAddons, offline, menu, 
           )}
         </div>
 
-        {/* Category label — center */}
-        {categories.length > 0 && (
+        {/* Category label — center (TV mode only; phone lists each category header inline) */}
+        {!isPhone && categories.length > 0 && (
           <div className="flex flex-col items-center">
             <span
               className="tracking-[0.28em] uppercase font-semibold mb-[0.3vh]"
@@ -330,7 +330,96 @@ export default function LayoutPhotoMenu({ categories, allAddons, offline, menu, 
             borderRight: '1px solid rgba(240,234,216,0.08)',
           }}
         >
-          {slicedItems.length === 0 ? (
+          {isPhone ? (
+            categories.filter((c) => (c.items || []).length > 0).length === 0 ? (
+              <div className="flex items-center justify-center h-full">
+                <p style={{ fontSize: 'clamp(1rem, 1.5vw, 2rem)', color: '#7a6f56' }}>No items yet</p>
+              </div>
+            ) : (
+              categories
+                .filter((cat) => (cat.items || []).length > 0)
+                .map((cat, catIdx) => (
+                  <div key={cat.id || `${cat.name}-${catIdx}`} className="mb-6 last:mb-0">
+                    <h3
+                      className="font-bold tracking-wider uppercase pb-2 mb-2"
+                      style={{
+                        fontFamily: '"Playfair Display", Georgia, serif',
+                        fontSize: 'clamp(1.1rem, 1.8vw, 2rem)',
+                        color: '#c8902a',
+                        borderBottom: '1px solid rgba(200,144,42,0.3)',
+                      }}
+                    >
+                      {cat.name}
+                    </h3>
+                    {(cat.items || []).map((item, index) => (
+                      <article
+                        key={item.id || `${item.name}-${index}`}
+                        className="flex flex-col animate-cascade-item"
+                        style={{
+                          animationDelay: `${index * 0.08}s`,
+                          padding: '1.6vh 0',
+                          borderBottom:
+                            index < cat.items.length - 1
+                              ? '1px solid rgba(240,234,216,0.06)'
+                              : 'none',
+                        }}
+                      >
+                        {/* Name row + price */}
+                        <div className="flex items-baseline justify-between gap-[1vw]">
+                          <div className="flex items-center gap-[0.6vw] min-w-0">
+                            <h2
+                              className="font-bold leading-tight truncate"
+                              style={{
+                                fontFamily: '"Playfair Display", Georgia, serif',
+                                fontSize: 'clamp(0.95rem, 1.75vw, 2.2rem)',
+                                color: '#f0ead8',
+                              }}
+                            >
+                              {item.name}
+                            </h2>
+                            {item.tag && (
+                              <span
+                                className="flex-shrink-0 font-semibold tracking-widest uppercase"
+                                style={{
+                                  fontSize: 'clamp(0.35rem, 0.6vw, 0.75rem)',
+                                  padding: '0.2vh 0.6vw',
+                                  borderRadius: '0.25rem',
+                                  background: 'rgba(200,144,42,0.1)',
+                                  color: '#c8902a',
+                                  border: '1px solid rgba(200,144,42,0.25)',
+                                }}
+                              >
+                                {item.tag}
+                              </span>
+                            )}
+                          </div>
+                          <span
+                            className="flex-shrink-0 font-bold tabular-nums"
+                            style={{ fontSize: 'clamp(1rem, 1.9vw, 2.4rem)', color: '#c8902a' }}
+                          >
+                            {currency}{item.price}
+                          </span>
+                        </div>
+
+                        {/* Description */}
+                        {item.description && (
+                          <p
+                            className="leading-relaxed"
+                            style={{
+                              fontSize: 'clamp(0.6rem, 1.05vw, 1.2rem)',
+                              color: '#7a6f56',
+                              marginTop: '0.4vh',
+                            }}
+                          >
+                            {item.description}
+                          </p>
+                        )}
+                      </article>
+                    ))}
+                  </div>
+                ))
+            )
+          ) : slicedItems.length === 0 ? (
             <div className="flex items-center justify-center h-full">
               <p style={{ fontSize: 'clamp(1rem, 1.5vw, 2rem)', color: '#7a6f56' }}>No items yet</p>
             </div>

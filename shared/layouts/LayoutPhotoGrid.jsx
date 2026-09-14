@@ -14,18 +14,6 @@ export const capabilities = {
   hasFooter: false,
 }
 
-// Curated high-resolution fallback Algerian Salon de thé (قاعة شاي) photos
-const FALLBACK_IMAGES = [
-  'https://images.unsplash.com/photo-1597481499750-3e6b22637e12?w=1200&q=80', // 1. Thé à la Menthe Traditionnel
-  'https://images.unsplash.com/photo-1534778101976-62847782c213?w=1200&q=80', // 2. Café Crème / Cappuccino
-  'https://images.unsplash.com/photo-1584776296944-ab6fb57b0bdd?w=1200&q=80', // 3. Crêpe Nutella Banane
-  'https://images.unsplash.com/photo-1562376552-0d160a2f238d?w=1200&q=80', // 4. Gaufre Liégeoise Gourmande
-  'https://images.unsplash.com/photo-1565299585323-38d6b0865b47?w=1200&q=80', // 5. Msemen Miel & Beurre
-  'https://images.unsplash.com/photo-1519869325930-281384150729?w=1200&q=80', // 6. Assortiment Baklawa & Gâteaux
-  'https://images.unsplash.com/photo-1553530666-ba11a7da3888?w=1200&q=80', // 7. Milkshake Fraise Gourmand
-  'https://images.unsplash.com/photo-1551024709-8f23befc6f87?w=1200&q=80', // 8. Mojito Frais Fruits Rouges
-]
-
 function formatPrice(price, currency = 'DA') {
   if (price == null || price === '') return ''
   const str = String(price).trim()
@@ -123,10 +111,114 @@ function getGridConfig(count) {
   }
 }
 
-export default function LayoutPhotoGrid({ categories = [], allAddons = [], offline, menu, title }) {
+function PhotoGridCard({ item, idx, gridConfig, currency }) {
+  let variations = []
+  if (Array.isArray(item.variations) && item.variations.length > 0) {
+    variations = item.variations
+  } else if (Array.isArray(item.addons) && item.addons.length > 0) {
+    variations = item.addons
+  } else if (idx != null && gridConfig && idx >= gridConfig.bottomRowStartIndex && Array.isArray(item.categoryAddons) && item.categoryAddons.length > 0) {
+    variations = item.categoryAddons.slice(0, 2)
+  } else if (idx != null && !gridConfig && Array.isArray(item.categoryAddons) && item.categoryAddons.length > 0) {
+    variations = item.categoryAddons.slice(0, 2)
+  }
+
+  return (
+    <div
+      key={item.id || `${item.name}-${idx}`}
+      className="photogrid-card flex flex-col h-full w-full overflow-hidden bg-white shadow-[0_1px_3px_rgba(0,0,0,0.05)] relative"
+      style={gridConfig ? { gridColumn: gridConfig.getItemSpan(idx) } : undefined}
+    >
+      {/* Food Photo Area (if image exists) */}
+      {item.imageUrl && (
+        <div className="flex-1 min-h-0 w-full relative overflow-hidden bg-zinc-100">
+          <img
+            src={item.imageUrl}
+            alt={item.name}
+            loading="lazy"
+            onError={(e) => {
+              e.currentTarget.style.display = 'none'
+            }}
+            className="w-full h-full object-cover transition-transform duration-700 ease-out"
+          />
+        </div>
+      )}
+
+      {/* Primary Info Banner (Soft Warm Beige / Tan) */}
+      <div
+        className="w-full flex items-center justify-between px-[clamp(8px,0.85vw,16px)] py-[clamp(4px,0.65vh,9px)]"
+        style={{ background: '#f5ede2' }}
+      >
+        {/* Left: Stacked Title + Subtitle/Description */}
+        <div className="flex-1 min-w-0 pr-[clamp(6px,0.6vw,12px)]">
+          <div
+            className="font-bold text-zinc-900 truncate leading-tight tracking-tight layout-photogrid-arabic"
+            style={{ fontSize: 'clamp(0.78rem, 1.05vw, 1.35rem)' }}
+          >
+            {item.name}
+          </div>
+          {(item.description || item.tag) && (
+            <div
+              className="text-[#6b4724]/90 truncate font-medium leading-snug mt-[0.1vh]"
+              style={{ fontSize: 'clamp(0.6rem, 0.78vw, 0.95rem)' }}
+            >
+              {item.description || item.tag}
+            </div>
+          )}
+        </div>
+
+        {/* Right: Item Price */}
+        <div
+          className="flex-shrink-0 font-extrabold text-[#713f12] text-right tabular-nums whitespace-nowrap leading-none"
+          style={{ fontSize: 'clamp(0.85rem, 1.25vw, 1.7rem)' }}
+        >
+          {formatPrice(item.price, currency)}
+        </div>
+      </div>
+
+      {/* Stacked Variations / Add-ons (Dark Teal / Forest Green Secondary Banners) */}
+      {variations.length > 0 && (
+        <div className="w-full flex flex-col border-t border-white gap-[1px] bg-white">
+          {variations.slice(0, 3).map((v, vIdx) => (
+            <div
+              key={v.id || `${v.name}-${vIdx}`}
+              className="w-full flex items-center justify-between px-[clamp(8px,0.85vw,16px)] py-[clamp(3px,0.45vh,6px)]"
+              style={{ background: '#0e4a43' }}
+            >
+              <div className="flex-1 min-w-0 pr-[clamp(6px,0.6vw,12px)]">
+                <span
+                  className="font-semibold text-white truncate block leading-tight"
+                  style={{ fontSize: 'clamp(0.65rem, 0.8vw, 1.05rem)' }}
+                >
+                  {v.name}
+                </span>
+                {v.description && (
+                  <span
+                    className="text-white/80 text-xs truncate block leading-none mt-0.5"
+                    style={{ fontSize: 'clamp(0.55rem, 0.68vw, 0.85rem)' }}
+                  >
+                    {v.description}
+                  </span>
+                )}
+              </div>
+              <span
+                className="flex-shrink-0 font-bold text-white text-right tabular-nums whitespace-nowrap leading-none"
+                style={{ fontSize: 'clamp(0.75rem, 1vw, 1.3rem)' }}
+              >
+                {formatPrice(v.price, currency)}
+              </span>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
+export default function LayoutPhotoGrid({ categories = [], allAddons = [], offline, menu, title, isPhone = false }) {
   const currency = menu?.currency || 'DA'
 
-  // Flatten items from all categories up to 8 items max
+  // Flatten items from all categories up to 8 items max on TV; collect all items on phone
   const allItems = []
   for (const cat of categories) {
     for (const item of cat.items || []) {
@@ -135,9 +227,9 @@ export default function LayoutPhotoGrid({ categories = [], allAddons = [], offli
         categoryName: cat.name,
         categoryAddons: cat.addons || [],
       })
-      if (allItems.length >= capabilities.maxItems) break
+      if (!isPhone && allItems.length >= capabilities.maxItems) break
     }
-    if (allItems.length >= capabilities.maxItems) break
+    if (!isPhone && allItems.length >= capabilities.maxItems) break
   }
 
   const gridConfig = getGridConfig(allItems.length)
@@ -182,6 +274,9 @@ export default function LayoutPhotoGrid({ categories = [], allAddons = [], offli
             overflow-y: auto !important;
             padding: 12px !important;
           }
+          .photogrid-outer-container {
+            height: auto !important;
+          }
           .photogrid-frame {
             height: auto !important;
             min-height: calc(100vh - 24px);
@@ -212,7 +307,7 @@ export default function LayoutPhotoGrid({ categories = [], allAddons = [], offli
       )}
 
       {/* Outer Padding Container */}
-      <div className="w-full h-full p-[clamp(8px,1.2vw,22px)] box-border flex flex-col">
+      <div className="photogrid-outer-container w-full h-full p-[clamp(8px,1.2vw,22px)] box-border flex flex-col">
         {/* Dark Green Outer Border Frame */}
         <div
           className="photogrid-frame photogrid-inner-frame w-full h-full box-border border-[#0e423d] p-[clamp(6px,0.8vw,16px)] flex flex-col"
@@ -227,117 +322,48 @@ export default function LayoutPhotoGrid({ categories = [], allAddons = [], offli
               <h2 className="text-2xl font-bold">{title || 'Menu'}</h2>
               <p className="text-zinc-500 mt-2">Aucun article à afficher pour le moment.</p>
             </div>
+          ) : isPhone ? (
+            /* Group items under category headers when on phone */
+            <div className="w-full flex flex-col gap-6">
+              {categories
+                .filter((cat) => (cat.items || []).length > 0)
+                .map((cat, catIdx) => (
+                  <div key={cat.id || `${cat.name}-${catIdx}`} className="w-full flex flex-col gap-3">
+                    <div className="pb-1 border-b-2 border-[#0e423d]/30">
+                      <h3 className="text-xl font-bold text-[#0e423d] layout-photogrid-arabic uppercase tracking-wide">
+                        {cat.name}
+                      </h3>
+                    </div>
+                    <div className="flex flex-col gap-4">
+                      {(cat.items || []).map((item, idx) => (
+                        <PhotoGridCard
+                          key={item.id || `${item.name}-${idx}`}
+                          item={{ ...item, categoryAddons: cat.addons || [] }}
+                          idx={idx}
+                          currency={currency}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                ))}
+            </div>
           ) : (
-            /* Dynamically balanced Grid of Menu Items */
+            /* Dynamically balanced Grid of Menu Items (TV mode) */
             <div
               className="photogrid-grid w-full h-full grid gap-[clamp(6px,0.9vw,16px)] box-border"
               style={{
                 ...gridConfig.containerStyle,
               }}
             >
-              {allItems.map((item, idx) => {
-                const itemImg = item.imageUrl || FALLBACK_IMAGES[idx % FALLBACK_IMAGES.length]
-
-                // Determine variations / addons to display on this card:
-                // 1) Explicit item.variations or item.addons
-                // 2) If absent, category addons if available (for cards starting from bottomRowStartIndex)
-                let variations = []
-                if (Array.isArray(item.variations) && item.variations.length > 0) {
-                  variations = item.variations
-                } else if (Array.isArray(item.addons) && item.addons.length > 0) {
-                  variations = item.addons
-                } else if (idx >= gridConfig.bottomRowStartIndex && Array.isArray(item.categoryAddons) && item.categoryAddons.length > 0) {
-                  variations = item.categoryAddons.slice(0, 2)
-                }
-
-                return (
-                  <div
-                    key={item.id || `${item.name}-${idx}`}
-                    className="photogrid-card flex flex-col h-full w-full overflow-hidden bg-white shadow-[0_1px_3px_rgba(0,0,0,0.05)] relative"
-                    style={{
-                      gridColumn: gridConfig.getItemSpan(idx),
-                    }}
-                  >
-                    {/* Food Photo Area (Dominant top section) */}
-                    <div className="flex-1 min-h-0 w-full relative overflow-hidden bg-zinc-100">
-                      <img
-                        src={itemImg}
-                        alt={item.name}
-                        loading="lazy"
-                        className="w-full h-full object-cover transition-transform duration-700 ease-out"
-                      />
-                    </div>
-
-                    {/* Primary Info Banner (Soft Warm Beige / Tan) */}
-                    <div
-                      className="w-full flex items-center justify-between px-[clamp(8px,0.85vw,16px)] py-[clamp(4px,0.65vh,9px)]"
-                      style={{ background: '#f5ede2' }}
-                    >
-                      {/* Left: Stacked Title + Subtitle/Description */}
-                      <div className="flex-1 min-w-0 pr-[clamp(6px,0.6vw,12px)]">
-                        <div
-                          className="font-bold text-zinc-900 truncate leading-tight tracking-tight layout-photogrid-arabic"
-                          style={{ fontSize: 'clamp(0.78rem, 1.05vw, 1.35rem)' }}
-                        >
-                          {item.name}
-                        </div>
-                        {(item.description || item.tag) && (
-                          <div
-                            className="text-[#6b4724]/90 truncate font-medium leading-snug mt-[0.1vh]"
-                            style={{ fontSize: 'clamp(0.6rem, 0.78vw, 0.95rem)' }}
-                          >
-                            {item.description || item.tag}
-                          </div>
-                        )}
-                      </div>
-
-                      {/* Right: Item Price */}
-                      <div
-                        className="flex-shrink-0 font-extrabold text-[#713f12] text-right tabular-nums whitespace-nowrap leading-none"
-                        style={{ fontSize: 'clamp(0.85rem, 1.25vw, 1.7rem)' }}
-                      >
-                        {formatPrice(item.price, currency)}
-                      </div>
-                    </div>
-
-                    {/* Stacked Variations / Add-ons (Dark Teal / Forest Green Secondary Banners) */}
-                    {variations.length > 0 && (
-                      <div className="w-full flex flex-col border-t border-white gap-[1px] bg-white">
-                        {variations.slice(0, 3).map((v, vIdx) => (
-                          <div
-                            key={v.id || `${v.name}-${vIdx}`}
-                            className="w-full flex items-center justify-between px-[clamp(8px,0.85vw,16px)] py-[clamp(3px,0.45vh,6px)]"
-                            style={{ background: '#0e4a43' }}
-                          >
-                            <div className="flex-1 min-w-0 pr-[clamp(6px,0.6vw,12px)]">
-                              <span
-                                className="font-semibold text-white truncate block leading-tight"
-                                style={{ fontSize: 'clamp(0.65rem, 0.8vw, 1.05rem)' }}
-                              >
-                                {v.name}
-                              </span>
-                              {v.description && (
-                                <span
-                                  className="text-white/80 text-xs truncate block leading-none mt-0.5"
-                                  style={{ fontSize: 'clamp(0.55rem, 0.68vw, 0.85rem)' }}
-                                >
-                                  {v.description}
-                                </span>
-                              )}
-                            </div>
-                            <span
-                              className="flex-shrink-0 font-bold text-white text-right tabular-nums whitespace-nowrap leading-none"
-                              style={{ fontSize: 'clamp(0.75rem, 1vw, 1.3rem)' }}
-                            >
-                              {formatPrice(v.price, currency)}
-                            </span>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                )
-              })}
+              {allItems.map((item, idx) => (
+                <PhotoGridCard
+                  key={item.id || `${item.name}-${idx}`}
+                  item={item}
+                  idx={idx}
+                  gridConfig={gridConfig}
+                  currency={currency}
+                />
+              ))}
             </div>
           )}
         </div>

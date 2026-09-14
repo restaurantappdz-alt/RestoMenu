@@ -33,7 +33,7 @@ function Dots() {
 }
 
 function ItemImage({ url }) {
-  if (!url) return <span style={{ marginRight: 10, fontSize: '1.2rem' }}>🍽️</span>
+  if (!url) return null
   return (
     <img
       src={url}
@@ -89,6 +89,10 @@ export default function LayoutBrasserie({ categories = [], allAddons = [], offli
           }
           .layout-brasserie-root > div > div:nth-child(2) {
             overflow: visible !important;
+            max-width: 100% !important;
+          }
+          .layout-brasserie-root .brasserie-content {
+            max-width: 100% !important;
           }
           .layout-brasserie-root .brasserie-grid {
             grid-template-columns: 1fr !important;
@@ -139,7 +143,7 @@ export default function LayoutBrasserie({ categories = [], allAddons = [], offli
             <GoldLine />
           </div>
 
-          <div style={{
+          <div className="brasserie-content" style={{
             flex: 1, width: '100%', overflow: 'hidden',
             maxWidth: 'clamp(500px, 55vw, 800px)',
             margin: 'clamp(1rem, 1.5vw, 2rem) auto 0',

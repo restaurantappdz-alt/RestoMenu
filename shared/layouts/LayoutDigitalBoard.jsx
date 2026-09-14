@@ -225,6 +225,7 @@ export default function LayoutDigitalBoard({
   offline,
   menu = {},
   title,
+  isPhone = false,
 }) {
   const currency = menu?.currency || 'DA'
   const rawConfigured = menu?.boardConfig?.slots || []
@@ -235,14 +236,14 @@ export default function LayoutDigitalBoard({
   let slots = []
   if (filledConfigured.length > 0) {
     // Show ONLY what has data! Do not append fake/blank boxes
-    slots = filledConfigured.slice(0, 8)
+    slots = isPhone ? filledConfigured : filledConfigured.slice(0, 8)
   } else {
-    // If no boardConfig slots exist, fallback to available category items (up to 8)
+    // If no boardConfig slots exist, fallback to available category items (up to 8 on TV)
     const categoryItems = (categories || [])
       .flatMap((c) => c.items || [])
       .filter((item) => item && (item.name || item.price != null || item.imageUrl))
-      .slice(0, 8)
-    slots = categoryItems.map(normalizeCategoryItem)
+    const selectedCategoryItems = isPhone ? categoryItems : categoryItems.slice(0, 8)
+    slots = selectedCategoryItems.map(normalizeCategoryItem)
   }
 
   const count = slots.length
@@ -304,12 +305,12 @@ export default function LayoutDigitalBoard({
       return (
         <div className="layout-digital-board-grid grid grid-cols-6 grid-rows-2 gap-3.5 p-3.5 h-full w-full">
           {slots.slice(0, 3).map((slot, index) => (
-            <div key={index} className="col-span-2 h-full">
+            <div key={index} className="col-span-2 h-full layout-digital-board-card">
               <DigitalBoardCard slot={slot} currency={currency} isWide={false} />
             </div>
           ))}
           {slots.slice(3, 5).map((slot, index) => (
-            <div key={index + 3} className="col-span-3 h-full">
+            <div key={index + 3} className="col-span-3 h-full layout-digital-board-card">
               <DigitalBoardCard slot={slot} currency={currency} isWide={true} />
             </div>
           ))}
@@ -332,12 +333,12 @@ export default function LayoutDigitalBoard({
       return (
         <div className="layout-digital-board-grid grid grid-cols-12 grid-rows-2 gap-3 p-3 h-full w-full">
           {slots.slice(0, 4).map((slot, index) => (
-            <div key={index} className="col-span-3 h-full">
+            <div key={index} className="col-span-3 h-full layout-digital-board-card">
               <DigitalBoardCard slot={slot} currency={currency} isWide={false} />
             </div>
           ))}
           {slots.slice(4, 7).map((slot, index) => (
-            <div key={index + 4} className="col-span-4 h-full">
+            <div key={index + 4} className="col-span-4 h-full layout-digital-board-card">
               <DigitalBoardCard slot={slot} currency={currency} isWide={false} />
             </div>
           ))}
@@ -398,7 +399,49 @@ export default function LayoutDigitalBoard({
         </div>
       )}
 
-      {renderGridContent()}
+      {isPhone ? (
+        categories.filter((c) => (c.items || []).length > 0).length > 0 ? (
+          <div className="layout-digital-board-grid flex flex-col gap-6 p-2 sm:p-4 w-full h-auto overflow-visible">
+            {categories
+              .filter((c) => (c.items || []).length > 0)
+              .map((cat, catIdx) => (
+                <div key={cat.id || `${cat.name}-${catIdx}`} className="w-full flex flex-col gap-3">
+                  <div className="pb-1 border-b-2 border-[#084c3c]/30">
+                    <h3 className="text-xl sm:text-2xl font-black text-[#084c3c] uppercase tracking-wide" dir="auto">
+                      {cat.name}
+                    </h3>
+                  </div>
+                  <div className="flex flex-col gap-4">
+                    {(cat.items || []).map((item, idx) => {
+                      const slot = normalizeCategoryItem(item)
+                      return (
+                        <div key={item.id || `${item.name}-${idx}`} className="layout-digital-board-card h-[340px] min-h-[300px]">
+                          <DigitalBoardCard slot={slot} currency={currency} isWide={false} />
+                        </div>
+                      )
+                    })}
+                  </div>
+                </div>
+              ))}
+          </div>
+        ) : count === 0 ? (
+          <div className="flex flex-col items-center justify-center h-full w-full text-center p-8">
+            <FallbackDishIcon className="w-20 h-20 text-[#084c3c]/40 mb-4" />
+            <h2 className="text-[#084c3c] text-3xl font-extrabold mb-2">القائمة قيد التحديث</h2>
+            <p className="text-[#084c3c]/70 text-base font-medium">Menu updating soon...</p>
+          </div>
+        ) : (
+          <div className="layout-digital-board-grid flex flex-col gap-4 p-2 sm:p-4 w-full h-auto overflow-visible">
+            {slots.map((slot, idx) => (
+              <div key={idx} className="layout-digital-board-card h-[340px] min-h-[300px]">
+                <DigitalBoardCard slot={slot} currency={currency} isWide={false} />
+              </div>
+            ))}
+          </div>
+        )
+      ) : (
+        renderGridContent()
+      )}
     </div>
   )
 }

@@ -1,47 +1,5 @@
 import React, { useEffect, useState } from 'react'
 
-const CATEGORY_ICONS = {
-  default: '🍽️',
-  drink: '☕',
-  coffee: '☕',
-  tea: '🫖',
-  juice: '🧃',
-  smoothie: '🥤',
-  main: '🥩',
-  sandwich: '🥪',
-  burger: '🍔',
-  pizza: '🍕',
-  pasta: '🍝',
-  salad: '🥗',
-  soup: '🍜',
-  fish: '🐟',
-  meat: '🥩',
-  chicken: '🍗',
-  dessert: '🍰',
-  cake: '🎂',
-  icecream: '🍦',
-  breakfast: '🍳',
-  starter: '🥟',
-  appetizer: '🥟',
-  side: '🥔',
-  bread: '🥖',
-  cheese: '🧀',
-  fruit: '🍓',
-  special: '⭐',
-  grill: '🔥',
-  tagine: '🍲',
-  couscous: '🥘',
-}
-
-function getCategoryIcon(name) {
-  if (!name) return CATEGORY_ICONS.default
-  const key = name.toLowerCase().trim()
-  for (const [k, v] of Object.entries(CATEGORY_ICONS)) {
-    if (key.includes(k)) return v
-  }
-  return CATEGORY_ICONS.default
-}
-
 function GoldDivider({ variant = 'dots' }) {
   if (variant === 'line') {
     return (
@@ -223,9 +181,6 @@ export default function LayoutPro({ categories = [], allAddons = [], offline, me
                       display: 'flex', alignItems: 'center', gap: 10,
                       marginBottom: 'clamp(0.3rem, 0.5vw, 0.6rem)',
                     }}>
-                      <span style={{ fontSize: 'clamp(0.85rem, 1.1vw, 1.3rem)' }}>
-                        {getCategoryIcon(cat.name)}
-                      </span>
                       <h2 style={{
                         fontFamily: "'Playfair Display', 'Georgia', serif",
                         fontWeight: 600,

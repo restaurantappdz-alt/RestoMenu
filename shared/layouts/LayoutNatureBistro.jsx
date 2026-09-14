@@ -236,7 +236,7 @@ export default function LayoutNatureBistro({ categories = [], allAddons = [], of
                     paddingBottom: 'clamp(0.15rem,0.25vw,0.3rem)',
                     borderBottom: '1px solid rgba(123,163,123,0.15)',
                   }}>
-                    🌿 {cat.name} 🌿
+                    {cat.name}
                   </h2>
                   <div className="nb-grid" style={{
                     display: 'grid',

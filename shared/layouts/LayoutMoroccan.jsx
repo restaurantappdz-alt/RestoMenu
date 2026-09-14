@@ -13,7 +13,7 @@ function GoldDiamondLine() {
 }
 
 function ItemImage({ url }) {
-  if (!url) return <span style={{ marginRight: 10, fontSize: '1.2rem' }}>🥗</span>
+  if (!url) return null
   return (
     <img
       src={url}
