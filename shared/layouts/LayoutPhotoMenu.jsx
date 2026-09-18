@@ -7,15 +7,6 @@ function ChefHat(props) {
   )
 }
 
-function Clock(props) {
-  return (
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
-      <circle cx="12" cy="12" r="10"/>
-      <polyline points="12 6 12 12 16 14"/>
-    </svg>
-  )
-}
-
 function Star({ fill, ...props }) {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill={fill || "none"} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
@@ -206,7 +197,6 @@ export default function LayoutPhotoMenu({ categories = [], allAddons, offline, m
   const slicedItems = items.slice(0, capabilities.maxItems)
 
   const currency = menu?.currency || 'DA'
-  const hours = menu?.businessHours || 'Open Daily'
   const allergyNote = menu?.allergyNote || null
   const pricingNote = menu?.pricingNote || null
   const hasHeroImage = menu?.heroImageUrl
@@ -511,21 +501,22 @@ export default function LayoutPhotoMenu({ categories = [], allAddons, offline, m
       </main>
 
       {/* ── FOOTER ── */}
-      <footer
-        className="flex-shrink-0 flex items-center justify-center"
-        style={{
-          padding: '0.8vh 3vw',
-          borderTop: '1px solid rgba(240,234,216,0.08)',
-          background: 'rgba(19,17,9,0.6)',
-        }}
-      >
-        <div className="flex items-center" style={{ fontSize: 'clamp(0.4rem, 0.72vw, 0.9rem)', color: '#7a6f56' }}>
-          <Clock style={{ width: '0.8vw', height: '0.8vw', marginRight: '0.4vw', flexShrink: 0 }} />
-          <span>{hours}</span>
-          {allergyNote && <><Dot /><span>{allergyNote}</span></>}
-          {pricingNote && <><Dot /><span>{pricingNote}</span></>}
-        </div>
-      </footer>
+      {(allergyNote || pricingNote) && (
+        <footer
+          className="flex-shrink-0 flex items-center justify-center"
+          style={{
+            padding: '0.8vh 3vw',
+            borderTop: '1px solid rgba(240,234,216,0.08)',
+            background: 'rgba(19,17,9,0.6)',
+          }}
+        >
+          <div className="flex items-center" style={{ fontSize: 'clamp(0.4rem, 0.72vw, 0.9rem)', color: '#7a6f56' }}>
+            {allergyNote && <span>{allergyNote}</span>}
+            {allergyNote && pricingNote && <Dot />}
+            {pricingNote && <span>{pricingNote}</span>}
+          </div>
+        </footer>
+      )}
     </div>
   )
 }

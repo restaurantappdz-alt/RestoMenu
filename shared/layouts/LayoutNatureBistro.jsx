@@ -12,8 +12,6 @@ export default function LayoutNatureBistro({ categories = [], allAddons = [], of
   const [mounted, setMounted] = useState(false)
   useEffect(() => { setMounted(true) }, [])
 
-  const businessHours = menu?.businessHours || 'MON–FRI  10AM–10PM  •  SAT–SUN  9AM–11PM'
-
   return (
     <>
       <style>{`
@@ -310,20 +308,6 @@ export default function LayoutNatureBistro({ categories = [], allAddons = [], of
                 </div>
               ))
             )}
-          </div>
-
-          <div style={{
-            marginTop: 'clamp(0.35rem,0.5vw,0.75rem)',
-            paddingTop: 'clamp(0.25rem,0.35vw,0.5rem)',
-            borderTop: '1px solid rgba(123,163,123,0.08)',
-            textAlign: 'center',
-            fontFamily: "'Inter', sans-serif",
-            color: '#5A6B5A',
-            fontSize: 'clamp(0.8rem, 1vw, 0.95rem)',
-            fontWeight: 300,
-            letterSpacing: '1px',
-          }}>
-            {businessHours}
           </div>
         </div>
       </div>

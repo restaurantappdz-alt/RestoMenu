@@ -1,4 +1,4 @@
-﻿// subscriptionGuard.js
+// subscriptionGuard.js
 //
 // Subscription-expiration enforcement for the TV display app.
 // Pure functions, zero React dependencies. All state lives in localStorage.
@@ -97,6 +97,8 @@ export function updateFromServer(data, fromCache) {
       if (Number.isFinite(ms)) {
         localStorage.setItem(KEYS.EXPIRES_AT, String(ms))
       }
+    } else {
+      localStorage.removeItem(KEYS.EXPIRES_AT)
     }
 
     // A live server read proves the device is online right now —

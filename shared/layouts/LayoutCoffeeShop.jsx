@@ -20,8 +20,6 @@ export default function LayoutCoffeeShop({
   menu = {},
   title = 'BOULEVARD COFFEE SHOP & BAKERY',
 }) {
-  const businessHours =
-    menu.businessHours || 'MON-FRI: 10AM TO 6PM. SAT-SUN: 12PM TO 8PM.'
   const currency = menu.currency || 'DA'
 
   const categoriesWithAddons = categories.map((cat) => ({
@@ -288,23 +286,6 @@ export default function LayoutCoffeeShop({
             </div>
           )}
         </div>
-        <div style={{ height: 'clamp(1.5rem, 2.5vw, 3rem)' }} />
-        <GoldLine width="50%" />
-        <div style={{ height: 'clamp(0.75rem, 1vw, 1.25rem)' }} />
-        <p
-          style={{
-            fontFamily: "'Inter', 'Arial', sans-serif",
-            fontWeight: 400,
-            fontStyle: 'italic',
-            fontSize: 'clamp(0.85rem, 1.2vw, 1.4rem)',
-            color: '#F5E6D3',
-            textAlign: 'center',
-            letterSpacing: '1px',
-            lineHeight: 1.5,
-          }}
-        >
-          {businessHours}
-        </p>
       </div>
     </>
   )

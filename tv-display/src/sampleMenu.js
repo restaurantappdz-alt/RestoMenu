@@ -5,7 +5,6 @@ export const sampleMenu = {
   name: 'Dar El Baraka',
   tagline: 'Cuisine algérienne traditionnelle',
   currency: 'D.A',
-  businessHours: 'LUN–DIM 11H–23H',
   heroImageUrl: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=1600&q=80',
   heroName: 'Couscous Royal',
   heroDescription: 'Semoule fine, agneau fondant, légumes de saison et sauce maison',

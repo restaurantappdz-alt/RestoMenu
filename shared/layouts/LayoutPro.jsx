@@ -46,8 +46,6 @@ export default function LayoutPro({ categories = [], allAddons = [], offline, me
   const [mounted, setMounted] = useState(false)
   useEffect(() => { setMounted(true) }, [])
 
-  const businessHours = menu?.businessHours || 'MON–FRI  10AM–10PM  •  SAT–SUN  9AM–11PM'
-
   return (
     <>
       <style>{`
@@ -257,8 +255,8 @@ export default function LayoutPro({ categories = [], allAddons = [], offline, me
           </div>
 
           {/* Footer */}
-          <div style={{ flex: 'none', textAlign: 'center', marginTop: 'clamp(0.5rem, 0.75vw, 1rem)' }}>
-            {allAddons.length > 0 && (
+          {allAddons.length > 0 && (
+            <div style={{ flex: 'none', textAlign: 'center', marginTop: 'clamp(0.5rem, 0.75vw, 1rem)' }}>
               <div style={{
                 display: 'flex', flexWrap: 'wrap', gap: 6, justifyContent: 'center',
                 marginBottom: 'clamp(0.3rem, 0.5vw, 0.6rem)',
@@ -278,20 +276,8 @@ export default function LayoutPro({ categories = [], allAddons = [], offline, me
                   </span>
                 ))}
               </div>
-            )}
-            <GoldDivider variant="line" />
-            <div style={{ height: 'clamp(0.3rem, 0.5vw, 0.6rem)' }} />
-            <p style={{
-              fontFamily: "'Inter', sans-serif",
-              fontWeight: 200,
-              color: 'rgba(245,230,211,0.4)',
-              fontSize: 'clamp(0.6rem, 0.75vw, 0.85rem)',
-              letterSpacing: '3px',
-              textTransform: 'uppercase',
-            }}>
-              {businessHours}
-            </p>
-          </div>
+            </div>
+          )}
         </div>
       </div>
     </>

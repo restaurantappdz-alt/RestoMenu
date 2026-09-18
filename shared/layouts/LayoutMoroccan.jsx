@@ -35,8 +35,6 @@ export default function LayoutMoroccan({ categories = [], allAddons = [], offlin
   const [mounted, setMounted] = useState(false)
   useEffect(() => { setMounted(true) }, [])
 
-  const businessHours = menu?.businessHours || 'LUN–VEN: 11H–22H • SAM–DIM: 10H–23H'
-
   return (
     <>
       <style>{`
@@ -221,17 +219,6 @@ export default function LayoutMoroccan({ categories = [], allAddons = [], offlin
                 ))}
               </div>
             )}
-            <div style={{ width: '40%', margin: '0 auto', height: 1, background: 'linear-gradient(90deg, transparent, rgba(212,175,55,0.4), transparent)' }} />
-            <p style={{
-              fontFamily: "'Inter', sans-serif",
-              fontWeight: 300,
-              color: '#A8C4C0',
-              fontSize: 'clamp(0.7rem, 0.85vw, 0.95rem)',
-              letterSpacing: '2px',
-              marginTop: 'clamp(0.3rem, 0.5vw, 0.6rem)',
-            }}>
-              {businessHours}
-            </p>
           </div>
         </div>
       </div>

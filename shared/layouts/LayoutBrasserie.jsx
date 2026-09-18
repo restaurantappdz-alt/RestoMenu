@@ -56,8 +56,6 @@ export default function LayoutBrasserie({ categories = [], allAddons = [], offli
   const [mounted, setMounted] = useState(false)
   useEffect(() => { setMounted(true) }, [])
 
-  const businessHours = menu?.businessHours || 'MON–VEN: 11H–22H • SAM–DIM: 10H–23H'
-
   return (
     <>
       <style>{`
@@ -251,17 +249,6 @@ export default function LayoutBrasserie({ categories = [], allAddons = [], offli
                 ))}
               </div>
             )}
-            <GoldLine />
-            <p style={{
-              fontFamily: "'Inter', sans-serif",
-              color: '#7A6B5A',
-              fontSize: 'clamp(0.7rem, 0.9vw, 1rem)',
-              fontStyle: 'italic',
-              marginTop: 'clamp(0.4rem, 0.6vw, 0.75rem)',
-              letterSpacing: '1px',
-            }}>
-              {businessHours}
-            </p>
           </div>
         </div>
       </div>

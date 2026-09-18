@@ -33,7 +33,7 @@ export default function LayoutModern({ categories = [], allAddons = [], offline,
   const [mounted, setMounted] = useState(false)
   useEffect(() => { setMounted(true) }, [])
 
-  const businessHours = menu?.businessHours || 'MON–FRI 10AM–6PM • SAT–SUN 12PM–8PM'
+  let emojiIndex = 0
 
   return (
     <>
@@ -237,17 +237,6 @@ export default function LayoutModern({ categories = [], allAddons = [], offline,
                 ))}
               </div>
             )}
-            <GoldCircleLine />
-            <p style={{
-              fontFamily: "'Inter', sans-serif",
-              fontWeight: 300,
-              color: '#AAAAAA',
-              fontSize: 'clamp(0.65rem, 0.8vw, 0.9rem)',
-              letterSpacing: '1px',
-              marginTop: 'clamp(0.3rem, 0.5vw, 0.6rem)',
-            }}>
-              {businessHours}
-            </p>
           </div>
         </div>
       </div>
