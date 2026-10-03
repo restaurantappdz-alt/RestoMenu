@@ -61,3 +61,13 @@ describe.each(ALL)('currency %s', (key, Layout) => {
     })
   }
 })
+
+describe('Classic layout currency', () => {
+  it('renders the configured currency for item and addon prices', () => {
+    const { container } = render(
+      <LayoutClassic categories={categories} allAddons={allAddons} offline={false} menu={{ currency: 'MAD' }} title="Test" />
+    )
+    expect(container.textContent.match(/MAD/g)).toHaveLength(2)
+    expect(container.textContent).not.toContain('D.A')
+  })
+})

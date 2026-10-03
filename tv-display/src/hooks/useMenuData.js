@@ -46,19 +46,42 @@ function getScreenId() {
   return params.get('s') || null
 }
 
-function cacheKey(restaurantId) {
-  return `${CACHE_KEY_PREFIX}_${restaurantId}`
+function cacheKey(restaurantId, menuId = null) {
+  return menuId ? `${CACHE_KEY_PREFIX}_${restaurantId}_${menuId}` : `${CACHE_KEY_PREFIX}_${restaurantId}`
 }
 
-function loadCache(restaurantId) {
+function loadCache(restaurantId, targetMenuId = null) {
   try {
-    const raw = localStorage.getItem(cacheKey(restaurantId))
-    return raw ? JSON.parse(raw) : null
+    if (targetMenuId) {
+      const specific = localStorage.getItem(cacheKey(restaurantId, targetMenuId))
+      if (specific) return JSON.parse(specific)
+    }
+    const defaultRaw = localStorage.getItem(cacheKey(restaurantId))
+    if (defaultRaw) {
+      const parsed = JSON.parse(defaultRaw)
+      if (!targetMenuId || parsed.id === targetMenuId) return parsed
+    }
+    // Fallback if targetMenuId was requested but not cached under that specific ID:
+    // return any cached menu for this restaurant so the TV is never blank offline!
+    if (defaultRaw) return JSON.parse(defaultRaw)
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i)
+      if (key && key.startsWith(`${CACHE_KEY_PREFIX}_${restaurantId}`)) {
+        const val = localStorage.getItem(key)
+        if (val) return JSON.parse(val)
+      }
+    }
+    return null
   } catch { return null }
 }
 
 function saveCache(restaurantId, data) {
-  try { localStorage.setItem(cacheKey(restaurantId), JSON.stringify(data)) } catch {}
+  try {
+    localStorage.setItem(cacheKey(restaurantId), JSON.stringify(data))
+    if (data && data.id) {
+      localStorage.setItem(cacheKey(restaurantId, data.id), JSON.stringify(data))
+    }
+  } catch {}
 }
 
 function loadConfigCache(restaurantId) {
@@ -73,9 +96,9 @@ function saveConfigCache(restaurantId, data) {
 }
 
 // ─── Menu resolution from screen config ──────────────────────────
-// Handles both legacy { menuId: "abc" } (singular string) and the
-// current { menuIds: ["a","b"], schedules: { a: {...}, b: null } }
-// format.  Implements the same getActiveMenuId() logic from the Dart
+// Handles legacy string IDs ("abc"), legacy object { menuId: "abc" },
+// and current { menuIds: ["a","b"], schedules: { a: {...}, b: null } }
+// format. Implements the same getActiveMenuId() logic from the Dart
 // menu_schedule.dart so the TV picks the right menu based on day/time.
 
 const DAY_LABELS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
@@ -89,7 +112,12 @@ function timeToMinutes(t) {
 function isScheduleActiveAt(sched, now) {
   if (!sched) return false
   const day = DAY_LABELS[now.getDay()]
-  if (!sched.daysOfWeek?.includes(day)) return false
+  if (sched.daysOfWeek?.length > 0 && !sched.daysOfWeek.includes(day)) return false
+  if (!sched.startTime || !sched.endTime) {
+    // If daysOfWeek matched and no specific start/end time set,
+    // the menu is active for the whole day.
+    return true
+  }
   const mins = now.getHours() * 60 + now.getMinutes()
   const start = timeToMinutes(sched.startTime)
   const end = timeToMinutes(sched.endTime)
@@ -100,8 +128,13 @@ function isScheduleActiveAt(sched, now) {
   return mins >= start || mins < end
 }
 
-function resolveMenuId(screenEntry) {
+function resolveMenuId(screenEntry, now = new Date()) {
   if (!screenEntry) return null
+
+  // Plain string ID format (legacy)
+  if (typeof screenEntry === 'string') {
+    return screenEntry
+  }
 
   // Legacy format: { menuId: "abc" } — single string
   if (screenEntry.menuId && typeof screenEntry.menuId === 'string') {
@@ -113,12 +146,11 @@ function resolveMenuId(screenEntry) {
   if (!Array.isArray(ids) || ids.length === 0) return null
 
   const schedules = screenEntry.schedules || {}
-  const now = new Date()
 
   // Pass 1: first menu with an ACTIVE schedule wins
   for (const id of ids) {
     const sched = schedules[id]
-    const isScheduled = sched && sched.daysOfWeek?.length > 0 && sched.startTime && sched.endTime
+    const isScheduled = sched && (sched.daysOfWeek?.length > 0 || (sched.startTime && sched.endTime))
     if (isScheduled && isScheduleActiveAt(sched, now)) {
       return id
     }
@@ -127,7 +159,7 @@ function resolveMenuId(screenEntry) {
   // Pass 2: first unscheduled (always-on) menu
   for (const id of ids) {
     const sched = schedules[id]
-    const isScheduled = sched && sched.daysOfWeek?.length > 0 && sched.startTime && sched.endTime
+    const isScheduled = sched && (sched.daysOfWeek?.length > 0 || (sched.startTime && sched.endTime))
     if (!isScheduled) return id
   }
 
@@ -149,27 +181,22 @@ export default function useMenuData() {
   const [menu, setMenu] = useState(() => {
     const rid = getRestaurantId()
     if (!rid) return null
-    const cachedMenu = loadCache(rid)
-    if (!cachedMenu) return null
     const cachedCfg = loadConfigCache(rid)
-    if (!cachedCfg) return cachedMenu
     const sid = getScreenId()
-    const raw = sid ? cachedCfg.screens?.[sid] : null
-    const expectedId = sid ? resolveMenuId(raw) : (cachedCfg.activeMenuId || null)
-    return expectedId ? (cachedMenu.id === expectedId ? cachedMenu : null) : cachedMenu
+    const raw = sid && cachedCfg ? cachedCfg.screens?.[sid] : null
+    const expectedId = sid ? resolveMenuId(raw) : (cachedCfg?.activeMenuId || null)
+    return loadCache(rid, expectedId)
   })
   const [loading, setLoading] = useState(() => {
     const rid = getRestaurantId()
     if (!rid) return true
-    const cachedMenu = loadCache(rid)
-    if (!cachedMenu) return true
     const cachedCfg = loadConfigCache(rid)
-    if (!cachedCfg) return false
     const sid = getScreenId()
-    const raw = sid ? cachedCfg.screens?.[sid] : null
-    const expectedId = sid ? resolveMenuId(raw) : (cachedCfg.activeMenuId || null)
-    if (!expectedId) return false
-    return cachedMenu.id !== expectedId
+    const raw = sid && cachedCfg ? cachedCfg.screens?.[sid] : null
+    const expectedId = sid ? resolveMenuId(raw) : (cachedCfg?.activeMenuId || null)
+    const cachedMenu = loadCache(rid, expectedId)
+    if (!cachedMenu) return true
+    return false
   })
   const [offline, setOffline] = useState(typeof navigator !== 'undefined' && !navigator.onLine)
   const [waiting, setWaiting] = useState(false)
@@ -229,19 +256,15 @@ export default function useMenuData() {
     // Mounted offline with cache -> skip Firestore, load from cache
     if (mountedOffline) {
       const cachedCfg = loadConfigCache(id)
-      if (cachedCfg) {
-        const raw = screenId ? cachedCfg.screens?.[screenId] : null
-        const cachedMenuId = screenId ? resolveMenuId(raw) : (cachedCfg.activeMenuId || null)
-        if (cachedMenuId) {
-          setActiveMenuId(cachedMenuId)
-          setWaiting(false)
-          const cachedMenu = loadCache(id)
-          if (cachedMenu && cachedMenu.id === cachedMenuId) {
-            setMenu(cachedMenu)
-          }
-          setLoading(false)
-          return
-        }
+      const raw = screenId && cachedCfg ? cachedCfg.screens?.[screenId] : null
+      const cachedMenuId = screenId ? resolveMenuId(raw) : (cachedCfg?.activeMenuId || null)
+      const cachedMenu = loadCache(id, cachedMenuId)
+      if (cachedMenu) {
+        setActiveMenuId(cachedMenu.id)
+        setWaiting(false)
+        setMenu(cachedMenu)
+        setLoading(false)
+        return
       }
     }
 
@@ -348,10 +371,15 @@ export default function useMenuData() {
       const raw = screenId ? data.screens?.[screenId] : null
       const newId = screenId ? resolveMenuId(raw) : (data.activeMenuId || null)
       if (!newId) {
-        // No menu assigned to this screen — show waiting state.
-        // Do NOT fall back to stale cached menu; the admin will push
-        // a new config snapshot once a menu is assigned.
         if (typeof navigator !== 'undefined' && !navigator.onLine) {
+          return
+        }
+        const cachedMenu = loadCache(id)
+        if (cachedMenu) {
+          setActiveMenuId(cachedMenu.id)
+          setMenu(cachedMenu)
+          setWaiting(false)
+          setLoading(false)
           return
         }
         setWaiting(true)
@@ -362,6 +390,19 @@ export default function useMenuData() {
       }
       setWaiting(false)
       setActiveMenuId(newId)
+
+      // When online, pre-fetch and cache all other menus assigned to this screen
+      if (raw && Array.isArray(raw.menuIds)) {
+        for (const otherId of raw.menuIds) {
+          if (otherId && otherId !== newId) {
+            getDoc(doc(db, 'restaurants', id, 'menus', otherId)).then((snap) => {
+              if (snap && snap.exists()) {
+                saveCache(id, { id: snap.id, ...snap.data() })
+              }
+            }).catch(() => {})
+          }
+        }
+      }
     }, (error) => {
       setConnectionError(true)
       setLoading(false)
@@ -389,6 +430,12 @@ export default function useMenuData() {
       const newId = resolveMenuId(raw)
       if (newId && newId !== activeMenuId) {
         setActiveMenuId(newId)
+        // If offline or menu is already cached, switch immediately
+        const cachedMenu = loadCache(rid, newId)
+        if (cachedMenu) {
+          setMenu(cachedMenu)
+          setLoading(false)
+        }
       }
     }, 60000)
     return () => clearInterval(interval)
@@ -396,6 +443,15 @@ export default function useMenuData() {
 
   useEffect(() => {
     if (!activeMenuId || !restaurantId) return
+    const isOffline = typeof navigator !== 'undefined' && !navigator.onLine
+    if (isOffline) {
+      const cachedMenu = loadCache(restaurantId, activeMenuId)
+      if (cachedMenu) {
+        setMenu(cachedMenu)
+        setLoading(false)
+        return
+      }
+    }
     setLoading(true)
     const unsubMenu = onSnapshot(doc(db, 'restaurants', restaurantId, 'menus', activeMenuId), (snap) => {
       setConnectionError(false)
@@ -404,11 +460,12 @@ export default function useMenuData() {
         setMenu(data)
         saveCache(restaurantId, data)
       } else {
-        const cachedMenu = loadCache(restaurantId)
-        if (cachedMenu && cachedMenu.id === activeMenuId) {
+        const cachedMenu = loadCache(restaurantId, activeMenuId)
+        if (cachedMenu) {
           // Keep showing the cached copy, but the load is over either way —
           // never leave the UI hanging in "Loading menu...".
           setLoading(false)
+          setMenu(cachedMenu)
           return
         }
         setMenu(null)

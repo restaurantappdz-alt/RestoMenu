@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { toDayStart, updateFromServer, updateFromRestaurant, checkAccess, revokeAccess, syncServerOffset, watchServerExpiry } from '../src/subscriptionGuard'
 
 // Mock firebase/database BEFORE importing the module under test (pattern
@@ -25,6 +25,8 @@ function setItem(key, value) {
 function ts(millis) {
   return { toMillis: () => millis }
 }
+
+afterEach(() => vi.useRealTimers())
 
 describe('toDayStart', () => {
   it('truncates to midnight UTC for a noon timestamp', () => {
@@ -105,7 +107,7 @@ describe('checkAccess', () => {
     expect(result.allowed).toBe(true)
   })
 
-  it('blocks when correctedNowDay >= expiresAtDay', () => {
+  it('blocks when the corrected UTC date is after the expiry date', () => {
     const yesterday = Date.now() - 86400000
     setItem('restomenu-tv-expiresAt', String(yesterday))
     setItem('restomenu-tv-lastSeenTime', String(Date.now()))
@@ -147,14 +149,22 @@ describe('checkAccess', () => {
     expect(localStorage.getItem('restomenu-tv-config_test123')).toBeNull()
   })
 
-  it('blocks when correctedNowDay equals expiresAtDay', () => {
-    const todayStart = toDayStart(Date.now())
-    setItem('restomenu-tv-expiresAt', String(todayStart))
+  it('allows access throughout the expiry UTC date', () => {
+    const now = Date.UTC(2026, 9, 1, 23, 59, 0)
+    vi.setSystemTime(now)
+    setItem('restomenu-tv-expiresAt', String(Date.UTC(2026, 9, 1, 23, 59, 59)))
     setItem('restomenu-tv-lastSeenTime', String(Date.now()))
 
     const result = checkAccess()
-    expect(result.allowed).toBe(false)
-    expect(result.reason).toBe('expired')
+    expect(result.allowed).toBe(true)
+  })
+
+  it('blocks access on the UTC date after expiry', () => {
+    vi.setSystemTime(Date.UTC(2026, 9, 2, 0, 0, 0))
+    setItem('restomenu-tv-expiresAt', String(Date.UTC(2026, 9, 1, 23, 59, 59)))
+    setItem('restomenu-tv-lastSeenTime', String(Date.now()))
+
+    expect(checkAccess()).toMatchObject({ allowed: false, reason: 'expired' })
   })
 
   it('offset drift of +/- 30 min does not change decision mid-day', () => {

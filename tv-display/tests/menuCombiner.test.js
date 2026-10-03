@@ -145,14 +145,11 @@ describe('isSubscriptionExpired', () => {
     expect(isSubscriptionExpired({ expiresAt: { toMillis: () => future } })).toBe(false)
   })
 
-  it('compares at UTC day granularity (expiry later today is already expired)', () => {
-    // TV semantics: checkAccess() uses `toDayStart(now) >= toDayStart(expiry)`,
-    // so a subscription is blocked from the START of its expiry day. The phone
-    // page must agree — no partial-day mismatch between TV and phone.
+  it('keeps the subscription valid throughout its expiry UTC date', () => {
     const laterToday = Date.UTC(2026, 6, 29, 23, 59, 59) // expiry today 23:59:59 UTC
     const now = Date.UTC(2026, 6, 29, 10, 0, 0) // today at 10:00 UTC
     vi.setSystemTime(now)
-    expect(isSubscriptionExpired({ expiresAt: laterToday })).toBe(true)
+    expect(isSubscriptionExpired({ expiresAt: laterToday })).toBe(false)
     vi.useRealTimers()
   })
 
@@ -164,9 +161,9 @@ describe('isSubscriptionExpired', () => {
     vi.useRealTimers()
   })
 
-  it('expires at the start of the expiry day (same as TV)', () => {
+  it('expires on the UTC date after the expiry day (same as TV)', () => {
     const expiryDay = Date.UTC(2026, 6, 29, 0, 0, 0)
-    const now = Date.UTC(2026, 6, 29, 10, 0, 0) // today, after day start
+    const now = Date.UTC(2026, 6, 30, 0, 0, 0) // day after expiry
     vi.setSystemTime(now)
     expect(isSubscriptionExpired({ expiresAt: expiryDay })).toBe(true)
     vi.useRealTimers()

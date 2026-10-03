@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { collection, query, orderBy, limit, onSnapshot } from 'firebase/firestore'
 import { db } from '../firebase'
 
@@ -40,9 +40,9 @@ export default function useDeliveryNotifications(restaurantId, enabled = true) {
     return () => unsub()
   }, [restaurantId, enabled])
 
-  const popNotification = () => {
+  const popNotification = useCallback(() => {
     setQueue((prev) => prev.slice(1))
-  }
+  }, [])
 
   return { current: queue[0] || null, popNotification }
 }

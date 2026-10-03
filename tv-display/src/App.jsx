@@ -9,31 +9,8 @@ import { isTvClassDevice } from './tvGate'
 import { Smartphone } from 'lucide-react'
 import { DEMO_CATEGORIES, DEMO_ADDONS, DEMO_MENU } from './demo/demoData'
 import { getLayout, getMaxItems } from '@layouts'
+import { truncateCategories } from './categoryLimiter'
 import './index.css'
-
-function truncateCategories(categories, maxItems) {
-  if (maxItems == null || !categories.length) return categories
-
-  const totalItems = categories.reduce((sum, c) => sum + (c.items || []).length, 0)
-  if (totalItems <= maxItems) return categories
-
-  const result = categories.map((c) => ({ ...c, items: [...(c.items || [])] }))
-  let remaining = maxItems
-
-  for (let i = 0; i < result.length; i++) {
-    if (remaining <= 0) {
-      result[i].items = []
-      continue
-    }
-    const catItems = result[i].items.length
-    const share = Math.max(1, Math.round(remaining / (result.length - i)))
-    const take = Math.min(catItems, share)
-    result[i].items = result[i].items.slice(0, take)
-    remaining -= take
-  }
-
-  return result
-}
 
 function StateScreen({ children, className = '' }) {
   return (

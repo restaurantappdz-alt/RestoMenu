@@ -281,7 +281,7 @@ export function checkAccess() {
     const expiresAtDay = toDayStart(Number(expiresAt))
     const correctedNowDay = toDayStart(correctedNow)
 
-    if (correctedNowDay >= expiresAtDay) {
+    if (correctedNowDay > expiresAtDay) {
       revokeAccess()
       return { allowed: false, reason: 'expired' }
     }

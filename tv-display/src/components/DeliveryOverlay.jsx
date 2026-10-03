@@ -1,20 +1,29 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { CheckCircle2 } from 'lucide-react'
 
 export default function DeliveryOverlay({ notification, onDismiss }) {
   const [visible, setVisible] = useState(false)
+  const onDismissRef = useRef(onDismiss)
+
+  useEffect(() => {
+    onDismissRef.current = onDismiss
+  }, [onDismiss])
 
   useEffect(() => {
     if (notification) {
       setVisible(true)
+      let dismissTimer
       const timer = setTimeout(() => {
         setVisible(false)
         // Wait for animation to complete before removing from queue
-        setTimeout(onDismiss, 500)
+        dismissTimer = setTimeout(() => onDismissRef.current(), 500)
       }, 3000)
-      return () => clearTimeout(timer)
+      return () => {
+        clearTimeout(timer)
+        clearTimeout(dismissTimer)
+      }
     }
-  }, [notification, onDismiss])
+  }, [notification])
 
   if (!notification && !visible) return null
 

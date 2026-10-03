@@ -4,6 +4,7 @@ import react from '@vitejs/plugin-react'
 import legacy from '@vitejs/plugin-legacy'
 import { VitePWA } from 'vite-plugin-pwa'
 import path from 'path'
+import { cloudinaryUrlPattern, imageExtensionUrlPattern } from './src/imageCachePatterns.js'
 
 export default defineConfig({
   base: '/',
@@ -35,7 +36,16 @@ export default defineConfig({
         navigateFallback: '/index.html',
         runtimeCaching: [
           {
-            urlPattern: /\.(png|svg|jpg|jpeg|webp|gif)$/i,
+            urlPattern: imageExtensionUrlPattern,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'tv-images',
+              expiration: { maxEntries: 200, maxAgeSeconds: 60 * 60 * 24 * 30 },
+              cacheableResponse: { statuses: [0, 200] }
+            }
+          },
+          {
+            urlPattern: cloudinaryUrlPattern,
             handler: 'CacheFirst',
             options: {
               cacheName: 'tv-images',

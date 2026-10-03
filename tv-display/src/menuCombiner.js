@@ -96,5 +96,5 @@ export function isSubscriptionExpired(config) {
   if (typeof ms === 'object' && typeof ms.toMillis === 'function') ms = ms.toMillis()
   else ms = Number(ms)
   if (!Number.isFinite(ms)) return true
-  return toDayStart(Date.now()) >= toDayStart(ms)
+  return toDayStart(Date.now()) > toDayStart(ms)
 }

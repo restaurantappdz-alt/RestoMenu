@@ -186,7 +186,7 @@ export default function LayoutClassic({ categories, allAddons, offline, menu, ti
                               <SketchyConnector />
                               <div className="item-price">
                                 <span className="font-heading font-black text-brand-honey leading-tight tabular-nums text-price">{item.price}</span>
-                                <span className="font-heading font-bold ml-2 text-price-currency" style={{ color: 'rgba(255, 183, 3, 0.6)' }}>D.A</span>
+                                <span className="font-heading font-bold ml-2 text-price-currency" style={{ color: 'rgba(255, 183, 3, 0.6)' }}>{menu?.currency || 'DA'}</span>
                               </div>
                             </div>
                           ))}
@@ -210,7 +210,7 @@ export default function LayoutClassic({ categories, allAddons, offline, menu, ti
                   {allAddons.map((addon, j) => (
                     <p key={j} className="font-heading font-black text-brand-honey text-addon-price animate-cascade-item" style={{ animationDelay: `${(j + 0.5) * 0.1}s` }}>
                       {addon.price}
-                      <span className="font-heading font-bold ml-2 text-addon-currency" style={{ color: 'rgba(255, 183, 3, 0.55)' }}>D.A</span>
+                      <span className="font-heading font-bold ml-2 text-addon-currency" style={{ color: 'rgba(255, 183, 3, 0.55)' }}>{menu?.currency || 'DA'}</span>
                     </p>
                   ))}
                   <div className="mt-7 px-6 py-2 bg-white/8 rounded-full border border-white/10">

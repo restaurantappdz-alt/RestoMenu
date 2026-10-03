@@ -49,6 +49,11 @@ service cloud.firestore {
         allow create, update, delete: if isOwner(restaurantId);
       }
 
+      // --- Delivery notifications (public read for the TV display) ---
+      match /delivery_notifications/{notificationId} {
+        allow read: if true;
+      }
+
       // --- TV config/display (public read, locked write) ---
       match /config/display {
         allow read: if true;

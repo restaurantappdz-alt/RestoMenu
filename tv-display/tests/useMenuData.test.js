@@ -177,3 +177,113 @@ describe('useMenuData — connection error states (M2/M3)', () => {
     h.restore()
   })
 })
+
+describe('useMenuData — offline & day scheduling resilience', () => {
+  beforeEach(() => {
+    localStorage.clear()
+    vi.stubGlobal('navigator', { onLine: false })
+    vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new Error('network down')))
+  })
+
+  afterEach(() => {
+    vi.useRealTimers()
+    vi.unstubAllGlobals()
+    Object.keys(snapshots).forEach((k) => delete snapshots[k])
+    Object.keys(snapshotErrors).forEach((k) => delete snapshotErrors[k])
+    unsubscribers.splice(0).forEach((u) => u.mockClear())
+    vi.clearAllMocks()
+  })
+
+  it('resolves legacy string screen entry format offline', () => {
+    localStorage.setItem('restomenu-tv-config_rest1', JSON.stringify({
+      screens: { tv1: 'm1' }
+    }))
+    localStorage.setItem('restomenu-tv-cache_rest1', JSON.stringify({ id: 'm1', name: 'String Screen Menu' }))
+
+    const h = renderHookOnce('?r=rest1&s=tv1')
+    expect(h.output.menu).toEqual({ id: 'm1', name: 'String Screen Menu' })
+    expect(h.output.waiting).toBe(false)
+    h.unmount()
+    h.restore()
+  })
+
+  it('resolves day-only schedule (without startTime/endTime) to active menu', () => {
+    // Force date to a Tuesday
+    vi.useFakeTimers()
+    vi.setSystemTime(new Date('2026-09-08T12:00:00Z')) // 2026-09-08 is Tuesday
+
+    localStorage.setItem('restomenu-tv-config_rest1', JSON.stringify({
+      screens: {
+        tv1: {
+          menuIds: ['m1', 'm2'],
+          schedules: {
+            m1: { daysOfWeek: ['Mon'] },
+            m2: { daysOfWeek: ['Tue'] }
+          }
+        }
+      }
+    }))
+    localStorage.setItem('restomenu-tv-cache_rest1_m2', JSON.stringify({ id: 'm2', name: 'Tuesday Menu' }))
+    localStorage.setItem('restomenu-tv-cache_rest1', JSON.stringify({ id: 'm1', name: 'Monday Menu' }))
+
+    const h = renderHookOnce('?r=rest1&s=tv1')
+    expect(h.output.menu).toEqual({ id: 'm2', name: 'Tuesday Menu' })
+    h.unmount()
+    h.restore()
+  })
+
+  it('falls back to available cached menu offline if active scheduled menu is not cached', () => {
+    // Force date to a Saturday
+    vi.useFakeTimers()
+    vi.setSystemTime(new Date('2026-09-12T12:00:00Z')) // Saturday
+
+    localStorage.setItem('restomenu-tv-config_rest1', JSON.stringify({
+      screens: {
+        tv1: {
+          menuIds: ['m1', 'm2'],
+          schedules: {
+            m1: { daysOfWeek: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'], startTime: '09:00', endTime: '17:00' },
+            m2: { daysOfWeek: ['Sat', 'Sun'], startTime: '09:00', endTime: '17:00' }
+          }
+        }
+      }
+    }))
+    // Only m1 is cached
+    localStorage.setItem('restomenu-tv-cache_rest1', JSON.stringify({ id: 'm1', name: 'Weekday Menu' }))
+
+    const h = renderHookOnce('?r=rest1&s=tv1')
+    // Must NOT be null / "Menu Not Found" when offline! Must fall back to cached menu m1.
+    expect(h.output.menu).toEqual({ id: 'm1', name: 'Weekday Menu' })
+    expect(h.output.loading).toBe(false)
+    h.unmount()
+    h.restore()
+  })
+
+  it('loads specific scheduled menu from multi-menu cache when offline', () => {
+    // Force date to a Saturday
+    vi.useFakeTimers()
+    vi.setSystemTime(new Date('2026-09-12T12:00:00Z')) // Saturday
+
+    localStorage.setItem('restomenu-tv-config_rest1', JSON.stringify({
+      screens: {
+        tv1: {
+          menuIds: ['m1', 'm2'],
+          schedules: {
+            m1: { daysOfWeek: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'], startTime: '09:00', endTime: '17:00' },
+            m2: { daysOfWeek: ['Sat', 'Sun'], startTime: '09:00', endTime: '17:00' }
+          }
+        }
+      }
+    }))
+    localStorage.setItem('restomenu-tv-cache_rest1_m1', JSON.stringify({ id: 'm1', name: 'Weekday Menu' }))
+    localStorage.setItem('restomenu-tv-cache_rest1_m2', JSON.stringify({ id: 'm2', name: 'Weekend Menu' }))
+
+    const h = renderHookOnce('?r=rest1&s=tv1')
+    expect(h.output.menu).toEqual({ id: 'm2', name: 'Weekend Menu' })
+    expect(h.output.loading).toBe(false)
+    h.unmount()
+    h.restore()
+  })
+})
+
+

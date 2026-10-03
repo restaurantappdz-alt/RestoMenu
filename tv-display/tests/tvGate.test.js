@@ -1,5 +1,5 @@
-import { describe, it, expect } from 'vitest'
-import { isTvLikeUserAgent, isTvLikeViewport, isTvClassDevice } from '../src/tvGate'
+import { afterEach, describe, it, expect, vi } from 'vitest'
+import { isTvLikeUserAgent, isTvClassDevice } from '../src/tvGate'
 
 const TV_UAS = [
   'Mozilla/5.0 (SMART-TV; LINUX; Tizen 9.0) AppleWebKit/537.36 (KHTML, like Gecko) 120.0.6099.5/9.0 TV Safari/537.36',
@@ -24,6 +24,8 @@ const PHONE_UAS = [
   '',
 ]
 
+afterEach(() => vi.unstubAllGlobals())
+
 describe('isTvLikeUserAgent', () => {
   TV_UAS.forEach((ua) => {
     it(`flags TV UA: ${ua.slice(0, 45)}...`, () => {
@@ -43,31 +45,15 @@ describe('isTvLikeUserAgent', () => {
   })
 })
 
-describe('isTvLikeViewport', () => {
-  it('flags large landscape screens (TVs, monitors, projectors)', () => {
-    expect(isTvLikeViewport(1920, 1080)).toBe(true)
-    expect(isTvLikeViewport(3840, 2160)).toBe(true)
-    expect(isTvLikeViewport(1366, 768)).toBe(true)
-  })
-
-  it('allows phones in portrait and landscape', () => {
-    expect(isTvLikeViewport(390, 844)).toBe(false)
-    expect(isTvLikeViewport(852, 393)).toBe(false)
-  })
-
-  it('allows tall screens of any width', () => {
-    expect(isTvLikeViewport(1080, 1920)).toBe(false)
-  })
-
-  it('fails open on invalid input', () => {
-    expect(isTvLikeViewport(undefined, undefined)).toBe(false)
-    expect(isTvLikeViewport(NaN, NaN)).toBe(false)
-    expect(isTvLikeViewport('1920', '1080')).toBe(false)
-  })
-})
-
 describe('isTvClassDevice', () => {
-  it('returns false in the default jsdom environment (no TV UA, 1024x768)', () => {
+  it('does not block a laptop or tablet based on its large landscape viewport', () => {
+    vi.stubGlobal('navigator', { userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/120.0.0.0' })
+    vi.stubGlobal('window', { innerWidth: 1920, innerHeight: 1080 })
     expect(isTvClassDevice()).toBe(false)
+  })
+
+  it('blocks a TV identified by its user agent', () => {
+    vi.stubGlobal('navigator', { userAgent: TV_UAS[0] })
+    expect(isTvClassDevice()).toBe(true)
   })
 })
