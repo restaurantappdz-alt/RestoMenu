@@ -1,6 +1,7 @@
 import useMenuData from './hooks/useMenuData'
 import useDeviceLock from './hooks/useDeviceLock'
 import useDeliveryNotifications from './hooks/useDeliveryNotifications'
+import useTvFullscreen from './hooks/useTvFullscreen'
 import DeliveryOverlay from './components/DeliveryOverlay'
 import PhoneMenuPage from './pages/PhoneMenuPage'
 import LayoutPreviewPage from './pages/LayoutPreviewPage'
@@ -136,6 +137,10 @@ export default function App() {
   const screenId = params.get('s')
   const deviceStatus = useDeviceLock(restaurantId, screenId, !offline)
   const { current: deliveryNotification, popNotification } = useDeliveryNotifications(restaurantId, !offline && !subscriptionBlocked)
+
+  // Auto-fullscreen on TV display mount & remote interactions
+  const { isFullscreen, requestFullscreen } = useTvFullscreen(true)
+
   const LayoutComponent = getLayout(selectedLayout)
 
   const capItemLimit = getMaxItems(selectedLayout, categories?.length || 0)
@@ -210,6 +215,19 @@ export default function App() {
         />
       </ErrorBoundary>
       <DeliveryOverlay notification={deliveryNotification} onDismiss={popNotification} />
+      {!isFullscreen && (
+        <button
+          type="button"
+          onClick={requestFullscreen}
+          className="fixed bottom-6 right-6 z-50 flex items-center gap-2 px-5 py-3 rounded-full bg-brand-orange text-white text-sm font-bold shadow-2xl hover:scale-105 active:scale-95 transition-all cursor-pointer border border-white/20 animate-bounce"
+          title="ملء الشاشة / Fullscreen"
+        >
+          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M4 8V4m0 0h4M4 4l5 5m11-5h-4m4 0v4m0-4l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
+          </svg>
+          <span>ملء الشاشة</span>
+        </button>
+      )}
     </div>
   )
 }
